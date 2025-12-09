@@ -45,44 +45,44 @@ Built for the **Solana Winter Build Challenge 2025** — demonstrates a realisti
 
 ```mermaid
 graph TB
-    subgraph User["User & UX"]
-        U[User browser/app]
-        Wallet[Wallet Phantom / Solana Actions]
+    subgraph UserUX["User & UX"]
+        U["User (browser/app)"]
+        Wallet["Wallet (Phantom / Solana Actions)"]
     end
 
     subgraph Frontend
-        Web[Next.js / React]
-        UI[Marketplace, Run Modal, Dashboard]
+        Web["Next.js / React"]
+        UI["Marketplace, Run Modal, Dashboard"]
     end
 
     subgraph Backend
-        Relayer[Relayer / Paymaster]
-        API[SynapsePay API Bun / Node]
-        X402Adapter[X402 Adapter]
+        Relayer["Relayer / Paymaster"]
+        API["SynapsePay API (Bun / Node)"]
+        X402["X402 Adapter"]
     end
 
     subgraph Chain
-        Solana[Solana Devnet/Devnet]
-        Anchor[Anchor Program: Registry, Receipts, Subscriptions]
-        USDC[USDC-SPL Token]
+        Solana["Solana (Devnet/Mainnet)"]
+        Anchor["Anchor Program: Registry, Receipts, Subscriptions"]
+        USDC["USDC-SPL Token"]
     end
 
     subgraph AgentsDevices["Agents & Devices"]
-        Agents[AI Agents AurraCloud / Local LLM / Stubs]
-        Devices[Device Gateway Raspberry Pi / ESP32]
-        Storage[IPFS / Arweave]
+        Agents["AI Agents (AurraCloud / Local LLM / Stubs)"]
+        Devices["Device Gateway (Raspberry Pi / ESP32)"]
+        Storage["IPFS / Arweave"]
     end
 
-    U -->|1. Browse / Run| Web
-    Web -->|2. Create invoice| API
-    API -->|3. 402 Response| Web
-    Web -->|4. Pay Actions or Relayer| Relayer
-    Relayer -->|5. Verify tx| Anchor
-    Anchor -->|6. Mint Receipt| Solana
-    Relayer -->|7. Trigger| Agents
-    Agents -->|8. Store result| Storage
-    Storage -->|9. CID| Anchor
-    Web -->|10. Show result & tx| U
+    U -->|"1. Browse / Run"| Web
+    Web -->|"2. Create invoice"| API
+    API -->|"3. 402 Response"| Web
+    Web -->|"4. Pay (Actions or Relayer)"| Relayer
+    Relayer -->|"5. Verify tx"| Anchor
+    Anchor -->|"6. Mint Receipt"| Solana
+    Relayer -->|"7. Trigger"| Agents
+    Agents -->|"8. Store result"| Storage
+    Storage -->|"9. CID"| Anchor
+    Web -->|"10. Show result & tx"| U
 ```
 
 **Flow Overview:**
