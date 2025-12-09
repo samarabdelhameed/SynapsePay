@@ -377,7 +377,7 @@ graph TB
 
         Encoded --> Version[version: '1.0']
         Encoded --> PaymentType[paymentType: 'solana']
-        Encoded --> Network[network: 'mainnet' | 'devnet']
+        Encoded --> Network[network: mainnet/devnet]
         Encoded --> Payload[payload: SolanaPaymentPayload]
 
         subgraph SolanaPayload["💳 Solana Payment Payload"]
