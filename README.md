@@ -2397,7 +2397,489 @@ alias sol-logs="solana logs"
 
 ---
 
-## 📄 Deliverables
+## � API Documentation
+
+### Facilitator API (Port 8403)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `POST` | `/invoice` | Create payment invoice | `{ agentId, amount, payer }` | `{ invoiceId, expiresAt, paymentDetails }` |
+| `POST` | `/verify` | Verify payment signature | `{ payload, signature }` | `{ valid: boolean, errors?: [] }` |
+| `POST` | `/settle` | Settle payment on-chain | `{ invoiceId, txSignature }` | `{ txHash, slot, receiptId }` |
+| `GET` | `/status/:invoiceId` | Check invoice status | - | `{ state, paidAt?, resultCid? }` |
+| `GET` | `/health` | Health check | - | `{ status: 'ok', uptime }` |
+
+#### Create Invoice Example
+
+```bash
+curl -X POST http://localhost:8403/invoice \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "pdf-summarizer-v1",
+    "amount": "50000",
+    "payer": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+  }'
+```
+
+**Response:**
+```json
+{
+  "invoiceId": "7xKXtg2CW87d9VqQzJkHT5J5E1mRQWz4vNrYhS9QT2Ni",
+  "amount": "50000",
+  "currency": "USDC",
+  "recipient": "HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH",
+  "expiresAt": 1702166700,
+  "network": "devnet"
+}
+```
+
+### Resource Server API (Port 8404)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `GET` | `/agents` | List all agents | - | `{ agents: Agent[] }` |
+| `GET` | `/agent/:id` | Get agent details | - | `{ agent: Agent }` |
+| `POST` | `/agent/execute` | Execute agent task | `{ agentId, taskParams }` + X-PAYMENT | `{ taskId, status }` |
+| `GET` | `/task/:id` | Get task status | - | `{ status, resultCid?, error? }` |
+| `GET` | `/result/:cid` | Fetch result from IPFS | - | `{ result: any }` |
+| `POST` | `/device/command` | Send IoT command | `{ deviceId, command }` + X-PAYMENT | `{ success, response }` |
+
+#### Execute Agent Example
+
+```bash
+curl -X POST http://localhost:8404/agent/execute \
+  -H "Content-Type: application/json" \
+  -H "X-PAYMENT: eyJ2ZXJzaW9uIjoiMS4wIi..." \
+  -d '{
+    "agentId": "pdf-summarizer-v1",
+    "taskParams": {
+      "inputCID": "QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco",
+      "maxTokens": 500,
+      "language": "en"
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "taskId": "task_abc123",
+  "status": "executing",
+  "estimatedTime": 5000
+}
+```
+
+### Actions API (Port 8405)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| `GET` | `/actions.json` | Actions manifest | - | Solana Actions manifest |
+| `GET` | `/api/actions/:agentId` | Get action metadata | - | Action metadata for Blinks |
+| `POST` | `/api/actions/:agentId` | Execute action | Solana Action payload | Transaction to sign |
+| `GET` | `/blink/:agentId` | Generate Blink URL | - | `{ blinkUrl, qrCode }` |
+
+#### Actions.json Manifest
+
+```json
+{
+  "rules": [
+    {
+      "pathPattern": "/api/actions/*",
+      "apiPath": "/api/actions/*"
+    }
+  ]
+}
+```
+
+#### Blink URL Format
+
+```
+https://synapsepay.io/api/actions/pdf-summarizer-v1?input=QmXoypiz...
+
+# Shareable on Twitter:
+solana-action:https://synapsepay.io/api/actions/pdf-summarizer-v1
+```
+
+---
+
+## 🔐 Security Considerations
+
+### Authentication & Authorization
+
+| Security Layer | Implementation |
+|----------------|----------------|
+| **Wallet Authentication** | Ed25519 signature verification |
+| **Request Signing** | All payments signed by user wallet |
+| **Facilitator Auth** | API key + rate limiting |
+| **Admin Operations** | Multi-sig for program upgrades |
+
+### Rate Limiting
+
+```typescript
+// Rate limit configuration
+const rateLimits = {
+  invoiceCreation: { requests: 10, window: '1m' },
+  paymentVerification: { requests: 50, window: '1m' },
+  agentExecution: { requests: 5, window: '1m' },
+  publicEndpoints: { requests: 100, window: '1m' },
+};
+```
+
+### Signature Validation
+
+```rust
+// On-chain signature verification (Anchor)
+pub fn verify_payment(
+    ctx: Context<VerifyPayment>,
+    signature: [u8; 64],
+    message: Vec<u8>,
+) -> Result<()> {
+    // Verify Ed25519 signature
+    let pubkey = ctx.accounts.payer.key();
+    require!(
+        ed25519_verify(&pubkey.to_bytes(), &message, &signature),
+        PaymentError::InvalidSignature
+    );
+    
+    // Check nonce to prevent replay
+    require!(
+        !ctx.accounts.nonce_account.is_used,
+        PaymentError::NonceAlreadyUsed
+    );
+    
+    Ok(())
+}
+```
+
+### Replay Attack Prevention
+
+| Protection | Description |
+|------------|-------------|
+| **Nonce Tracking** | Each invoice has unique nonce, marked as used after settlement |
+| **Expiry Window** | Invoices expire after 5 minutes |
+| **Transaction Hash** | Each tx hash can only be used once |
+| **Slot Validation** | Verify tx was in recent slots |
+
+### Private Key Management
+
+```
+⚠️ SECURITY BEST PRACTICES
+
+✅ DO:
+- Use environment variables for all keys
+- Store facilitator keys in secure vault (AWS KMS, HashiCorp Vault)
+- Rotate keys regularly
+- Use separate keys for devnet/mainnet
+- Implement key backup and recovery procedures
+
+❌ DON'T:
+- Commit .env files to git
+- Hardcode private keys in source code
+- Share keys across environments
+- Store keys in plain text
+- Use same keys for testing and production
+```
+
+### Security Checklist
+
+```
+□ All endpoints require authentication
+□ Rate limiting enabled on all routes
+□ Input validation on all parameters
+□ SQL injection prevention (parameterized queries)
+□ XSS prevention (output encoding)
+□ CORS properly configured
+□ HTTPS enforced in production
+□ Secrets stored in vault, not env files
+□ Logging excludes sensitive data
+□ Error messages don't leak internal details
+□ Dependencies regularly updated
+□ Security audit before mainnet launch
+```
+
+---
+
+## 🗺️ Roadmap
+
+### 2025 Development Timeline
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        SYNAPSEPAY ROADMAP 2025                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Q1 2025 (Jan-Mar)                                                     │
+│  ════════════════                                                       │
+│  ✅ MVP Launch on Devnet                                                │
+│  ✅ Core AI Agents (5 agents)                                           │
+│  ✅ x402 Payment Flow                                                   │
+│  ✅ Basic Marketplace                                                   │
+│  ✅ Solana Actions Integration                                          │
+│  ✅ Hackathon Submission                                                │
+│                                                                         │
+│  Q2 2025 (Apr-Jun)                                                     │
+│  ════════════════                                                       │
+│  🔲 Mainnet Beta Launch                                                 │
+│  🔲 Security Audit                                                      │
+│  🔲 10+ AI Agents                                                       │
+│  🔲 Subscription System                                                 │
+│  🔲 Agent Creator SDK                                                   │
+│  🔲 Analytics Dashboard                                                 │
+│                                                                         │
+│  Q3 2025 (Jul-Sep)                                                     │
+│  ════════════════                                                       │
+│  🔲 Mobile App (React Native)                                           │
+│  🔲 Agent Marketplace v2                                                │
+│  🔲 Revenue Sharing System                                              │
+│  🔲 Enterprise API                                                      │
+│  🔲 IoT Device Partnerships                                             │
+│  🔲 25+ AI Agents                                                       │
+│                                                                         │
+│  Q4 2025 (Oct-Dec)                                                     │
+│  ════════════════                                                       │
+│  🔲 Multi-chain Support (Ethereum, Base)                                │
+│  🔲 Cross-chain Payments (CCTP)                                         │
+│  🔲 AI Agent Composer (no-code)                                         │
+│  🔲 DAO Governance                                                      │
+│  🔲 50+ AI Agents                                                       │
+│  🔲 1M+ Transactions Target                                             │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Feature Roadmap
+
+| Phase | Features | Target |
+|-------|----------|--------|
+| **Phase 1: Foundation** | MVP, Core Agents, Payments | Q1 2025 |
+| **Phase 2: Growth** | Mainnet, Subscriptions, Creator SDK | Q2 2025 |
+| **Phase 3: Expansion** | Mobile, Enterprise, IoT | Q3 2025 |
+| **Phase 4: Scale** | Multi-chain, DAO, Mass Adoption | Q4 2025 |
+
+### Technical Milestones
+
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| Anchor Programs v1 | Registry, Payments, Scheduler | ✅ Complete |
+| x402 Solana Library | Payment protocol for Solana | ✅ Complete |
+| Frontend MVP | React + ShadCN dashboard | ✅ Complete |
+| Devnet Deployment | Full system on devnet | 🔲 In Progress |
+| Security Audit | Third-party audit | 🔲 Planned |
+| Mainnet Launch | Production deployment | 🔲 Q2 2025 |
+
+---
+
+## 🎬 Demo Video Script
+
+### Video Structure (2-3 minutes)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      SYNAPSEPAY DEMO VIDEO SCRIPT                       │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  🎬 0:00 - 0:15 | INTRO                                                 │
+│  ─────────────────────────────────────────                              │
+│  "SynapsePay - AI-Powered AutoPay Agents on Solana"                    │
+│  Show: Logo animation + tagline                                         │
+│  Audio: Upbeat intro music                                              │
+│                                                                         │
+│  🏪 0:15 - 0:45 | MARKETPLACE DEMO                                      │
+│  ─────────────────────────────────────────                              │
+│  Actions:                                                               │
+│  • Open marketplace page                                                │
+│  • Browse AI agents grid                                                │
+│  • Filter by category (AI, IoT, Automation)                             │
+│  • Show agent cards with prices                                         │
+│  Narration: "Browse our marketplace of AI agents..."                   │
+│                                                                         │
+│  💳 0:45 - 1:15 | PAYMENT FLOW                                          │
+│  ─────────────────────────────────────────                              │
+│  Actions:                                                               │
+│  • Click "Run Agent" on PDF Summarizer                                  │
+│  • Show payment modal with 0.05 USDC                                   │
+│  • Connect Phantom wallet                                               │
+│  • Sign transaction (gasless!)                                          │
+│  • Show payment confirmation                                            │
+│  Narration: "Pay just 0.05 USDC with zero gas fees..."                │
+│                                                                         │
+│  🤖 1:15 - 1:45 | AI EXECUTION                                          │
+│  ─────────────────────────────────────────                              │
+│  Actions:                                                               │
+│  • Upload PDF file                                                      │
+│  • Show AI processing animation                                         │
+│  • Display summary result                                               │
+│  • Show IPFS CID + Solscan receipt link                                │
+│  Narration: "AI processes your task and stores results on IPFS..."    │
+│                                                                         │
+│  ⚡ 1:45 - 2:15 | SOLANA ACTIONS (BLINKS)                               │
+│  ─────────────────────────────────────────                              │
+│  Actions:                                                               │
+│  • Generate Blink URL for agent                                         │
+│  • Show QR code                                                         │
+│  • Demo: Click Twitter share                                            │
+│  • Show embedded action preview                                         │
+│  Narration: "Share agents anywhere - Twitter, Email, QR codes..."     │
+│                                                                         │
+│  📊 2:15 - 2:30 | DASHBOARD & SUBSCRIPTIONS                             │
+│  ─────────────────────────────────────────                              │
+│  Actions:                                                               │
+│  • Show user dashboard                                                  │
+│  • Display task history                                                 │
+│  • Show active subscriptions                                            │
+│  • Quick look at spending analytics                                     │
+│  Narration: "Track all your tasks and set up automated workflows..."  │
+│                                                                         │
+│  🎉 2:30 - 2:45 | WRAP UP                                               │
+│  ─────────────────────────────────────────                              │
+│  Show: Key stats overlay                                                │
+│  • "0.05 USDC per task"                                                │
+│  • "< 2 second execution"                                               │
+│  • "Zero gas fees"                                                      │
+│  • "On-chain receipts"                                                  │
+│  CTA: "Try SynapsePay today!"                                          │
+│  Show: GitHub link + Demo URL                                           │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Recording Checklist
+
+```
+□ Screen recording software ready (OBS, Loom)
+□ Phantom wallet connected with devnet USDC
+□ All services running (docker-compose up)
+□ Sample PDF file ready for upload
+□ Clean browser (no personal bookmarks visible)
+□ Notifications disabled
+□ 1080p resolution minimum
+□ Microphone tested
+□ Script practiced 2-3 times
+□ Backup recording plan
+```
+
+---
+
+## 🤖 Sample AI Agents
+
+### Built-in Agents Catalog
+
+| Agent ID | Name | Category | Price | Description |
+|----------|------|----------|-------|-------------|
+| `pdf-summarizer-v1` | 📄 PDF Summarizer | AI | 0.05 USDC | Extract key points from PDF documents |
+| `image-editor-v1` | 🎨 Image Editor | AI | 0.10 USDC | Remove background, resize, apply filters |
+| `code-debugger-v1` | 🐛 Code Debugger | AI | 0.08 USDC | Analyze and fix code issues |
+| `nft-minter-v1` | 🖼️ NFT Minter | NFT | 0.25 USDC | Generate and mint NFT from image |
+| `video-summarizer-v1` | 🎬 Video Summarizer | AI | 0.15 USDC | Summarize YouTube videos |
+| `trading-signal-v1` | 📈 Trading Signals | Trading | 0.20 USDC | Get AI-powered trading signals |
+| `wallet-analyzer-v1` | 💼 Wallet Analyzer | Utility | 0.05 USDC | Analyze wallet activity and holdings |
+| `ipfs-uploader-v1` | 📁 IPFS Uploader | Utility | 0.03 USDC | Upload files to IPFS |
+| `smart-contract-v1` | 📝 Contract Signer | Automation | 0.50 USDC | Sign and execute smart contracts |
+| `daily-report-v1` | 📊 Daily Report | Automation | 0.10 USDC | Generate daily portfolio report |
+
+### Agent Details
+
+#### 📄 PDF Summarizer
+
+```json
+{
+  "agentId": "pdf-summarizer-v1",
+  "name": "PDF Summarizer",
+  "description": "Upload a PDF and get an AI-powered summary with key points, main themes, and actionable insights.",
+  "category": "AI",
+  "price": {
+    "amount": "50000",
+    "currency": "USDC",
+    "display": "0.05 USDC"
+  },
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "inputCID": { "type": "string", "description": "IPFS CID of PDF file" },
+      "maxTokens": { "type": "number", "default": 500 },
+      "language": { "type": "string", "default": "en" },
+      "format": { "type": "string", "enum": ["bullets", "paragraph", "structured"] }
+    },
+    "required": ["inputCID"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "summary": { "type": "string" },
+      "keyPoints": { "type": "array", "items": { "type": "string" } },
+      "wordCount": { "type": "number" }
+    }
+  },
+  "estimatedTime": 5000,
+  "aiModel": "gpt-4-turbo",
+  "rating": 4.8,
+  "totalRuns": 1250
+}
+```
+
+#### 🖼️ NFT Minter
+
+```json
+{
+  "agentId": "nft-minter-v1",
+  "name": "NFT Minter",
+  "description": "Transform any image into an NFT. AI enhances the image, generates metadata, and mints on Solana.",
+  "category": "NFT",
+  "price": {
+    "amount": "250000",
+    "currency": "USDC",
+    "display": "0.25 USDC"
+  },
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "imageCID": { "type": "string", "description": "IPFS CID of image" },
+      "name": { "type": "string", "description": "NFT name" },
+      "description": { "type": "string" },
+      "attributes": { "type": "array" },
+      "royaltyBps": { "type": "number", "default": 500 }
+    },
+    "required": ["imageCID", "name"]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "mintAddress": { "type": "string" },
+      "metadataUri": { "type": "string" },
+      "explorerUrl": { "type": "string" }
+    }
+  },
+  "estimatedTime": 15000,
+  "rating": 4.9,
+  "totalRuns": 850
+}
+```
+
+### Agent Categories
+
+| Category | Icon | Agents | Description |
+|----------|------|--------|-------------|
+| **AI** | 🤖 | 5 | Text, image, and code AI processing |
+| **NFT** | 🖼️ | 2 | NFT creation and management |
+| **Trading** | 📈 | 2 | Market analysis and signals |
+| **Utility** | 🔧 | 3 | File handling and blockchain queries |
+| **Automation** | 🔄 | 3 | Scheduled tasks and workflows |
+| **IoT** | 🌐 | 2 | Device control and monitoring |
+
+### Coming Soon Agents
+
+| Agent | Category | ETA |
+|-------|----------|-----|
+| 🎵 Audio Transcriber | AI | Q2 2025 |
+| 🌍 Language Translator | AI | Q2 2025 |
+| 📧 Email Automation | Automation | Q2 2025 |
+| 🏠 Smart Home Controller | IoT | Q3 2025 |
+| 🚁 Drone Commander | IoT | Q3 2025 |
+| 💱 Cross-chain Swap | Trading | Q4 2025 |
+
+---
+
+## �📄 Deliverables
 
 | Deliverable | Status |
 |-------------|--------|
