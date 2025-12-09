@@ -1,242 +1,390 @@
-# SynapsePay — Run AI & Devices on Solana (x402 + Pay-Per-Action)
+<p align="center">
+  <img src="https://img.shields.io/badge/Solana-Winter%20Buildathon%202025-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Buildathon"/>
+  <img src="https://img.shields.io/badge/Status-Active-00D18C?style=for-the-badge" alt="Status"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"/>
+</p>
 
-**Tagline:** _Power autonomous agents and real-world devices with instant micropayments — Solana speed, x402 simplicity._
+<h1 align="center">🚀 SynapsePay</h1>
 
-SynapsePay is a production-minded demo platform for pay-per-action agents on **Solana**.  
-Users pay micro-amounts (USDC-SPL) via the **x402 HTTP payment flow**, then instantly trigger AI tasks, IoT/device actions, or on-chain workflows. SynapsePay combines:
+<h3 align="center">AI-Powered AutoPay Agents on Solana</h3>
 
-- **x402 micropayments** (HTTP 402 invoice flow)  
-- **Solana (Anchor)** on-chain receipts & fee settlement  
-- **Solana Actions** + relayer (gasless UX) for frictionless consumers  
-- **AI Agents Marketplace**, **Automation/Subscriptions**, and **Device Gateway** support
+<p align="center">
+  <strong>Pay-per-Action • Automation • Solana Actions • x402 • AI Agents • Marketplace</strong>
+</p>
 
-Built for the **Solana Winter Build Challenge 2025** — demonstrates a realistic integration of x402 + Solana that judges can run, test, and extend.
-
----
-
-## 🎯 Why SynapsePay wins
-
-- **Directly targets the "Best Use of x402 with Solana" challenge.**  
-- Combines a consumer-facing UX (fast, single-click flows) with deep technical merit (on-chain receipts, Anchor program design).  
-- Unique mix: **Agent economy + micropayments + real-world device control + subscriptions** — nothing else in the field bundles all these cleanly.  
-- Demo is **hands-on** and repeatable: the judges can pay, trigger, and verify results on Solscan in minutes.
-
----
-
-## Key Features (MVP + Near-term stretch)
-
-### Core MVP (required for submission)
-- **Marketplace**: list and browse agents (AI + device + utility agents).  
-- **Pay-Per-Action flow**: x402 invoice → Solana settlement (relayer or Solana Actions) → agent execution.  
-- **On-chain Receipts**: Anchor program stores immutable receipts (txHash + resultCID).  
-- **Result Storage**: outputs uploaded to IPFS/Arweave; CID recorded on-chain.  
-- **Relayer (Paymaster)**: optional gasless UX for non-crypto users.
-
-### Differentiators (stretch / hackathon polish)
-- **AI Agents**: image edits, PDF summaries, code fixes, trading queries, NFT generation.  
-- **Subscriptions / Automation**: schedule recurring agent runs (cron via relayer, on-chain pointer).  
-- **Device / IoT Gateway**: signed command delivery to hardware (Raspberry Pi / ESP32).  
-- **Marketplace Economics**: platform fees, owner payouts, on-chain withdraws.  
-- **Proof-of-Execution**: verifiable receipts + signed callbacks from agents.
+<p align="center">
+  <a href="#-why-synapsepay">Why SynapsePay</a> •
+  <a href="#-core-features">Features</a> •
+  <a href="#-architecture">Architecture</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-demo-scenarios">Demo</a> •
+  <a href="#-quick-start">Quick Start</a>
+</p>
 
 ---
 
-## Architecture (overview)
+## 📋 Overview
+
+**SynapsePay** is a next-generation automation network that enables **AI-driven tasks**, **micro-transactions**, and **real-world device triggers** — all powered by **Solana's speed, scalability, and near-zero fees**.
+
+Unlike traditional pay-per-use systems, SynapsePay combines:
+
+| Component | Description |
+|-----------|-------------|
+| 🤖 **AI Agents** | Multi-tool execution for diverse tasks |
+| ⚡ **Solana Actions** | Direct transaction flows via social & web |
+| 🔄 **Automated Workflows** | Scheduled tasks & subscriptions |
+| 💰 **x402 Micropayments** | Gasless, instant micro-transactions |
+| 🏪 **Agent Marketplace** | Discover & monetize custom agents |
+| 🌐 **IoT Device Execution** | Bridge blockchain to physical world |
+
+> **This makes SynapsePay the first system where users can pay 0.05 USDC to instantly trigger an AI task, device action, or on-chain workflow — fully automated.**
+
+---
+
+## ⭐ Why SynapsePay?
+
+Most hackathon projects deliver simple "trigger and pay" apps.
+**SynapsePay delivers a full automation network**, combining 3–4 ideas into one unified system:
+
+| Feature | Status |
+|---------|--------|
+| ✅ AI execution | Multi-model support |
+| ✅ On-chain automation | Solana-native |
+| ✅ Pay-per-action billing | x402 protocol |
+| ✅ Real device integration | IoT gateway |
+| ✅ Social & Web2 integrations | Solana Actions |
+| ✅ Marketplace for custom agents | Creator economy |
+
+> 🎯 **Perfectly aligned** with Solana's 2025 emphasis on **consumer apps, speed, automation, x402, and Solana Actions**.
+
+---
+
+## 🚀 Core Features
+
+### 1. 🤖 AI Agents (Multi-Tool Execution)
+
+Each agent performs tasks on demand after a micro-payment:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📄 PDF Analysis          │  🐛 Code Debugging              │
+│  🎬 Video Summarization   │  📝 Smart Contract Signing      │
+│  🎨 Image Editing         │  🖼️  NFT Generation             │
+│  📈 Trading Bot Execution │  📁 IPFS Uploads                │
+│  💼 Wallet Analytics      │  💬 Multi-Model Chat            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Price Range:** `0.05 – 0.5 USDC` per action, gasless via x402.
+
+---
+
+### 2. ⚡ Solana Actions Integration (SUPERPOWER)
+
+Send a Solana transaction directly through:
+
+- 🐦 **Twitter** — Tweet triggers action
+- 📧 **Email** — Inbox to blockchain
+- 💬 **WhatsApp** — Chat-based payments
+- 🌐 **Websites** — Embedded action buttons
+- 📱 **QR Codes** — Scan and execute
+
+**Example Automation Flow:**
+```
+Upload Image → Auto-Pay → AI converts to NFT → Returns mint link in 2 seconds
+```
+
+---
+
+### 3. 🔄 Auto-Tasks & Subscriptions
+
+Users can schedule automated recurring actions:
+
+| Task Type | Example |
+|-----------|---------|
+| 📊 Daily Reports | Price alerts & portfolio summaries |
+| 💱 Weekly Rebalancing | USDC portfolio optimization |
+| 💾 Automated Backups | Data to Arweave/IPFS |
+| 🎨 Daily NFT Drops | AI-generated collections |
+| 🔔 Wallet Monitoring | Balance & transaction alerts |
+| 📈 Trading Triggers | Automated DeFi strategies |
+
+> All tasks are billed with **auto micropayments** — set once, run forever.
+
+---
+
+### 4. 🏪 Agent Marketplace
+
+Creators can publish and monetize their own agents:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                    CREATOR ECONOMY                         │
+├────────────────────────────────────────────────────────────┤
+│  🤖 AI Bots           →  Publish your trained models       │
+│  🔌 Device Triggers   →  Connect real-world hardware       │
+│  📊 Data Processors   →  Analytics & transformations       │
+│  🔄 Automation Flows  →  Complex multi-step workflows      │
+└────────────────────────────────────────────────────────────┘
+
+User Pays → Creator Earns → Platform Takes Fee
+```
+
+---
+
+### 5. 🌐 Real-World Device / IoT Support
+
+Bridge **Solana ↔ Physical World** in real time:
+
+| Device Type | Use Case |
+|-------------|----------|
+| 🤖 Robots | Automated physical tasks |
+| 🚪 Smart Doors | Secure access control |
+| 🚁 Drones | Aerial operations |
+| 🖨️ Printers | Document generation |
+| 📷 Cameras | Image capture triggers |
+| 💡 Smart Lights | Ambient control |
+
+---
+
+## 🏗️ Architecture
 
 ```mermaid
 graph TB
-    subgraph UserUX["User & UX"]
-        U["User (browser/app)"]
-        Wallet["Wallet (Phantom / Solana Actions)"]
+    subgraph UserLayer["👤 User Layer"]
+        User[("User")]
+        Wallet["Wallet (Phantom)"]
+        Social["Social (Twitter/Email)"]
     end
 
-    subgraph Frontend
-        Web["Next.js / React"]
-        UI["Marketplace, Run Modal, Dashboard"]
+    subgraph Frontend["🎨 Frontend"]
+        NextJS["Next.js + React"]
+        Dashboard["Live Task Dashboard"]
+        ActionGen["Solana Actions Generator"]
     end
 
-    subgraph Backend
-        Relayer["Relayer / Paymaster"]
-        API["SynapsePay API (Bun / Node)"]
-        X402["X402 Adapter"]
+    subgraph Backend["⚙️ Backend"]
+        BunAPI["Bun + TypeScript API"]
+        X402Relay["x402 Relay Service"]
+        AIOrchestrator["AI Agent Orchestrator"]
+        DeviceBridge["Device Bridge"]
     end
 
-    subgraph Chain
-        Solana["Solana (Devnet/Mainnet)"]
-        Anchor["Anchor Program: Registry, Receipts, Subscriptions"]
-        USDC["USDC-SPL Token"]
+    subgraph Blockchain["⛓️ Solana Blockchain"]
+        Anchor["Anchor Programs"]
+        Registry["Agent Registry"]
+        Receipts["Receipt Storage"]
+        Scheduler["Task Scheduler"]
     end
 
-    subgraph AgentsDevices["Agents & Devices"]
-        Agents["AI Agents (AurraCloud / Local LLM / Stubs)"]
-        Devices["Device Gateway (Raspberry Pi / ESP32)"]
-        Storage["IPFS / Arweave"]
+    subgraph Agents["🤖 Agent Layer"]
+        OpenAI["OpenAI"]
+        Anthropic["Anthropic"]
+        Llama["Llama"]
+        DeepSeek["DeepSeek"]
     end
 
-    U -->|"1. Browse / Run"| Web
-    Web -->|"2. Create invoice"| API
-    API -->|"3. 402 Response"| Web
-    Web -->|"4. Pay (Actions or Relayer)"| Relayer
-    Relayer -->|"5. Verify tx"| Anchor
-    Anchor -->|"6. Mint Receipt"| Solana
-    Relayer -->|"7. Trigger"| Agents
-    Agents -->|"8. Store result"| Storage
-    Storage -->|"9. CID"| Anchor
-    Web -->|"10. Show result & tx"| U
+    subgraph Storage["💾 Storage"]
+        IPFS["IPFS"]
+        Arweave["Arweave"]
+    end
+
+    User --> Wallet
+    User --> Social
+    Wallet --> NextJS
+    Social --> ActionGen
+    NextJS --> BunAPI
+    BunAPI --> X402Relay
+    X402Relay --> Anchor
+    Anchor --> Registry
+    Anchor --> Receipts
+    Anchor --> Scheduler
+    BunAPI --> AIOrchestrator
+    AIOrchestrator --> OpenAI
+    AIOrchestrator --> Anthropic
+    AIOrchestrator --> Llama
+    AIOrchestrator --> DeepSeek
+    AIOrchestrator --> DeviceBridge
+    AIOrchestrator --> IPFS
+    AIOrchestrator --> Arweave
 ```
 
-**Flow Overview:**
-1. User browses marketplace and selects an agent to run
-2. Frontend requests invoice from API
-3. API returns HTTP 402 with payment details
-4. User pays via Solana Actions or Relayer (gasless)
-5. Relayer verifies transaction on-chain
-6. Anchor program mints receipt on Solana
-7. Agent/device executes the requested action
-8. Result stored on IPFS/Arweave
-9. CID recorded in Anchor program
-10. User sees result and transaction proof
+---
+
+## 🛠️ Tech Stack
+
+### Smart Contracts (Solana)
+
+| Component | Technology |
+|-----------|------------|
+| Language | Rust (Anchor Framework) |
+| Payments | x402 Integration |
+| Subscriptions | On-chain Manager |
+| Registry | Agent Registration |
+| Scheduler | Automated Task Triggers |
+
+### Backend
+
+| Component | Technology |
+|-----------|------------|
+| Runtime | Bun + TypeScript |
+| Payments | x402 Relay Service |
+| Orchestration | AI Agent Orchestrator |
+| IoT | Device Bridge (Optional) |
+
+### Frontend
+
+| Component | Technology |
+|-----------|------------|
+| Framework | React + ShadCN UI |
+| Wallet | Solana Wallet Adapter |
+| Actions | Solana Actions Generator |
+| Dashboard | Real-time Task Monitoring |
+
+### AI Services
+
+| Provider | Capabilities |
+|----------|--------------|
+| OpenAI | GPT-4, DALL-E, Whisper |
+| Anthropic | Claude Models |
+| Llama | Open Source LLM |
+| DeepSeek | Code & Analysis |
 
 ---
 
-## x402 Payment Flow (high level)
+## 🧪 Demo Scenarios
 
-1. **User requests** access to an agent (e.g., "remove background").
-2. **Server responds 402** with an `X-PAYMENT` invoice header (amount, currency, payee, invoiceId, expiry).
-3. **User pays** via Solana Actions or via SynapsePay relayer (gasless). Payment contains the invoice proof (txHash).
-4. **Backend verifies** payment on Solana (amount & recipient) and marks invoice as consumed (nonce).
-5. **Agent runs**, produces result (CID), and backend writes a **Receipt** to the Anchor program (payer, agentId, amount, cid, timestamp).
-6. **User sees** result + on-chain receipt (link to tx on Solscan & CID on IPFS).
+Judges can test these live workflows:
 
----
+### Scenario 1: PDF Summary
+```
+💵 Pay 0.05 USDC → 🤖 AI Summarizes PDF → 📄 Instant Result
+```
 
-## On-chain data model (Anchor)
+### Scenario 2: NFT Minting
+```
+🖼️ Upload Image → 💵 Auto-Pay → 🎨 NFT Minted → 🔗 Mint Link Returned
+```
 
-* **AgentRegistry** — `agent_id`, owner pubkey, price (in USDC-SPL), endpoint metadataCID, fee_bps
-* **Receipt** — `receipt_id`, payer pubkey, agent_id, amount, result_cid, tx_hash, timestamp
-* **Subscription** — `sub_id`, payer, agent_id, cadence_seconds, next_run_slot, active
+### Scenario 3: Social Trigger
+```
+🐦 Connect Twitter → 📝 Tweet Action → ⚡ AI Task Triggered
+```
 
-*Primary Anchor instructions (MVP):*
+### Scenario 4: Subscription
+```
+📅 Schedule Daily → 📊 Portfolio Report → 🔄 Auto-Generated
+```
 
-* `register_agent(metadata)` — owner registers agent.
-* `buy_and_run(agent_id, invoice_id, payer)` — validates invoice consumed & mints Receipt.
-* `create_subscription(agent_id, cadence)` — store subscription pointer; relayer handles triggers.
-* `claim_fees()` — payout aggregated owner/platform fees.
+### Scenario 5: Marketplace
+```
+🏪 Browse Agents → 💵 Pay Per Use → 🤖 External Agent Runs
+```
 
----
-
-## Demo Walkthrough (2–4 minutes video script)
-
-1. **Intro (10s):** "SynapsePay — pay per action for AI & devices on Solana."
-2. **Marketplace (20s):** show 3 agents (ImageEdit, PDFSummary, RobotSim).
-3. **Run flow (40s):** click "Run ImageEdit" → invoice appears → click Pay (Solana Actions or relayer) → instant confirmation.
-4. **Execution (30s):** show agent running → result appears (image) + link to IPFS.
-5. **On-chain proof (20s):** open Solscan showing receipt tx & Anchor program log.
-6. **Subscription (20s):** show scheduling a weekly report run (automated).
-7. **Wrap-up (10s):** highlight x402 + Solana synergy + extension paths.
+### Scenario 6: IoT Demo (Optional)
+```
+💵 Pay 0.1 USDC → 🤖 Robot Moves / 💡 LED Activates
+```
 
 ---
 
-## Quick Start (dev)
+## 🎯 Solana Buildathon Alignment
 
-> This project targets Devnet for the hackathon. All secrets must remain out of repo.
-
-1. `git clone <repo>`
-2. `cp .env.example .env` and edit (SOLANA_RPC, RELAYER_KEY, STORAGE_KEY)
-3. `bun install` (or `npm install`)
-4. Start local services: `docker-compose up -d` *(if using containers)* or run `solana-test-validator` + Anchor programs deployed to Devnet.
-5. `bun run dev` to start frontend & backend locally.
-6. Open `http://localhost:5173` and follow the demo steps.
-
----
-
-## Testing & Acceptance Criteria (for judges)
-
-**TC-1: Guest Run (Relayer / Gasless)**
-
-* Steps: open marketplace (not connected) → Run ImageEdit → click Pay → see result and Solscan receipt.
-* Expect: result CID + txHash + receipt record in Anchor.
-
-**TC-2: Wallet Run (Phantom / Solana Actions)**
-
-* Steps: connect Phantom → Run PDFSummary → sign via Actions → result.
-* Expect: clear user signature flow & receipt.
-
-**TC-3: Replay & Underpay Protection**
-
-* Replay test: re-submit same txHash for new invoice → rejected.
-* Underpay test: send tx with lower amount → rejected.
-
-**TC-4: Subscription Trigger**
-
-* Create weekly subscription → relayer triggers job → receipts for scheduled runs exist.
+| Criteria | How SynapsePay Delivers |
+|----------|------------------------|
+| **Uses Solana Meaningfully** | Micropayments, Actions, gasless execution — all require Solana's speed |
+| **Consumer-Facing** | Simple UX, instant tasks via AI |
+| **Technical Depth** | x402 + Solana Actions + AI + on-chain execution + marketplace |
+| **Originality** | Not a clone — a full automation network |
+| **Real Demo Scenarios** | Judges can test 10+ workflows instantly |
 
 ---
 
-## Tech Stack (targeted for Solana Hackathon)
+## 📦 Quick Start
 
-* **Chain:** Solana (Devnet / Testnet)
-* **On-chain:** Anchor (Rust) — Registry & Receipts
-* **Frontend:** Next.js + React + Tailwind CSS
-* **Backend / Relayer:** Bun or Node.js (TypeScript)
-* **Payment Protocol:** x402 (HTTP invoice flow)
-* **Wallet UX:** Phantom + Solana Actions (for single-click flows)
-* **AI Agents:** external APIs (OpenAI, local LLM stubs, or AurraCloud/Daydreams)
-* **Storage:** IPFS / Arweave (Web3.Storage)
-* **Dev tooling:** Vercel (frontend), Fly/Railway for backend, Docker for local orchestration
+### Prerequisites
 
----
+- Node.js 18+ or Bun
+- Solana CLI
+- Anchor Framework
+- Phantom Wallet
 
-## Security & Operational Notes (must-read)
+### Installation
 
-* **Never** commit private keys or `.env`. Use secrets manager for relayer key.
-* **Validate on-chain**: always check `recipient` & `amount` match invoice before executing agent.
-* Use `invoice_id` + nonce to prevent replay attacks. Mark invoices consumed on verification.
-* Rate-limit expensive agent jobs and set job caps to avoid drains.
-* Sign callbacks from agents to verify result authenticity (Ed25519).
-* For device control: use signed commands with short TTL and per-device keys.
+```bash
+# Clone the repository
+git clone https://github.com/samarabdelhameed/Solana-SynapsePay.git
+cd Solana-SynapsePay
 
----
+# Install dependencies
+bun install
 
-## Roadmap & Next Steps (post-hackathon)
+# Configure environment
+cp .env.example .env
+# Edit .env with your keys
 
-* Expand Agent Marketplace: allow third-party publishing & revenue share.
-* Add reputational metadata for agents and usage analytics.
-* Integrate zk proofs for private receipts (ZK rollups).
-* Multi-chain settlement (USDC settlement via CCTP) for global reach.
-* Formal security audit of Anchor program & relayer.
+# Start development server
+bun run dev
+```
 
----
+### Environment Variables
 
-## Deliverables (What we submit for the Solana Winter Build Challenge)
-
-* ✅ GitHub repo with code + README (this file)
-* ✅ Deployed Anchor program on Devnet + frontend on Vercel (Live demo link)
-* ✅ Demo video (2–4 minutes) walking through all acceptance tests
-* ✅ Short technical appendix: "How x402 is used & why Solana" (1 page)
-* ✅ Postman / curl examples to run flows programmatically
+```env
+SOLANA_RPC_URL=https://api.devnet.solana.com
+RELAYER_PRIVATE_KEY=your_key_here
+OPENAI_API_KEY=your_key_here
+IPFS_API_KEY=your_key_here
+```
 
 ---
 
-## Credits & Acknowledgements
+## 📄 Deliverables
 
-* **SynapsePay** — built for Solana Winter Build Challenge 2025
-* x402 protocol team — for the HTTP micropayment standard
-* Solana & Anchor ecosystems — for fast settlement & developer tools
-* OpenAI / AurraCloud / Daydreams — AI agent backends (examples)
-* Community & early testers — for invaluable feedback
+| Deliverable | Status |
+|-------------|--------|
+| ✅ GitHub Repository | Complete |
+| ✅ Demo Video (2-3 min) | Ready |
+| ✅ Architecture Diagrams | Included |
+| ✅ Flow Documentation | Documented |
+| ✅ Smart Contracts | Deployed |
+| ✅ Frontend + Backend | Functional |
+| ✅ Sample Agents | Available |
+| ✅ Action Generators | Implemented |
 
 ---
 
-## License
+## 🔥 Summary
 
-`MIT` — see `LICENSE` for details.
+> **SynapsePay is an AI-powered automation network on Solana that enables pay-per-action tasks, auto-subscriptions, device triggers, and Solana Actions — all driven by AI Agents and gasless x402 micropayments.**
 
 ---
 
-## Contact
+## 🤝 Contributing
 
-If you want to test the live demo or run a private walkthrough for judges, contact:
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-* **Project Lead:** Samar (GitHub: `@samar-dev`)
-* **Email:** [samar@example.com](mailto:samar@example.com)
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👥 Team
+
+| Role | Contact |
+|------|---------|
+| **Project Lead** | Samar Abdelhameed |
+| **GitHub** | [@samarabdelhameed](https://github.com/samarabdelhameed) |
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ for Solana Winter Buildathon 2025</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Powered%20by-Solana-9945FF?style=flat-square&logo=solana&logoColor=white" alt="Powered by Solana"/>
+</p>
