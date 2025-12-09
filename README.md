@@ -786,10 +786,475 @@ Judges can test these live workflows:
 🏪 Browse Agents → 💵 Pay Per Use → 🤖 External Agent Runs
 ```
 
-### Scenario 6: IoT Demo (Optional)
+### Scenario 6: IoT Device Rental 🆕
 ```
-💵 Pay 0.1 USDC → 🤖 Robot Moves / 💡 LED Activates
+🌐 Browse Devices → 💵 Pay 0.1 USDC → 🤖 Control Robot → ⏱️ Session Timer
 ```
+
+---
+
+## 🌐 IoT Device Control Hub
+
+### Overview
+
+The **IoT Device Control Hub** extends SynapsePay's micropayment capabilities to real-world hardware devices. Users can rent and control physical devices (robots, drones, LEDs, printers) using USDC micropayments via the X402 protocol.
+
+### 📊 User Journey Diagram
+
+![IoT User Journey](./docs/images/iot-user-journey.png)
+
+### 📐 Use Case Diagram
+
+![IoT Use Case Diagram](./docs/images/iot-use-case-diagram.png)
+
+### Supported Device Types
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          IoT Device Hub Features                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  🤖 UGV Rover Control     │  Real-time robot movement + live camera feed    │
+│  🚁 Drone Camera          │  Aerial photography with GPS tracking           │
+│  💡 Smart LED Array       │  RGB lighting control for events                │
+│  🖨️ 3D Printer Access     │  Remote printing with material selection       │
+│  📷 Security Cameras      │  Multi-camera surveillance access               │
+│  🔭 Remote Telescope      │  Astronomical observation from anywhere         │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Device Control Screens
+
+| Route | Screen | Description |
+|-------|--------|-------------|
+| `/devices` | **IoT Device Hub** | Grid of all available devices with status |
+| `/devices/:id` | **Device Control** | Full control interface for specific device |
+
+### Screen 1: Connect Wallet
+
+Initial screen for users to connect their Solana wallet.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  SynapsePay                           X402: ONLINE    [Connect Wallet] │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│                           🤖                                         │
+│                      (Device Icon)                                   │
+│                                                                      │
+│                 Connect to SynapsePay                                │
+│                                                                      │
+│         Access the UGV Rover 01 controls by connecting               │
+│         your wallet. This application uses the X402                  │
+│         protocol for secure, gasless micropayments.                  │
+│                                                                      │
+│                  ┌────────────────────────┐                          │
+│                  │  🔗 Connect Wallet     │                          │
+│                  └────────────────────────┘                          │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Screen 2: Secure Access Gate (Payment Flow)
+
+Three-step X402 payment process for device access.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  SynapsePay                X402: ONLINE    NET: OK    [0x71C...9A23] │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────────┐ │
+│  │  🔐 Secure Access Gate                          0.10 USDC       │ │
+│  │     X402 Micropayment Required                 For 10 min ctrl  │ │
+│  │                                                                 │ │
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐               │ │
+│  │  │ ① Sign      │ │ ② Sign      │ │ ③ Settlement │               │ │
+│  │  │    Permit   │ │    Intent   │ │              │               │ │
+│  │  │  (Gasless)  │ │  (Authorize)│ │ (Executing)  │               │ │
+│  │  └─────────────┘ └─────────────┘ └─────────────┘               │ │
+│  │                                                                 │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐│ │
+│  │  │ [12:45:01] Initiating X402 payment sequence...              ││ │
+│  │  │ [12:45:02] Requesting USDC-SPL token approval signature...  ││ │
+│  │  │ [12:45:03] ✓ Permit signature received                      ││ │
+│  │  │ [12:45:04] Requesting payment intent signature...           ││ │
+│  │  │ [12:45:05] ✓ Payment intent signed                          ││ │
+│  │  │ [12:45:06] Submitting to Solana network...                  ││ │
+│  │  │ [12:45:07] ✓ Payment settled: 0.10 USDC transferred         ││ │
+│  │  └─────────────────────────────────────────────────────────────┘│ │
+│  │                                                                 │ │
+│  │  ┌─────────────────────────────────────────────────────────────┐│ │
+│  │  │         ⊕ Initialize Payment Sequence →                    ││ │
+│  │  └─────────────────────────────────────────────────────────────┘│ │
+│  └─────────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Screen 3: Device Control Interface (Post-Payment)
+
+Full control interface after successful payment.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🤖 UGV Rover 01                          X402: ONLINE    [0x71C...9A23]    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────────────────────────┐  ┌────────────────────────────────┐│
+│  │                                     │  │  🤖 UGV Rover 01      [IDLE]   ││
+│  │  ● LIVE FEED          LAT: 34.0522  │  │                                ││
+│  │                       LON: 118.2437 │  │  ⚡ BATTERY    📶 SIGNAL       ││
+│  │      ┌─────┐                        │  │  ████████░░   ██████████       ││
+│  │      │  ⊕  │  ESTABLISHING          │  │  87%          97%              ││
+│  │      │     │  SECURE FEED           │  │                                ││
+│  │      └─────┘  // UGV-01             │  │  🌡️ TEMP      ⏱️ SESSION       ││
+│  │                                     │  │  40.4°C       09:45            ││
+│  │  ─────────────────────────          │  │                                ││
+│  │  ─────────────────────────          │  │  📍 LOCATION                   ││
+│  │  ─────────────────────────          │  │  LAT: 34.0522 N                ││
+│  │                                     │  │  LON: 118.2437 W               ││
+│  └─────────────────────────────────────┘  └────────────────────────────────┘│
+│                                                                              │
+│  ┌─────────────────────────────────────┐  ┌────────────────────────────────┐│
+│  │  ⚡ SYSTEM LOGS            TX: ACTIVE│  │         ┌─────┐               ││
+│  │                                     │  │         │  ↑  │               ││
+│  │  [12:45:08] Device access granted   │  │         └─────┘               ││
+│  │  [12:45:09] Establishing connection │  │   ┌─────┐┌─────┐┌─────┐       ││
+│  │  [12:45:10] Device control active   │  │   │  ←  ││  ●  ││  →  │       ││
+│  │  [12:45:12] TX: MOVE_FORWARD        │  │   └─────┘└─────┘└─────┘       ││
+│  │  [12:45:12] ACK: MOVE_FORWARD ok    │  │         ┌─────┐               ││
+│  │  > █                                │  │         │  ↓  │               ││
+│  └─────────────────────────────────────┘  │         └─────┘               ││
+│                                           │  MANUAL OVERRIDE ENGAGED       ││
+│                                           │  Use WASD keys                 ││
+│                                           └────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🎯 User Journeys & Use Cases
+
+### Use Case Diagram
+
+```mermaid
+graph TB
+    subgraph Actors
+        User[👤 End User]
+        DeviceOwner[🔧 Device Owner]
+        Facilitator[💳 X402 Facilitator]
+    end
+
+    subgraph IoTHub["🌐 IoT Device Hub"]
+        UC1[Browse Available Devices]
+        UC2[View Device Details]
+        UC3[Connect Wallet]
+        UC4[Initiate Payment]
+        UC5[Control Device]
+        UC6[View Live Feed]
+        UC7[Session Timer]
+        UC8[Command Device]
+    end
+
+    subgraph PaymentFlow["💰 X402 Payment Flow"]
+        UC9[Sign Permit]
+        UC10[Sign Intent]
+        UC11[Settle Payment]
+        UC12[Issue Access Token]
+    end
+
+    subgraph DeviceManagement["🔧 Device Management"]
+        UC13[Register Device]
+        UC14[Set Pricing]
+        UC15[Receive Payments]
+        UC16[Monitor Usage]
+    end
+
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+
+    UC4 --> UC9
+    UC9 --> UC10
+    UC10 --> UC11
+    UC11 --> UC12
+    UC12 --> UC5
+
+    Facilitator --> UC11
+    Facilitator --> UC12
+
+    DeviceOwner --> UC13
+    DeviceOwner --> UC14
+    DeviceOwner --> UC15
+    DeviceOwner --> UC16
+
+    style User fill:#8b5cf6,color:#fff
+    style DeviceOwner fill:#10b981,color:#fff
+    style Facilitator fill:#f59e0b,color:#fff
+```
+
+### User Journey 1: First-Time Device Rental
+
+```mermaid
+journey
+    title First-Time IoT Device Rental Journey
+    section Discovery
+      Visit SynapsePay: 5: User
+      Browse IoT Hub: 4: User
+      Select UGV Rover: 5: User
+    section Connection
+      Click Connect Wallet: 4: User
+      Approve Phantom: 5: User
+      Wallet Connected: 5: System
+    section Payment
+      View Access Gate: 4: User
+      Click Initialize Payment: 4: User
+      Sign Permit (Gasless): 5: User
+      Sign Intent: 5: User
+      Settlement Processing: 3: System
+      Payment Confirmed: 5: System
+    section Control
+      Access Granted: 5: System
+      View Live Feed: 5: User
+      Use WASD Controls: 5: User
+      Monitor Session Timer: 4: User
+    section Completion
+      Session Expires: 3: System
+      Access Revoked: 4: System
+      Return to Hub: 4: User
+```
+
+### User Journey 2: Returning User (Quick Rental)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as SynapsePay Web
+    participant Wallet as Phantom Wallet
+    participant Facilitator as X402 Facilitator
+    participant Device as IoT Device
+
+    User->>Web: Navigate to /devices/ugv-rover-01
+    Note over Web: Wallet already connected
+    Web->>User: Show Access Gate (0.10 USDC)
+    
+    User->>Web: Click "Initialize Payment"
+    Web->>Wallet: Request Permit Signature
+    Wallet-->>Web: Signed Permit (Gasless)
+    
+    Web->>Wallet: Request Intent Signature
+    Wallet-->>Web: Signed Intent
+    
+    Web->>Facilitator: POST /settle
+    Facilitator->>Facilitator: Submit to Solana
+    Facilitator-->>Web: Payment Confirmed
+    
+    Web->>Device: Establish Connection
+    Device-->>Web: Live Feed + Status
+    Web->>User: Show Control Interface
+    
+    User->>Web: Press 'W' Key
+    Web->>Device: CMD: MOVE_FORWARD
+    Device-->>Web: ACK: MOVE_FORWARD
+    
+    Note over User,Device: Session Timer: 09:45 remaining
+```
+
+### Complete User Flow Steps
+
+#### Step 1: Discovery & Selection
+
+| Step | Action | Screen |
+|------|--------|--------|
+| 1.1 | User visits SynapsePay home page | `/` |
+| 1.2 | User clicks "IoT Devices" in sidebar | Sidebar |
+| 1.3 | User views IoT Device Hub | `/devices` |
+| 1.4 | User browses available devices | Device Grid |
+| 1.5 | User clicks "Rent Now" on UGV Rover | Device Card |
+
+#### Step 2: Wallet Connection
+
+| Step | Action | Screen |
+|------|--------|--------|
+| 2.1 | User sees "Connect to SynapsePay" prompt | `/devices/ugv-rover-01` |
+| 2.2 | User clicks "Connect Wallet" | Connect Screen |
+| 2.3 | Phantom wallet popup appears | Wallet Extension |
+| 2.4 | User approves connection | Wallet Extension |
+| 2.5 | Wallet address displayed in navbar | Access Gate |
+
+#### Step 3: X402 Payment Flow
+
+| Step | Action | Screen |
+|------|--------|--------|
+| 3.1 | User sees Secure Access Gate | Access Gate |
+| 3.2 | User clicks "Initialize Payment Sequence" | Access Gate |
+| 3.3 | **Step 1: Sign Permit** - User signs USDC approval | Wallet Popup |
+| 3.4 | Log shows "✓ Permit signature received" | Terminal |
+| 3.5 | **Step 2: Sign Intent** - User signs payment intent | Wallet Popup |
+| 3.6 | Log shows "✓ Payment intent signed" | Terminal |
+| 3.7 | **Step 3: Settlement** - Facilitator submits to Solana | Processing |
+| 3.8 | Log shows "✓ Payment settled: 0.10 USDC transferred" | Terminal |
+| 3.9 | Access token issued | System |
+
+#### Step 4: Device Control
+
+| Step | Action | Screen |
+|------|--------|--------|
+| 4.1 | Control interface loads | Control Panel |
+| 4.2 | Live feed establishes connection | Live Feed |
+| 4.3 | Device status displayed (Battery, Signal, Temp) | Status Panel |
+| 4.4 | Session timer starts (10:00) | Timer |
+| 4.5 | User uses WASD keys or arrow buttons | Controls |
+| 4.6 | Commands sent to device in real-time | System Logs |
+| 4.7 | Device responds with acknowledgments | System Logs |
+
+#### Step 5: Session Completion
+
+| Step | Action | Screen |
+|------|--------|--------|
+| 5.1 | Timer reaches 00:00 | Timer |
+| 5.2 | System logs "Session expired" | System Logs |
+| 5.3 | Controls disabled | Controls |
+| 5.4 | User prompted to rent again or return | Modal |
+| 5.5 | User returns to IoT Device Hub | `/devices` |
+
+---
+
+## 🔄 IoT Payment Flow Architecture
+
+```mermaid
+graph TB
+    subgraph UserLayer["👤 User Layer"]
+        User[User with Phantom]
+        Browser[Web Browser]
+    end
+
+    subgraph Frontend["🌐 Frontend - Port 5174"]
+        DeviceHub[IoT Device Hub<br/>/devices]
+        DeviceControl[Device Control<br/>/devices/:id]
+        AccessGate[DeviceAccessGate<br/>Payment Flow]
+        ControlPanel[Control Interface<br/>Live Feed + Controls]
+    end
+
+    subgraph X402Layer["💳 X402 Payment Layer"]
+        Facilitator[X402 Facilitator<br/>:8403]
+        VerifyRoute[/verify<br/>Signature Check]
+        SettleRoute[/settle<br/>Submit to Solana]
+    end
+
+    subgraph Blockchain["⛓️ Solana Blockchain"]
+        Solana[Solana Network]
+        USDC[USDC-SPL Token]
+        PaymentProgram[synapsepay-payments<br/>Anchor Program]
+    end
+
+    subgraph IoTLayer["🌐 IoT Device Layer"]
+        DeviceBridge[Device Bridge<br/>:8600]
+        UGVRover[UGV Rover 01]
+        DroneCam[Drone Camera]
+        LEDArray[Smart LED Array]
+    end
+
+    User --> Browser
+    Browser --> DeviceHub
+    DeviceHub --> DeviceControl
+    DeviceControl --> AccessGate
+    
+    AccessGate -->|1. Request Payment| Facilitator
+    Facilitator --> VerifyRoute
+    Facilitator --> SettleRoute
+    SettleRoute -->|2. Submit TX| Solana
+    Solana --> USDC
+    Solana --> PaymentProgram
+    PaymentProgram -->|3. Confirm| Facilitator
+    
+    Facilitator -->|4. Access Token| AccessGate
+    AccessGate -->|5. Unlock| ControlPanel
+    
+    ControlPanel -->|6. Commands| DeviceBridge
+    DeviceBridge --> UGVRover
+    DeviceBridge --> DroneCam
+    DeviceBridge --> LEDArray
+    
+    UGVRover -->|7. Feedback| ControlPanel
+    DroneCam -->|7. Live Feed| ControlPanel
+
+    style User fill:#8b5cf6,color:#fff
+    style Facilitator fill:#f59e0b,color:#fff
+    style Solana fill:#9945FF,color:#fff
+    style DeviceBridge fill:#10b981,color:#fff
+```
+
+---
+
+## 📁 IoT Components Structure
+
+```
+apps/web/src/
+├── pages/
+│   ├── Devices.tsx                 # IoT Device Hub page
+│   └── DeviceControl.tsx           # Device control page
+│
+└── components/device/
+    ├── index.ts                    # Barrel exports
+    ├── DeviceAccessGate.tsx        # Payment flow UI
+    │   ├── Payment steps (3 stages)
+    │   ├── Terminal log display
+    │   └── Initialize payment button
+    │
+    ├── DeviceStatusPanel.tsx       # Device metrics
+    │   ├── Battery percentage
+    │   ├── Signal strength
+    │   ├── Temperature
+    │   ├── Session timer
+    │   └── GPS location
+    │
+    ├── DirectionalControls.tsx     # Movement controls
+    │   ├── Arrow buttons (4 directions)
+    │   ├── Stop button (center)
+    │   ├── WASD keyboard support
+    │   └── Disabled state handling
+    │
+    ├── LiveFeed.tsx                # Camera/video stream
+    │   ├── Live status indicator
+    │   ├── Location overlay
+    │   ├── Grid overlay effect
+    │   └── Loading state
+    │
+    └── SystemLogs.tsx              # Command terminal
+        ├── Auto-scroll to bottom
+        ├── Timestamp formatting
+        ├── Color-coded log types
+        └── TX active indicator
+```
+
+### Component Props Reference
+
+| Component | Key Props |
+|-----------|-----------|
+| `DeviceAccessGate` | `priceUsdc`, `durationMinutes`, `onAccessGranted`, `walletConnected` |
+| `DeviceStatusPanel` | `battery`, `signal`, `temperature`, `sessionTimeRemaining`, `location` |
+| `DirectionalControls` | `onCommand`, `disabled`, `enableKeyboard` |
+| `LiveFeed` | `isConnected`, `deviceName`, `streamUrl`, `location` |
+| `SystemLogs` | `logs`, `txActive`, `maxHeight` |
+
+---
+
+## 📊 Device Types & Pricing
+
+| Device | Type | Price | Duration | Controls |
+|--------|------|-------|----------|----------|
+| UGV Rover 01 | Robot | 0.10 USDC | 10 min | WASD + Camera |
+| Smart LED Array | LED | 0.05 USDC | 5 min | On/Off + Colors |
+| Drone Camera 01 | Drone | 0.25 USDC | 15 min | WASD + Camera |
+| 3D Printer MK3 | Printer | 0.50 USDC | 30 min | Start/Stop |
+| Security Cam Hub | Camera | 0.15 USDC | 20 min | PTZ Controls |
+| Remote Telescope | Telescope | 0.30 USDC | 15 min | Aim + Capture |
 
 ---
 
@@ -1086,6 +1551,8 @@ synapsepay/
 | `/` | **Home** | Landing page with hero, features, and CTA |
 | `/marketplace` | **Agent Marketplace** | Browse, filter, and search AI agents |
 | `/agent/:id` | **Agent Details** | Agent info, pricing, reviews, run button |
+| `/devices` | **IoT Device Hub** 🆕 | Browse, rent IoT devices with micropayments |
+| `/devices/:id` | **Device Control** 🆕 | Real-time device control with live feed |
 | `/dashboard` | **User Dashboard** | Task history, subscriptions, spending |
 | `/dashboard/tasks` | **Task History** | List of all executed tasks with results |
 | `/dashboard/subscriptions` | **Subscriptions** | Active auto-tasks and schedules |
@@ -1093,6 +1560,7 @@ synapsepay/
 | `/create-agent` | **Create Agent** | Form to publish new agent to marketplace |
 | `/my-agents` | **My Agents** | Manage agents you've published |
 | `/settings` | **Settings** | Profile, notifications, API keys |
+
 
 ### Screen Components Detail
 
@@ -1102,6 +1570,8 @@ apps/web/src/
 │   ├── Home.tsx                    # Landing page
 │   ├── Marketplace.tsx             # Agent grid with filters
 │   ├── AgentDetails.tsx            # Single agent view
+│   ├── Devices.tsx                 # 🆕 IoT Device Hub page
+│   ├── DeviceControl.tsx           # 🆕 Device control interface
 │   ├── Dashboard/
 │   │   ├── index.tsx               # Dashboard layout
 │   │   ├── TaskHistory.tsx         # Past executions
@@ -1117,6 +1587,14 @@ apps/web/src/
 │   │   ├── Sidebar.tsx             # Dashboard sidebar
 │   │   ├── Footer.tsx              # Site footer
 │   │   └── Layout.tsx              # Main layout wrapper
+│   │
+│   ├── device/                     # 🆕 IoT Device Components
+│   │   ├── index.ts                # Barrel exports
+│   │   ├── DeviceAccessGate.tsx    # X402 payment flow for device access
+│   │   ├── DeviceStatusPanel.tsx   # Battery, signal, temp, session timer
+│   │   ├── DirectionalControls.tsx # WASD arrow controls
+│   │   ├── LiveFeed.tsx            # Camera/video stream display
+│   │   └── SystemLogs.tsx          # Terminal-style command logs
 │   │
 │   ├── marketplace/
 │   │   ├── AgentCard.tsx           # Card showing agent info
