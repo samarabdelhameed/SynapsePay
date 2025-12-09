@@ -148,66 +148,133 @@ Bridge **Solana ↔ Physical World** in real time:
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 graph TB
     subgraph UserLayer["👤 User Layer"]
-        User[("User")]
-        Wallet["Wallet (Phantom)"]
-        Social["Social (Twitter/Email)"]
+        User[User]
+        Wallet[Phantom / Solflare<br/>Wallet Provider]
+        Social[Solana Actions<br/>Twitter / Email / QR]
     end
 
-    subgraph Frontend["🎨 Frontend"]
-        NextJS["Next.js + React"]
-        Dashboard["Live Task Dashboard"]
-        ActionGen["Solana Actions Generator"]
+    subgraph Frontend["� Frontend Layer - Port 5173"]
+        Web[Web App<br/>React + Vite + ShadCN]
+        Components[UI Components<br/>AgentCard, PaymentModal, Dashboard]
+        ActionGen[Solana Actions Generator<br/>Blinks Integration]
     end
 
-    subgraph Backend["⚙️ Backend"]
-        BunAPI["Bun + TypeScript API"]
-        X402Relay["x402 Relay Service"]
-        AIOrchestrator["AI Agent Orchestrator"]
-        DeviceBridge["Device Bridge"]
+    subgraph Backend["🔧 Backend Layer"]
+        Resource[Resource Server :8404<br/>Protected AI Endpoints]
+        Facilitator[X402 Facilitator :8403<br/>/verify, /settle, /invoice]
+        X402Lib[X402 Library<br/>Signatures & Validation]
+        AIOrchestrator[AI Agent Orchestrator<br/>Task Router & Executor]
     end
 
-    subgraph Blockchain["⛓️ Solana Blockchain"]
-        Anchor["Anchor Programs"]
-        Registry["Agent Registry"]
-        Receipts["Receipt Storage"]
-        Scheduler["Task Scheduler"]
+    subgraph Blockchain["⛓️ Solana Blockchain - Devnet/Mainnet"]
+        Solana[Solana Network<br/>~400ms Finality]
+        USDC[USDC-SPL Token<br/>Micropayments]
+        Anchor[Anchor Programs<br/>Registry + Receipts]
+        Scheduler[Task Scheduler<br/>Subscriptions & Cron]
     end
 
-    subgraph Agents["🤖 Agent Layer"]
-        OpenAI["OpenAI"]
-        Anthropic["Anthropic"]
-        Llama["Llama"]
-        DeepSeek["DeepSeek"]
+    subgraph AILayer["🤖 AI Agent Layer"]
+        OpenAI[OpenAI<br/>GPT-4 / DALL-E]
+        Anthropic[Anthropic<br/>Claude Models]
+        Llama[Llama<br/>Open Source LLM]
+        DeepSeek[DeepSeek<br/>Code & Analysis]
     end
 
-    subgraph Storage["💾 Storage"]
-        IPFS["IPFS"]
-        Arweave["Arweave"]
+    subgraph Storage["💾 Decentralized Storage"]
+        IPFS[IPFS<br/>Result Storage]
+        Arweave[Arweave<br/>Permanent Archive]
     end
 
-    User --> Wallet
-    User --> Social
-    Wallet --> NextJS
-    Social --> ActionGen
-    NextJS --> BunAPI
-    BunAPI --> X402Relay
-    X402Relay --> Anchor
-    Anchor --> Registry
-    Anchor --> Receipts
+    subgraph IoT["🌐 IoT / Device Layer"]
+        Robot[UGV Rover<br/>Physical Robot]
+        SmartDevices[Smart Devices<br/>Lights / Doors / Drones]
+    end
+
+    User -->|1. Select Agent| Web
+    User -->|1b. Solana Action| Social
+    Social -->|Blink Request| ActionGen
+    Web -->|2. Request Signature| Wallet
+    Wallet -->|3. Signed TX| Web
+    Web -->|4. X-PAYMENT Header| Resource
+    Resource -->|5. Verify Payment| Facilitator
+    Facilitator -->|Uses| X402Lib
+    Resource -->|6. Settle Payment| Facilitator
+    Facilitator -->|7. Submit TX| Solana
+    Solana --> USDC
+    Solana --> Anchor
     Anchor --> Scheduler
-    BunAPI --> AIOrchestrator
+    Resource -->|8. Execute Task| AIOrchestrator
     AIOrchestrator --> OpenAI
     AIOrchestrator --> Anthropic
     AIOrchestrator --> Llama
     AIOrchestrator --> DeepSeek
-    AIOrchestrator --> DeviceBridge
-    AIOrchestrator --> IPFS
+    AIOrchestrator -->|9. Store Result| IPFS
     AIOrchestrator --> Arweave
+    AIOrchestrator -->|10. Device Command| Robot
+    AIOrchestrator --> SmartDevices
+    Resource -->|11. Return Result| Web
+    Robot -->|Video Stream| Web
+
+    style User fill:#8b5cf6,color:#fff
+    style Wallet fill:#a855f7,color:#fff
+    style Social fill:#c084fc,color:#fff
+    style Web fill:#3b82f6,color:#fff
+    style Components fill:#60a5fa,color:#fff
+    style ActionGen fill:#93c5fd,color:#000
+    style Resource fill:#10b981,color:#fff
+    style Facilitator fill:#059669,color:#fff
+    style X402Lib fill:#34d399,color:#000
+    style AIOrchestrator fill:#14b8a6,color:#fff
+    style Solana fill:#9945FF,color:#fff
+    style USDC fill:#2775CA,color:#fff
+    style Anchor fill:#14F195,color:#000
+    style Scheduler fill:#00D18C,color:#000
+    style OpenAI fill:#412991,color:#fff
+    style Anthropic fill:#D4A574,color:#000
+    style Llama fill:#0467DF,color:#fff
+    style DeepSeek fill:#4F46E5,color:#fff
+    style IPFS fill:#65C2CB,color:#000
+    style Arweave fill:#222326,color:#fff
+    style Robot fill:#6366f1,color:#fff
+    style SmartDevices fill:#818cf8,color:#fff
+```
+
+### Architecture Components
+
+| Layer | Component | Description |
+|-------|-----------|-------------|
+| 👤 **User** | Phantom Wallet | Primary wallet for signing & payments |
+| 👤 **User** | Solana Actions | Blinks via Twitter, Email, QR |
+| 🌐 **Frontend** | React + Vite | Modern SPA with real-time updates |
+| 🌐 **Frontend** | ShadCN UI | Premium component library |
+| 🔧 **Backend** | Resource Server | Protected AI agent endpoints |
+| 🔧 **Backend** | X402 Facilitator | Payment verification & settlement |
+| 🔧 **Backend** | AI Orchestrator | Routes tasks to appropriate AI model |
+| ⛓️ **Blockchain** | Solana Network | Fast finality (~400ms) |
+| ⛓️ **Blockchain** | USDC-SPL | Micropayments (0.05+ USDC) |
+| ⛓️ **Blockchain** | Anchor Programs | Agent Registry + Receipt Storage |
+| 🤖 **AI** | Multi-Model | OpenAI, Claude, Llama, DeepSeek |
+| 💾 **Storage** | IPFS + Arweave | Decentralized result storage |
+| 🌐 **IoT** | Device Bridge | Robot & smart device control |
+
+### Data Flow Summary
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  1. User selects AI Agent or triggers via Solana Action (Blink)         │
+│  2. Phantom wallet signs payment transaction (gasless)                  │
+│  3. X-PAYMENT header sent to Resource Server                            │
+│  4. Facilitator verifies signature & settles on Solana                  │
+│  5. AI Orchestrator executes task (OpenAI/Claude/Llama/DeepSeek)        │
+│  6. Result stored on IPFS, CID recorded on-chain via Anchor             │
+│  7. Receipt minted, result returned to user                             │
+│  8. Optional: IoT device triggered (Robot/Smart Devices)                │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
