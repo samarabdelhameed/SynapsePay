@@ -805,6 +805,630 @@ Judges can test these live workflows:
 
 ---
 
+## � Project Structure
+
+### Monorepo Architecture
+
+```mermaid
+graph TB
+    Root[synapsepay/]
+
+    Root --> Docker[docker-compose.yml<br/>Multi-container orchestration]
+    Root --> Env[.env.example<br/>Configuration template]
+    Root --> Turbo[turbo.json<br/>Build pipeline]
+    Root --> Anchor[Anchor.toml<br/>Solana program config]
+
+    Root --> Apps[apps/]
+    Root --> Packages[packages/]
+    Root --> Programs[programs/]
+
+    subgraph Applications["📱 Applications"]
+        Apps --> Web[web/<br/>React + Vite + ShadCN]
+        Apps --> FacApp[x402-facilitator/<br/>Payment Gateway]
+        Apps --> ResourceApp[resource-server/<br/>AI Agent API]
+        Apps --> ActionGen[actions-api/<br/>Solana Actions/Blinks]
+    end
+
+    subgraph Libraries["📦 Packages"]
+        Packages --> X402[x402-solana/<br/>TypeScript Library]
+        Packages --> AIAgents[ai-agents/<br/>Agent SDK]
+        Packages --> TSConfig[tsconfig/<br/>Shared Configs]
+        Packages --> UIKit[ui-kit/<br/>Shared Components]
+    end
+
+    subgraph SolanaPrograms["⛓️ Solana Programs"]
+        Programs --> Registry[synapsepay-registry/<br/>Agent Registry]
+        Programs --> Payments[synapsepay-payments/<br/>Escrow + Receipts]
+        Programs --> Scheduler[synapsepay-scheduler/<br/>Subscriptions]
+    end
+
+    subgraph WebApp["🌐 Web App Details"]
+        Web --> WebSrc[src/components/<br/>AgentCard, PaymentModal]
+        Web --> WebPages[src/pages/<br/>Marketplace, Dashboard]
+        Web --> WebHooks[src/hooks/<br/>usePayment, useAgent]
+        Web --> WebConfig[src/config/<br/>Environment]
+    end
+
+    subgraph Facilitator["💳 Facilitator Details"]
+        FacApp --> FacRoutes[src/routes/<br/>verify, settle, invoice]
+        FacApp --> FacServices[src/services/<br/>Solana, Signature]
+        FacApp --> FacMiddleware[src/middleware/<br/>x402 Parser]
+    end
+
+    subgraph AnchorPrograms["🦀 Anchor Programs"]
+        Registry --> RegistryLib[src/lib.rs<br/>register_agent, update_agent]
+        Payments --> PaymentsLib[src/lib.rs<br/>create_invoice, settle, claim]
+        Scheduler --> SchedulerLib[src/lib.rs<br/>create_subscription, trigger]
+    end
+
+    style Root fill:#f59e0b,color:#fff
+    style Apps fill:#3b82f6,color:#fff
+    style Packages fill:#10b981,color:#fff
+    style Programs fill:#9945FF,color:#fff
+    style Web fill:#60a5fa,color:#fff
+    style FacApp fill:#34d399,color:#fff
+    style ResourceApp fill:#8b5cf6,color:#fff
+    style Registry fill:#14F195,color:#000
+    style Payments fill:#00D18C,color:#000
+    style X402 fill:#059669,color:#fff
+    style AIAgents fill:#14b8a6,color:#fff
+```
+
+### Directory Tree
+
+```
+synapsepay/
+├── 📄 docker-compose.yml          # Multi-container orchestration
+├── 📄 Anchor.toml                 # Solana Anchor configuration
+├── 📄 Cargo.toml                  # Rust workspace
+├── 📄 turbo.json                  # Turborepo build config
+├── 📄 package.json                # Root package manager
+├── 📄 .env.example                # Environment template
+│
+├── 📁 apps/                       # Application services
+│   ├── 📁 web/                    # Frontend dashboard
+│   │   ├── 📁 src/
+│   │   │   ├── 📁 components/     # UI components
+│   │   │   │   ├── AgentCard.tsx
+│   │   │   │   ├── PaymentModal.tsx
+│   │   │   │   ├── TaskDashboard.tsx
+│   │   │   │   └── WalletConnect.tsx
+│   │   │   ├── 📁 pages/          # Route pages
+│   │   │   │   ├── Marketplace.tsx
+│   │   │   │   ├── Dashboard.tsx
+│   │   │   │   └── AgentDetails.tsx
+│   │   │   ├── 📁 hooks/          # Custom hooks
+│   │   │   │   ├── usePayment.ts
+│   │   │   │   ├── useAgent.ts
+│   │   │   │   └── useSolanaActions.ts
+│   │   │   └── 📁 config/         # App configuration
+│   │   ├── 📄 vite.config.ts
+│   │   └── 📄 package.json
+│   │
+│   ├── 📁 x402-facilitator/       # Payment gateway service
+│   │   ├── 📁 src/
+│   │   │   ├── 📁 routes/
+│   │   │   │   ├── verify.ts      # Signature verification
+│   │   │   │   ├── settle.ts      # On-chain settlement
+│   │   │   │   └── invoice.ts     # Invoice generation
+│   │   │   ├── 📁 services/
+│   │   │   │   ├── solana.ts      # Solana RPC client
+│   │   │   │   └── signature.ts   # Ed25519 verification
+│   │   │   ├── 📁 middleware/
+│   │   │   │   └── x402-parser.ts # X-PAYMENT header parser
+│   │   │   └── server.ts          # HTTP server entry
+│   │   └── 📄 package.json
+│   │
+│   ├── 📁 resource-server/        # AI Agent execution API
+│   │   ├── 📁 src/
+│   │   │   ├── 📁 agents/         # AI agent implementations
+│   │   │   │   ├── pdf-summarizer.ts
+│   │   │   │   ├── image-editor.ts
+│   │   │   │   ├── nft-minter.ts
+│   │   │   │   └── code-debugger.ts
+│   │   │   ├── 📁 orchestrator/   # Task routing
+│   │   │   │   └── agent-router.ts
+│   │   │   ├── 📁 storage/        # IPFS/Arweave
+│   │   │   │   └── ipfs-client.ts
+│   │   │   └── server.ts
+│   │   └── 📄 package.json
+│   │
+│   └── 📁 actions-api/            # Solana Actions/Blinks API
+│       ├── 📁 src/
+│       │   ├── actions.json       # Actions manifest
+│       │   └── handlers/          # Action handlers
+│       └── 📄 package.json
+│
+├── 📁 packages/                   # Shared libraries
+│   ├── 📁 x402-solana/            # x402 protocol for Solana
+│   │   ├── 📁 src/
+│   │   │   ├── payload.ts         # Payload encoding/decoding
+│   │   │   ├── signatures.ts      # Ed25519 signing
+│   │   │   ├── middleware.ts      # Express/Hono middleware
+│   │   │   └── types.ts           # TypeScript types
+│   │   └── 📄 package.json
+│   │
+│   ├── 📁 ai-agents/              # Agent SDK
+│   │   ├── 📁 src/
+│   │   │   ├── base-agent.ts      # Abstract agent class
+│   │   │   ├── openai-provider.ts
+│   │   │   ├── claude-provider.ts
+│   │   │   └── llama-provider.ts
+│   │   └── 📄 package.json
+│   │
+│   ├── 📁 ui-kit/                 # Shared UI components
+│   │   ├── 📁 src/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── Modal.tsx
+│   │   └── 📄 package.json
+│   │
+│   └── 📁 tsconfig/               # Shared TypeScript configs
+│       ├── base.json
+│       ├── react.json
+│       └── node.json
+│
+├── 📁 programs/                   # Solana Anchor programs
+│   ├── 📁 synapsepay-registry/    # Agent registry program
+│   │   ├── 📁 src/
+│   │   │   ├── lib.rs             # Program entry
+│   │   │   ├── instructions/
+│   │   │   │   ├── register_agent.rs
+│   │   │   │   ├── update_agent.rs
+│   │   │   │   └── deactivate_agent.rs
+│   │   │   └── state/
+│   │   │       └── agent.rs       # Agent account struct
+│   │   └── Cargo.toml
+│   │
+│   ├── 📁 synapsepay-payments/    # Payments & receipts program
+│   │   ├── 📁 src/
+│   │   │   ├── lib.rs
+│   │   │   ├── instructions/
+│   │   │   │   ├── create_invoice.rs
+│   │   │   │   ├── settle_payment.rs
+│   │   │   │   ├── claim_payment.rs
+│   │   │   │   ├── refund_payment.rs
+│   │   │   │   └── mint_receipt.rs
+│   │   │   └── state/
+│   │   │       ├── invoice.rs
+│   │   │       ├── payment.rs
+│   │   │       └── receipt.rs
+│   │   └── Cargo.toml
+│   │
+│   └── 📁 synapsepay-scheduler/   # Subscription scheduler
+│       ├── 📁 src/
+│       │   ├── lib.rs
+│       │   ├── instructions/
+│       │   │   ├── create_subscription.rs
+│       │   │   ├── trigger_task.rs
+│       │   │   └── cancel_subscription.rs
+│       │   └── state/
+│       │       └── subscription.rs
+│       └── Cargo.toml
+│
+├── 📁 tests/                      # Integration tests
+│   ├── synapsepay-registry.ts
+│   ├── synapsepay-payments.ts
+│   └── synapsepay-scheduler.ts
+│
+├── 📁 scripts/                    # Deployment & utility scripts
+│   ├── deploy-programs.sh
+│   ├── init-devnet.sh
+│   └── seed-agents.ts
+│
+└── 📁 docs/                       # Documentation
+    ├── architecture.md
+    ├── api-reference.md
+    └── deployment-guide.md
+```
+
+### Key Files Description
+
+| File/Directory | Description |
+|----------------|-------------|
+| `docker-compose.yml` | Orchestrates all services (validator, facilitator, resource-server, web) |
+| `Anchor.toml` | Solana Anchor framework configuration |
+| `turbo.json` | Turborepo monorepo build pipeline |
+| `apps/web/` | React + Vite frontend with ShadCN UI |
+| `apps/x402-facilitator/` | Payment verification & settlement service |
+| `apps/resource-server/` | AI Agent execution and task routing |
+| `apps/actions-api/` | Solana Actions (Blinks) API endpoints |
+| `packages/x402-solana/` | TypeScript library for x402 on Solana |
+| `packages/ai-agents/` | SDK for building custom AI agents |
+| `programs/synapsepay-registry/` | Anchor program for agent registration |
+| `programs/synapsepay-payments/` | Anchor program for payments & receipts |
+| `programs/synapsepay-scheduler/` | Anchor program for subscriptions |
+| `tests/` | Anchor integration tests |
+| `scripts/` | Deployment and initialization scripts |
+
+---
+
+## 🏗️ Turborepo Workspaces (Bun)
+
+This is a **Turborepo monorepo** managed with **Bun workspaces**:
+
+```
+synapsepay/
+├── .env.example              # Single source of truth for configuration
+├── docker-compose.yml        # Multi-container orchestration
+├── turbo.json                # Build pipeline configuration
+├── Anchor.toml               # Solana Anchor configuration
+├── Cargo.toml                # Rust workspace root
+├── bun.lockb                 # Bun lockfile
+├── package.json              # Root workspace configuration
+│
+├── apps/
+│   ├── web/                  # React frontend (Vite + ShadCN + Storybook)
+│   ├── x402-facilitator/     # Payment facilitator service
+│   ├── resource-server/      # AI Agent execution API
+│   └── actions-api/          # Solana Actions (Blinks) API
+│
+├── packages/
+│   ├── x402-solana/          # X402 TypeScript library for Solana
+│   ├── ai-agents/            # AI Agent SDK
+│   ├── ui-kit/               # Shared UI components
+│   └── tsconfig/             # Shared TypeScript configurations
+│
+└── programs/
+    ├── synapsepay-registry/  # Agent Registry (Anchor/Rust)
+    ├── synapsepay-payments/  # Payments & Receipts (Anchor/Rust)
+    └── synapsepay-scheduler/ # Subscriptions (Anchor/Rust)
+```
+
+---
+
+## 🖥️ Frontend Screens (apps/web)
+
+### All Pages & Routes
+
+| Route | Screen Name | Description |
+|-------|-------------|-------------|
+| `/` | **Home** | Landing page with hero, features, and CTA |
+| `/marketplace` | **Agent Marketplace** | Browse, filter, and search AI agents |
+| `/agent/:id` | **Agent Details** | Agent info, pricing, reviews, run button |
+| `/dashboard` | **User Dashboard** | Task history, subscriptions, spending |
+| `/dashboard/tasks` | **Task History** | List of all executed tasks with results |
+| `/dashboard/subscriptions` | **Subscriptions** | Active auto-tasks and schedules |
+| `/dashboard/wallet` | **Wallet Overview** | USDC balance, transaction history |
+| `/create-agent` | **Create Agent** | Form to publish new agent to marketplace |
+| `/my-agents` | **My Agents** | Manage agents you've published |
+| `/settings` | **Settings** | Profile, notifications, API keys |
+
+### Screen Components Detail
+
+```
+apps/web/src/
+├── pages/
+│   ├── Home.tsx                    # Landing page
+│   ├── Marketplace.tsx             # Agent grid with filters
+│   ├── AgentDetails.tsx            # Single agent view
+│   ├── Dashboard/
+│   │   ├── index.tsx               # Dashboard layout
+│   │   ├── TaskHistory.tsx         # Past executions
+│   │   ├── Subscriptions.tsx       # Active subscriptions
+│   │   └── WalletOverview.tsx      # Balance & transactions
+│   ├── CreateAgent.tsx             # Agent creation form
+│   ├── MyAgents.tsx                # Agent management
+│   └── Settings.tsx                # User preferences
+│
+├── components/
+│   ├── layout/
+│   │   ├── Navbar.tsx              # Navigation bar with wallet
+│   │   ├── Sidebar.tsx             # Dashboard sidebar
+│   │   ├── Footer.tsx              # Site footer
+│   │   └── Layout.tsx              # Main layout wrapper
+│   │
+│   ├── marketplace/
+│   │   ├── AgentCard.tsx           # Card showing agent info
+│   │   ├── AgentGrid.tsx           # Grid of agent cards
+│   │   ├── FilterPanel.tsx         # Category/price filters
+│   │   ├── SearchBar.tsx           # Agent search
+│   │   └── CategoryTabs.tsx        # AI, IoT, Automation tabs
+│   │
+│   ├── agent/
+│   │   ├── AgentHeader.tsx         # Agent title, icon, rating
+│   │   ├── AgentPricing.tsx        # Price display
+│   │   ├── AgentDescription.tsx    # Full description
+│   │   ├── AgentReviews.tsx        # User reviews
+│   │   ├── RunAgentButton.tsx      # Trigger execution
+│   │   └── TaskInputForm.tsx       # Task parameters form
+│   │
+│   ├── payment/
+│   │   ├── PaymentModal.tsx        # x402 payment flow modal
+│   │   ├── PaymentStatus.tsx       # Payment state indicator
+│   │   ├── InvoiceDisplay.tsx      # Invoice details
+│   │   ├── ReceiptCard.tsx         # On-chain receipt display
+│   │   └── PriceTag.tsx            # USDC price display
+│   │
+│   ├── dashboard/
+│   │   ├── TaskCard.tsx            # Single task display
+│   │   ├── TaskResultViewer.tsx    # View task output
+│   │   ├── SubscriptionCard.tsx    # Subscription item
+│   │   ├── SpendingChart.tsx       # Usage analytics
+│   │   └── BalanceCard.tsx         # Wallet balance
+│   │
+│   ├── wallet/
+│   │   ├── WalletConnect.tsx       # Phantom/Solflare connect
+│   │   ├── WalletButton.tsx        # Connect/disconnect button
+│   │   ├── WalletDropdown.tsx      # Address & actions
+│   │   └── TransactionList.tsx     # Recent transactions
+│   │
+│   ├── actions/
+│   │   ├── BlinkGenerator.tsx      # Generate Solana Action URLs
+│   │   ├── QRCodeDisplay.tsx       # QR code for actions
+│   │   └── ShareButtons.tsx        # Twitter, email share
+│   │
+│   └── common/
+│       ├── Button.tsx              # Styled button
+│       ├── Card.tsx                # Card container
+│       ├── Modal.tsx               # Modal dialog
+│       ├── Input.tsx               # Form input
+│       ├── Select.tsx              # Dropdown select
+│       ├── Badge.tsx               # Status badge
+│       ├── Loader.tsx              # Loading spinner
+│       ├── Toast.tsx               # Notifications
+│       └── EmptyState.tsx          # Empty list state
+│
+├── hooks/
+│   ├── usePayment.ts               # x402 payment flow
+│   ├── useAgent.ts                 # Agent data fetching
+│   ├── useWallet.ts                # Wallet connection
+│   ├── useTasks.ts                 # Task history
+│   ├── useSubscriptions.ts         # Subscription management
+│   ├── useSolanaActions.ts         # Blinks/Actions
+│   └── useIPFS.ts                  # IPFS result fetching
+│
+├── stores/
+│   ├── walletStore.ts              # Zustand wallet state
+│   ├── agentStore.ts               # Agent cache
+│   └── taskStore.ts                # Task state
+│
+└── config/
+    ├── constants.ts                # App constants
+    ├── endpoints.ts                # API endpoints
+    └── solana.ts                   # Solana/RPC config
+```
+
+---
+
+## ⛓️ Anchor Programs (Solana Smart Contracts)
+
+### Program 1: synapsepay-registry
+
+**Purpose:** Agent registration and marketplace management
+
+```rust
+// programs/synapsepay-registry/src/lib.rs
+
+#[program]
+pub mod synapsepay_registry {
+    // Instructions
+    pub fn register_agent(ctx, metadata_cid, price, category) -> Result<()>
+    pub fn update_agent(ctx, new_metadata_cid, new_price) -> Result<()>
+    pub fn deactivate_agent(ctx) -> Result<()>
+    pub fn reactivate_agent(ctx) -> Result<()>
+    pub fn transfer_ownership(ctx, new_owner) -> Result<()>
+}
+
+// Accounts
+#[account]
+pub struct Agent {
+    pub owner: Pubkey,              // Agent owner wallet
+    pub agent_id: String,           // Unique identifier
+    pub metadata_cid: String,       // IPFS CID for metadata
+    pub price: u64,                 // Price in USDC (6 decimals)
+    pub category: AgentCategory,    // AI, IoT, Automation
+    pub total_runs: u64,            // Execution count
+    pub total_earned: u64,          // Total USDC earned
+    pub rating: u16,                // Average rating (0-500)
+    pub is_active: bool,            // Active status
+    pub created_at: i64,            // Unix timestamp
+    pub updated_at: i64,            // Last update
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub enum AgentCategory {
+    AI,
+    IoT,
+    Automation,
+    Utility,
+    Trading,
+    NFT,
+}
+```
+
+### Program 2: synapsepay-payments
+
+**Purpose:** Payment processing, escrow, and receipts
+
+```rust
+// programs/synapsepay-payments/src/lib.rs
+
+#[program]
+pub mod synapsepay_payments {
+    // Instructions
+    pub fn create_invoice(ctx, agent_id, amount, expires_at) -> Result<()>
+    pub fn settle_payment(ctx, signature) -> Result<()>
+    pub fn verify_payment(ctx) -> Result<()>
+    pub fn complete_task(ctx, result_cid) -> Result<()>
+    pub fn mint_receipt(ctx) -> Result<()>
+    pub fn claim_payment(ctx) -> Result<()>
+    pub fn refund_payment(ctx) -> Result<()>
+    pub fn withdraw_fees(ctx) -> Result<()>
+}
+
+// Accounts
+#[account]
+pub struct Invoice {
+    pub invoice_id: Pubkey,         // PDA derived ID
+    pub payer: Pubkey,              // User wallet
+    pub recipient: Pubkey,          // Agent owner
+    pub agent_id: String,           // Target agent
+    pub amount: u64,                // USDC amount
+    pub state: PaymentState,        // Current state
+    pub expires_at: i64,            // Expiration time
+    pub created_at: i64,            // Creation time
+    pub nonce: u64,                 // Replay protection
+}
+
+#[account]
+pub struct Payment {
+    pub payment_id: Pubkey,         // PDA derived ID
+    pub invoice: Pubkey,            // Related invoice
+    pub payer: Pubkey,              // User wallet
+    pub recipient: Pubkey,          // Agent owner
+    pub amount: u64,                // USDC amount
+    pub platform_fee: u64,          // 5% platform fee
+    pub state: PaymentState,        // Current state
+    pub result_cid: Option<String>, // IPFS result CID
+    pub tx_signature: [u8; 64],     // Solana tx signature
+    pub settled_at: i64,            // Settlement time
+}
+
+#[account]
+pub struct Receipt {
+    pub receipt_id: Pubkey,         // PDA derived ID
+    pub payment: Pubkey,            // Related payment
+    pub payer: Pubkey,              // User wallet
+    pub agent_id: String,           // Agent executed
+    pub amount: u64,                // Amount paid
+    pub result_cid: String,         // IPFS result
+    pub minted_at: i64,             // Mint time
+    pub slot: u64,                  // Solana slot
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum PaymentState {
+    InvoiceCreated,
+    Pending,
+    Executing,
+    Completed,
+    ReceiptMinted,
+    Claimed,
+    Expired,
+    Failed,
+    Refunded,
+}
+```
+
+### Program 3: synapsepay-scheduler
+
+**Purpose:** Subscription and automated task scheduling
+
+```rust
+// programs/synapsepay-scheduler/src/lib.rs
+
+#[program]
+pub mod synapsepay_scheduler {
+    // Instructions
+    pub fn create_subscription(ctx, agent_id, cadence, max_runs) -> Result<()>
+    pub fn update_subscription(ctx, new_cadence) -> Result<()>
+    pub fn pause_subscription(ctx) -> Result<()>
+    pub fn resume_subscription(ctx) -> Result<()>
+    pub fn cancel_subscription(ctx) -> Result<()>
+    pub fn trigger_scheduled_task(ctx) -> Result<()>
+    pub fn fund_subscription(ctx, amount) -> Result<()>
+}
+
+// Accounts
+#[account]
+pub struct Subscription {
+    pub subscription_id: Pubkey,    // PDA derived ID
+    pub owner: Pubkey,              // Subscriber wallet
+    pub agent_id: String,           // Target agent
+    pub cadence: ScheduleCadence,   // Frequency
+    pub next_run_at: i64,           // Next execution time
+    pub last_run_at: Option<i64>,   // Last execution
+    pub total_runs: u64,            // Completed runs
+    pub max_runs: Option<u64>,      // Max runs limit
+    pub balance: u64,               // Pre-funded USDC
+    pub is_active: bool,            // Active status
+    pub created_at: i64,            // Creation time
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub enum ScheduleCadence {
+    Hourly,
+    Daily,
+    Weekly,
+    Monthly,
+    Custom { seconds: u64 },
+}
+```
+
+---
+
+## 🔌 API Routes (Backend Services)
+
+### x402-facilitator (Port 8403)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/invoice` | Create new payment invoice |
+| `POST` | `/verify` | Verify payment signature |
+| `POST` | `/settle` | Settle payment on-chain |
+| `GET` | `/status/:invoiceId` | Check invoice status |
+| `GET` | `/health` | Service health check |
+
+### resource-server (Port 8404)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/agent/execute` | Execute AI agent task |
+| `GET` | `/agent/:id` | Get agent details |
+| `GET` | `/agents` | List all agents |
+| `GET` | `/task/:id` | Get task status/result |
+| `GET` | `/result/:cid` | Fetch result from IPFS |
+| `POST` | `/device/command` | Send IoT device command |
+| `GET` | `/health` | Service health check |
+
+### actions-api (Port 8405)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/actions.json` | Actions manifest |
+| `GET` | `/api/actions/:agentId` | Get action metadata |
+| `POST` | `/api/actions/:agentId` | Execute action |
+| `GET` | `/blink/:agentId` | Generate Blink URL |
+
+---
+
+## 🧪 Test Suite
+
+### Anchor Program Tests
+
+```
+tests/
+├── synapsepay-registry.ts
+│   ├── ✅ should register new agent
+│   ├── ✅ should update agent metadata
+│   ├── ✅ should deactivate agent
+│   ├── ✅ should reject unauthorized update
+│   └── ✅ should transfer ownership
+│
+├── synapsepay-payments.ts
+│   ├── ✅ should create invoice
+│   ├── ✅ should settle payment with valid signature
+│   ├── ✅ should reject expired invoice
+│   ├── ✅ should reject replay attack
+│   ├── ✅ should complete task and store CID
+│   ├── ✅ should mint receipt NFT
+│   ├── ✅ should claim payment as owner
+│   ├── ✅ should refund on failure
+│   └── ✅ should deduct platform fee
+│
+└── synapsepay-scheduler.ts
+    ├── ✅ should create subscription
+    ├── ✅ should trigger scheduled task
+    ├── ✅ should pause/resume subscription
+    ├── ✅ should cancel subscription
+    └── ✅ should enforce max runs limit
+
+Total: 50+ tests
+```
+
+---
+
 ## 📦 Quick Start
 
 ### Prerequisites
