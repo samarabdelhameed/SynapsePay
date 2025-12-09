@@ -1429,6 +1429,322 @@ Total: 50+ tests
 
 ---
 
+## 🧩 Component Architecture
+
+### Full Component Hierarchy
+
+```mermaid
+graph TB
+    subgraph AppLayer["🏠 Application Layer"]
+        App[App.tsx<br/>Root Component]
+        Router[AppRouter.tsx<br/>React Router]
+        Providers[Providers.tsx<br/>Context Providers]
+    end
+
+    subgraph LayoutLayer["📐 Layout Layer"]
+        Layout[Layout.tsx<br/>Main Layout]
+        Navbar[Navbar.tsx<br/>Navigation + Wallet]
+        Sidebar[Sidebar.tsx<br/>Dashboard Navigation]
+        Footer[Footer.tsx<br/>Site Footer]
+    end
+
+    subgraph MarketplaceLayer["🏪 Marketplace Layer"]
+        Marketplace[Marketplace.tsx<br/>Agent Grid Page]
+        AgentCard[AgentCard.tsx<br/>Agent Preview Card]
+        AgentGrid[AgentGrid.tsx<br/>Responsive Grid]
+        FilterPanel[FilterPanel.tsx<br/>Category Filters]
+        SearchBar[SearchBar.tsx<br/>Agent Search]
+        CategoryTabs[CategoryTabs.tsx<br/>AI/IoT/Automation]
+    end
+
+    subgraph AgentLayer["🤖 Agent Execution Layer"]
+        AgentDetails[AgentDetails.tsx<br/>Full Agent View]
+        AgentHeader[AgentHeader.tsx<br/>Title + Rating]
+        AgentPricing[AgentPricing.tsx<br/>Price Display]
+        RunAgentButton[RunAgentButton.tsx<br/>Execute Trigger]
+        TaskInputForm[TaskInputForm.tsx<br/>Parameter Form]
+        TaskResultViewer[TaskResultViewer.tsx<br/>Output Display]
+        AgentReviews[AgentReviews.tsx<br/>User Reviews]
+    end
+
+    subgraph PaymentLayer["💳 Payment Layer"]
+        PaymentGate[PaymentGate.tsx<br/>Access Control]
+        PaymentModal[PaymentModal.tsx<br/>x402 Flow UI]
+        InvoiceDisplay[InvoiceDisplay.tsx<br/>Invoice Details]
+        PaymentStatus[PaymentStatus.tsx<br/>State Indicator]
+        ReceiptCard[ReceiptCard.tsx<br/>On-chain Receipt]
+        PriceTag[PriceTag.tsx<br/>USDC Display]
+    end
+
+    subgraph DashboardLayer["📊 Dashboard Layer"]
+        Dashboard[Dashboard.tsx<br/>User Overview]
+        TaskHistory[TaskHistory.tsx<br/>Execution Log]
+        TaskCard[TaskCard.tsx<br/>Single Task]
+        SubscriptionManager[SubscriptionManager.tsx<br/>Auto-Tasks]
+        SubscriptionCard[SubscriptionCard.tsx<br/>Sub Item]
+        SpendingChart[SpendingChart.tsx<br/>Analytics]
+    end
+
+    subgraph WalletLayer["👛 Wallet Layer"]
+        WalletProvider[WalletProvider.tsx<br/>Solana Adapter]
+        WalletConnect[WalletConnect.tsx<br/>Connection UI]
+        WalletButton[WalletButton.tsx<br/>Connect/Disconnect]
+        WalletDropdown[WalletDropdown.tsx<br/>Account Menu]
+        BalanceCard[BalanceCard.tsx<br/>USDC Balance]
+        TransactionList[TransactionList.tsx<br/>Tx History]
+    end
+
+    subgraph ActionsLayer["⚡ Solana Actions Layer"]
+        BlinkGenerator[BlinkGenerator.tsx<br/>Action URL Creator]
+        QRCodeDisplay[QRCodeDisplay.tsx<br/>QR for Actions]
+        ShareButtons[ShareButtons.tsx<br/>Social Share]
+        ActionPreview[ActionPreview.tsx<br/>Blink Preview]
+    end
+
+    subgraph CommonLayer["🧱 Common Components"]
+        Button[Button.tsx]
+        Card[Card.tsx]
+        Modal[Modal.tsx]
+        Input[Input.tsx]
+        Select[Select.tsx]
+        Badge[Badge.tsx]
+        Loader[Loader.tsx]
+        Toast[Toast.tsx]
+        EmptyState[EmptyState.tsx]
+        Countdown[CountdownTimer.tsx]
+    end
+
+    %% Connections
+    App --> Providers
+    Providers --> Router
+    Router --> Layout
+    Layout --> Navbar
+    Layout --> Sidebar
+    Layout --> Footer
+
+    Router --> Marketplace
+    Router --> AgentDetails
+    Router --> Dashboard
+    
+    Marketplace --> AgentGrid
+    AgentGrid --> AgentCard
+    Marketplace --> FilterPanel
+    Marketplace --> SearchBar
+    Marketplace --> CategoryTabs
+
+    AgentDetails --> AgentHeader
+    AgentDetails --> AgentPricing
+    AgentDetails --> RunAgentButton
+    AgentDetails --> TaskInputForm
+    AgentDetails --> AgentReviews
+    
+    RunAgentButton --> PaymentGate
+    PaymentGate --> PaymentModal
+    PaymentModal --> InvoiceDisplay
+    PaymentModal --> PaymentStatus
+    PaymentGate --> TaskResultViewer
+    TaskResultViewer --> ReceiptCard
+
+    Dashboard --> TaskHistory
+    TaskHistory --> TaskCard
+    Dashboard --> SubscriptionManager
+    SubscriptionManager --> SubscriptionCard
+    Dashboard --> SpendingChart
+    Dashboard --> BalanceCard
+
+    Navbar --> WalletButton
+    WalletButton --> WalletConnect
+    WalletButton --> WalletDropdown
+    Dashboard --> TransactionList
+
+    AgentDetails --> BlinkGenerator
+    BlinkGenerator --> QRCodeDisplay
+    BlinkGenerator --> ShareButtons
+
+    %% Common component usage
+    PaymentModal --> Button
+    PaymentModal --> Card
+    PaymentModal --> Modal
+    TaskInputForm --> Input
+    TaskInputForm --> Select
+    AgentCard --> Badge
+    PaymentStatus --> Loader
+    ReceiptCard --> Card
+    SubscriptionCard --> Countdown
+
+    style App fill:#3b82f6,color:#fff
+    style Router fill:#60a5fa,color:#fff
+    style Providers fill:#93c5fd,color:#000
+    style Layout fill:#10b981,color:#fff
+    style Navbar fill:#34d399,color:#000
+    style Marketplace fill:#f59e0b,color:#fff
+    style AgentCard fill:#fbbf24,color:#000
+    style AgentDetails fill:#8b5cf6,color:#fff
+    style RunAgentButton fill:#a855f7,color:#fff
+    style PaymentGate fill:#ef4444,color:#fff
+    style PaymentModal fill:#f87171,color:#fff
+    style Dashboard fill:#14b8a6,color:#fff
+    style TaskHistory fill:#2dd4bf,color:#000
+    style WalletButton fill:#9945FF,color:#fff
+    style BlinkGenerator fill:#6366f1,color:#fff
+    style Button fill:#475569,color:#fff
+```
+
+### Component Categories
+
+| Category | Components | Count |
+|----------|------------|-------|
+| 📐 **Layout** | Layout, Navbar, Sidebar, Footer | 4 |
+| 🏪 **Marketplace** | Marketplace, AgentCard, AgentGrid, FilterPanel, SearchBar, CategoryTabs | 6 |
+| 🤖 **Agent** | AgentDetails, AgentHeader, AgentPricing, RunAgentButton, TaskInputForm, TaskResultViewer, AgentReviews | 7 |
+| 💳 **Payment** | PaymentGate, PaymentModal, InvoiceDisplay, PaymentStatus, ReceiptCard, PriceTag | 6 |
+| 📊 **Dashboard** | Dashboard, TaskHistory, TaskCard, SubscriptionManager, SubscriptionCard, SpendingChart | 6 |
+| 👛 **Wallet** | WalletProvider, WalletConnect, WalletButton, WalletDropdown, BalanceCard, TransactionList | 6 |
+| ⚡ **Actions** | BlinkGenerator, QRCodeDisplay, ShareButtons, ActionPreview | 4 |
+| 🧱 **Common** | Button, Card, Modal, Input, Select, Badge, Loader, Toast, EmptyState, CountdownTimer | 10 |
+| **Total** | | **49** |
+
+### Component States & Props
+
+```typescript
+// Key Component Interfaces
+
+interface AgentCardProps {
+  agent: Agent;
+  onSelect: (agentId: string) => void;
+  isLoading?: boolean;
+}
+
+interface PaymentModalProps {
+  agent: Agent;
+  isOpen: boolean;
+  onClose: () => void;
+  onPaymentComplete: (receipt: Receipt) => void;
+}
+
+interface TaskInputFormProps {
+  agent: Agent;
+  onSubmit: (params: TaskParams) => void;
+  isExecuting: boolean;
+}
+
+interface TaskResultViewerProps {
+  taskId: string;
+  resultCID: string;
+  status: TaskStatus;
+}
+
+interface SubscriptionCardProps {
+  subscription: Subscription;
+  onPause: () => void;
+  onCancel: () => void;
+  onResume: () => void;
+}
+
+interface BlinkGeneratorProps {
+  agentId: string;
+  taskParams?: TaskParams;
+  onGenerate: (blinkUrl: string) => void;
+}
+
+// State Types
+type PaymentState = 
+  | 'idle'
+  | 'creating_invoice'
+  | 'awaiting_signature'
+  | 'verifying'
+  | 'settling'
+  | 'executing'
+  | 'completed'
+  | 'failed';
+
+type TaskStatus = 
+  | 'pending'
+  | 'executing'
+  | 'completed'
+  | 'failed';
+```
+
+### Storybook Component Library
+
+All components are documented in **Storybook** with interactive examples:
+
+```
+📚 Storybook Categories
+├── 📐 Layout Components
+│   ├── Navbar (with wallet states)
+│   ├── Sidebar (collapsed/expanded)
+│   └── Footer
+│
+├── 🏪 Marketplace Components
+│   ├── AgentCard (default, loading, featured)
+│   ├── AgentGrid (3-col, 4-col, responsive)
+│   ├── FilterPanel (with active filters)
+│   ├── SearchBar (with suggestions)
+│   └── CategoryTabs (AI, IoT, Automation)
+│
+├── 🤖 Agent Components
+│   ├── AgentHeader (with rating stars)
+│   ├── AgentPricing (USDC display)
+│   ├── RunAgentButton (idle, loading, disabled)
+│   ├── TaskInputForm (various field types)
+│   ├── TaskResultViewer (text, image, file)
+│   └── AgentReviews (with pagination)
+│
+├── 💳 Payment Components
+│   ├── PaymentGate (locked, unlocked, expired)
+│   ├── PaymentModal (all payment states)
+│   ├── InvoiceDisplay (with countdown)
+│   ├── PaymentStatus (pending, success, error)
+│   ├── ReceiptCard (with Solscan link)
+│   └── PriceTag (various amounts)
+│
+├── 📊 Dashboard Components
+│   ├── TaskCard (completed, failed, pending)
+│   ├── TaskHistory (with filters)
+│   ├── SubscriptionCard (active, paused)
+│   ├── SpendingChart (daily, weekly, monthly)
+│   └── BalanceCard (with fund button)
+│
+├── 👛 Wallet Components
+│   ├── WalletConnect (Phantom, Solflare)
+│   ├── WalletButton (connected, disconnected)
+│   ├── WalletDropdown (with actions)
+│   └── TransactionList (paginated)
+│
+├── ⚡ Actions Components
+│   ├── BlinkGenerator (step by step)
+│   ├── QRCodeDisplay (scannable)
+│   ├── ShareButtons (Twitter, Email)
+│   └── ActionPreview (embedded blink)
+│
+└── 🧱 Common Components
+    ├── Button (primary, secondary, ghost, sizes)
+    ├── Card (default, elevated, interactive)
+    ├── Modal (sm, md, lg, fullscreen)
+    ├── Input (text, number, file, error states)
+    ├── Select (single, multi, searchable)
+    ├── Badge (success, warning, error, info)
+    ├── Loader (spinner, skeleton, dots)
+    ├── Toast (success, error, info, warning)
+    ├── EmptyState (no results, no tasks)
+    └── CountdownTimer (seconds, minutes)
+```
+
+### Run Storybook
+
+```bash
+# Start Storybook development server
+cd apps/web && bun run storybook
+
+# Build static Storybook
+cd apps/web && bun run build-storybook
+
+# Access at http://localhost:6006
+```
+
+---
+
 ## 📦 Quick Start
 
 ### Prerequisites
@@ -1463,6 +1779,620 @@ SOLANA_RPC_URL=https://api.devnet.solana.com
 RELAYER_PRIVATE_KEY=your_key_here
 OPENAI_API_KEY=your_key_here
 IPFS_API_KEY=your_key_here
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+### Configuration Flow
+
+```mermaid
+graph LR
+    subgraph ConfigSource["📄 Configuration Source"]
+        Env[.env file<br/>Single Source of Truth]
+        EnvExample[.env.example<br/>Template]
+    end
+
+    subgraph BackendServices["🔧 Backend Services"]
+        Env --> Docker[Docker Compose<br/>Service Variables]
+        Env --> Facilitator[X402 Facilitator<br/>:8403]
+        Env --> Resource[Resource Server<br/>:8404]
+        Env --> ActionsAPI[Actions API<br/>:8405]
+        Env --> AIOrchestrator[AI Orchestrator<br/>:8500]
+    end
+
+    subgraph SolanaConfig["⛓️ Solana Configuration"]
+        Env --> AnchorToml[Anchor.toml<br/>Program IDs]
+        Env --> SolanaConfig2[solana.ts<br/>RPC & Network]
+        AnchorToml --> Programs[Anchor Programs]
+    end
+
+    subgraph FrontendBuild["🎨 Frontend Build"]
+        Env --> Vite[Vite Build<br/>VITE_* prefix]
+        Vite --> X402Config[x402.ts<br/>Payment Config]
+        Vite --> WalletConfig[wallet.ts<br/>Solana Wallet Adapter]
+        Vite --> AgentConfig[agents.ts<br/>AI Agent Config]
+        Vite --> ActionsConfig[actions.ts<br/>Blinks Config]
+    end
+
+    subgraph Runtime["⚡ Runtime"]
+        X402Config --> Components[React Components]
+        WalletConfig --> Components
+        AgentConfig --> Components
+        ActionsConfig --> Components
+    end
+
+    EnvExample -.->|copy| Env
+
+    style Env fill:#f59e0b,color:#fff
+    style EnvExample fill:#fbbf24,color:#000
+    style Docker fill:#2563eb,color:#fff
+    style Facilitator fill:#10b981,color:#fff
+    style Resource fill:#8b5cf6,color:#fff
+    style Vite fill:#14b8a6,color:#fff
+    style AnchorToml fill:#9945FF,color:#fff
+    style Components fill:#3b82f6,color:#fff
+    style Programs fill:#14F195,color:#000
+```
+
+### Complete .env.example
+
+```env
+# ═══════════════════════════════════════════════════════════════
+# 🚀 SYNAPSEPAY ENVIRONMENT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+# Copy this file to .env and fill in your values
+# NEVER commit .env to version control!
+
+# ═══════════════════════════════════════════════════════════════
+# ⛓️ SOLANA CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+SOLANA_NETWORK=devnet
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_WS_URL=wss://api.devnet.solana.com
+
+# Program IDs (deployed Anchor programs)
+REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
+PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
+SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+
+# USDC Token Mint
+USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+
+# ═══════════════════════════════════════════════════════════════
+# 💳 X402 FACILITATOR CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+FACILITATOR_PORT=8403
+FACILITATOR_PRIVATE_KEY=your_facilitator_keypair_base58
+FACILITATOR_FEE_BPS=500
+INVOICE_EXPIRY_SECONDS=300
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 RESOURCE SERVER CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+RESOURCE_SERVER_PORT=8404
+TASK_TIMEOUT_SECONDS=60
+MAX_CONCURRENT_TASKS=10
+
+# ═══════════════════════════════════════════════════════════════
+# ⚡ SOLANA ACTIONS API CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+ACTIONS_API_PORT=8405
+ACTIONS_BASE_URL=https://synapsepay.io/api/actions
+BLINKS_ENABLED=true
+
+# ═══════════════════════════════════════════════════════════════
+# 🧠 AI SERVICES CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+# OpenAI
+OPENAI_API_KEY=sk-your-openai-key
+OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MAX_TOKENS=4096
+
+# Anthropic (Claude)
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+ANTHROPIC_MODEL=claude-3-opus-20240229
+
+# Local LLM (Ollama)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama2
+
+# DeepSeek
+DEEPSEEK_API_KEY=your-deepseek-key
+
+# ═══════════════════════════════════════════════════════════════
+# 💾 STORAGE CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+# IPFS
+IPFS_GATEWAY_URL=https://ipfs.io/ipfs
+IPFS_API_URL=http://localhost:5001
+IPFS_API_KEY=your-ipfs-api-key
+
+# Arweave (optional)
+ARWEAVE_WALLET_PATH=./arweave-wallet.json
+ARWEAVE_GATEWAY_URL=https://arweave.net
+
+# ═══════════════════════════════════════════════════════════════
+# 📊 REDIS CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=
+REDIS_DB=0
+
+# ═══════════════════════════════════════════════════════════════
+# 🌐 IOT / DEVICE BRIDGE CONFIGURATION (optional)
+# ═══════════════════════════════════════════════════════════════
+DEVICE_BRIDGE_PORT=8600
+DEVICE_BRIDGE_ENABLED=false
+MQTT_BROKER_URL=mqtt://localhost:1883
+DEVICE_AUTH_SECRET=your-device-auth-secret
+
+# ═══════════════════════════════════════════════════════════════
+# 🎨 FRONTEND CONFIGURATION (VITE_* prefix required)
+# ═══════════════════════════════════════════════════════════════
+VITE_APP_NAME=SynapsePay
+VITE_APP_URL=http://localhost:5173
+
+# Solana
+VITE_SOLANA_NETWORK=devnet
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+
+# Program IDs
+VITE_REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
+VITE_PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
+VITE_SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+
+# API Endpoints
+VITE_FACILITATOR_URL=http://localhost:8403
+VITE_RESOURCE_SERVER_URL=http://localhost:8404
+VITE_ACTIONS_API_URL=http://localhost:8405
+
+# Feature Flags
+VITE_ENABLE_IOT=false
+VITE_ENABLE_SUBSCRIPTIONS=true
+VITE_ENABLE_BLINKS=true
+
+# ═══════════════════════════════════════════════════════════════
+# 🔒 SECURITY CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+JWT_SECRET=your-super-secret-jwt-key
+CORS_ALLOWED_ORIGINS=http://localhost:5173,https://synapsepay.io
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW_MS=60000
+```
+
+### Service-Specific Configuration Files
+
+#### apps/web/src/config/solana.ts
+
+```typescript
+// Solana Network Configuration
+export const solanaConfig = {
+  network: import.meta.env.VITE_SOLANA_NETWORK || 'devnet',
+  rpcUrl: import.meta.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+  
+  programIds: {
+    registry: import.meta.env.VITE_REGISTRY_PROGRAM_ID,
+    payments: import.meta.env.VITE_PAYMENTS_PROGRAM_ID,
+    scheduler: import.meta.env.VITE_SCHEDULER_PROGRAM_ID,
+  },
+  
+  tokens: {
+    usdc: {
+      devnet: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+      'mainnet-beta': 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    },
+  },
+};
+```
+
+#### apps/web/src/config/x402.ts
+
+```typescript
+// X402 Payment Configuration
+export const x402Config = {
+  facilitatorUrl: import.meta.env.VITE_FACILITATOR_URL || 'http://localhost:8403',
+  invoiceExpiryMs: 5 * 60 * 1000, // 5 minutes
+  
+  endpoints: {
+    createInvoice: '/invoice',
+    verifyPayment: '/verify',
+    settlePayment: '/settle',
+    checkStatus: '/status',
+  },
+  
+  defaultCurrency: 'USDC',
+  minPayment: 0.01, // 0.01 USDC
+  maxPayment: 1000, // 1000 USDC
+};
+```
+
+#### apps/web/src/config/agents.ts
+
+```typescript
+// AI Agent Configuration
+export const agentConfig = {
+  resourceServerUrl: import.meta.env.VITE_RESOURCE_SERVER_URL || 'http://localhost:8404',
+  
+  endpoints: {
+    execute: '/agent/execute',
+    list: '/agents',
+    details: '/agent',
+    taskStatus: '/task',
+    result: '/result',
+  },
+  
+  taskTimeoutMs: 60 * 1000, // 60 seconds
+  pollingIntervalMs: 1000, // 1 second
+  
+  categories: ['AI', 'IoT', 'Automation', 'Utility', 'Trading', 'NFT'],
+};
+```
+
+#### apps/web/src/config/actions.ts
+
+```typescript
+// Solana Actions (Blinks) Configuration
+export const actionsConfig = {
+  apiUrl: import.meta.env.VITE_ACTIONS_API_URL || 'http://localhost:8405',
+  baseUrl: import.meta.env.VITE_APP_URL || 'http://localhost:5173',
+  
+  enabled: import.meta.env.VITE_ENABLE_BLINKS === 'true',
+  
+  endpoints: {
+    manifest: '/actions.json',
+    getAction: '/api/actions',
+    executeAction: '/api/actions',
+    generateBlink: '/blink',
+  },
+  
+  socialShare: {
+    twitter: true,
+    telegram: true,
+    email: true,
+  },
+};
+```
+
+### Environment by Deployment Stage
+
+| Variable | Development | Staging | Production |
+|----------|-------------|---------|------------|
+| `SOLANA_NETWORK` | devnet | devnet | mainnet-beta |
+| `SOLANA_RPC_URL` | localhost:8899 | api.devnet.solana.com | Custom RPC |
+| `FACILITATOR_FEE_BPS` | 0 | 500 | 500 |
+| `VITE_ENABLE_IOT` | true | true | false |
+| `REDIS_URL` | localhost:6379 | redis-staging | redis-prod |
+| `CORS_ALLOWED_ORIGINS` | localhost | staging.synapsepay.io | synapsepay.io |
+
+### Loading Order
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  1. .env.example (template, committed to git)                           │
+│  2. .env (local overrides, gitignored)                                  │
+│  3. .env.local (machine-specific, gitignored)                           │
+│  4. .env.[mode] (development/staging/production)                        │
+│  5. .env.[mode].local (mode-specific local overrides)                   │
+│  6. Process environment (Docker, CI/CD)                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Priority: Later files override earlier ones
+```
+
+### Key Environment Variables Summary
+
+All configuration is centralized in `.env.example`:
+
+```env
+# ═══════════════════════════════════════════════════════════════
+# ⛓️ SOLANA BLOCKCHAIN
+# ═══════════════════════════════════════════════════════════════
+SOLANA_NETWORK=devnet
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_WS_URL=wss://api.devnet.solana.com
+SOLANA_VALIDATOR_PORT=8899
+
+# ═══════════════════════════════════════════════════════════════
+# 📝 ANCHOR PROGRAMS (deployed addresses)
+# ═══════════════════════════════════════════════════════════════
+REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
+PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
+SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+
+# ═══════════════════════════════════════════════════════════════
+# 🔧 X402 SERVICES
+# ═══════════════════════════════════════════════════════════════
+X402_FACILITATOR_PORT=8403
+X402_RESOURCE_PORT=8404
+ACTIONS_API_PORT=8405
+AI_ORCHESTRATOR_PORT=8500
+
+# ═══════════════════════════════════════════════════════════════
+# 🎨 FRONTEND (VITE_ prefix required for browser access)
+# ═══════════════════════════════════════════════════════════════
+VITE_SOLANA_NETWORK=devnet
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
+VITE_PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
+VITE_SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+VITE_USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 AI AGENT CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+VITE_RESOURCE_SERVER_URL=http://localhost:8404
+VITE_FACILITATOR_URL=http://localhost:8403
+VITE_ACTIONS_API_URL=http://localhost:8405
+
+# ═══════════════════════════════════════════════════════════════
+# 🧠 AI PROVIDERS
+# ═══════════════════════════════════════════════════════════════
+OPENAI_API_KEY=sk-your-openai-key
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key
+```
+
+### Configuration Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Single Source of Truth** | All configuration in `.env.example` |
+| **VITE_ Prefix** | Browser variables need `VITE_` prefix |
+| **No Hardcoding** | All addresses/URLs from environment |
+| **Docker Integration** | Services read from `.env` automatically |
+| **Type Safety** | Config modules export typed constants |
+| **Anchor Integration** | Program IDs from `Anchor.toml` |
+
+> 📖 See `.env.example` for complete documentation.
+
+---
+
+## 🛠️ Development Workflow
+
+### Monorepo Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 🚀 MAIN COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Run all dev servers (frontend + backend + validator)
+bun run dev
+
+# Build all packages
+bun run build
+
+# Run all tests
+bun run test
+
+# Run E2E tests (headless)
+bun run test:e2e
+
+# Run E2E tests (keep services running for debugging)
+bun run test:e2e:dev
+
+# Clean all build artifacts
+bun run clean
+
+# Format code
+bun run format
+
+# Lint code
+bun run lint
+
+# Type check all packages
+bun run typecheck
+```
+
+### Anchor Program Development
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# ⛓️ SOLANA PROGRAMS (Anchor)
+# ═══════════════════════════════════════════════════════════════
+
+# Navigate to programs
+cd programs/
+
+# Build all Anchor programs
+anchor build
+
+# Run Anchor tests
+anchor test
+
+# Deploy to devnet
+anchor deploy --provider.cluster devnet
+
+# Deploy to localnet
+anchor deploy --provider.cluster localnet
+
+# Start local Solana validator
+solana-test-validator
+
+# Start validator with programs pre-deployed
+solana-test-validator \
+  --bpf-program SYNRegistry111111111111111111111111111111111 target/deploy/synapsepay_registry.so \
+  --bpf-program SYNPayments111111111111111111111111111111111 target/deploy/synapsepay_payments.so \
+  --bpf-program SYNScheduler11111111111111111111111111111111 target/deploy/synapsepay_scheduler.so
+
+# Generate IDL
+anchor idl init --filepath target/idl/synapsepay_registry.json SYNRegistry111111111111111111111111111111111
+
+# Verify program on-chain
+anchor verify SYNRegistry111111111111111111111111111111111
+```
+
+### Package-Specific Development
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 📦 X402 SOLANA LIBRARY
+# ═══════════════════════════════════════════════════════════════
+cd packages/x402-solana
+bun run build         # Build TypeScript library
+bun run typecheck     # Validate types
+bun run test          # Run unit tests
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 AI AGENTS SDK
+# ═══════════════════════════════════════════════════════════════
+cd packages/ai-agents
+bun run build         # Build agent SDK
+bun run test          # Test agent implementations
+
+# ═══════════════════════════════════════════════════════════════
+# 🎨 FRONTEND (apps/web)
+# ═══════════════════════════════════════════════════════════════
+cd apps/web
+bun run dev           # Development server (port 5173)
+bun run storybook     # Component library (port 6006)
+bun run build         # Production build
+bun run preview       # Preview production build
+bun run test          # Run component tests
+
+# ═══════════════════════════════════════════════════════════════
+# 💳 X402 FACILITATOR
+# ═══════════════════════════════════════════════════════════════
+cd apps/x402-facilitator
+bun run dev           # Development mode with hot reload
+bun run start         # Start facilitator (port 8403)
+bun run test          # Run facilitator tests
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 RESOURCE SERVER (AI Agents API)
+# ═══════════════════════════════════════════════════════════════
+cd apps/resource-server
+bun run dev           # Development mode
+bun run start         # Start server (port 8404)
+bun run test          # Run API tests
+
+# ═══════════════════════════════════════════════════════════════
+# ⚡ SOLANA ACTIONS API (Blinks)
+# ═══════════════════════════════════════════════════════════════
+cd apps/actions-api
+bun run dev           # Development mode
+bun run start         # Start server (port 8405)
+bun run test          # Run action tests
+```
+
+### Docker Development
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 🐳 DOCKER COMMANDS
+# ═══════════════════════════════════════════════════════════════
+
+# Start all services
+docker-compose up -d
+
+# Start with build
+docker-compose up -d --build
+
+# Start specific services
+docker-compose up -d solana-validator x402-facilitator resource-server web-frontend
+
+# Start with AI services profile
+docker-compose --profile ai up -d
+
+# Start with IoT services profile
+docker-compose --profile iot up -d
+
+# View logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f resource-server
+
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Rebuild specific service
+docker-compose build resource-server
+```
+
+### Testing Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 🧪 TESTING
+# ═══════════════════════════════════════════════════════════════
+
+# Run all tests
+bun run test
+
+# Run Anchor program tests
+anchor test
+
+# Run with coverage
+anchor test --coverage
+
+# Run frontend tests
+cd apps/web && bun run test
+
+# Run E2E tests
+bun run test:e2e
+
+# Run E2E tests in watch mode
+bun run test:e2e:watch
+
+# Run specific test file
+anchor test tests/synapsepay-payments.ts
+
+# Run tests with verbose output
+anchor test -- --verbose
+```
+
+### Deployment Commands
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# 🚀 DEPLOYMENT
+# ═══════════════════════════════════════════════════════════════
+
+# Deploy programs to devnet
+./scripts/deploy-programs.sh devnet
+
+# Deploy programs to mainnet
+./scripts/deploy-programs.sh mainnet-beta
+
+# Initialize devnet with test data
+./scripts/init-devnet.sh
+
+# Seed sample agents
+bun run scripts/seed-agents.ts
+
+# Build frontend for production
+cd apps/web && bun run build
+
+# Deploy frontend to Vercel
+vercel --prod
+
+# Verify deployment
+./scripts/verify-deployment.sh
+```
+
+### Useful Aliases
+
+```bash
+# Add to your .bashrc or .zshrc
+
+# SynapsePay shortcuts
+alias sp-dev="cd ~/Solana-SynapsePay && bun run dev"
+alias sp-build="cd ~/Solana-SynapsePay && bun run build"
+alias sp-test="cd ~/Solana-SynapsePay && anchor test"
+alias sp-deploy="cd ~/Solana-SynapsePay && anchor deploy"
+alias sp-logs="docker-compose logs -f"
+alias sp-validator="solana-test-validator"
+
+# Solana shortcuts
+alias sol-balance="solana balance"
+alias sol-airdrop="solana airdrop 2"
+alias sol-logs="solana logs"
 ```
 
 ---
