@@ -1,0 +1,26 @@
+{
+    "name": "@synapsepay/actions-api",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun run --hot src/server.ts",
+        "start": "bun run src/server.ts",
+        "build": "bun build src/server.ts --outdir dist --target node",
+        "test": "bun test",
+        "typecheck": "tsc --noEmit",
+        "clean": "rm -rf dist node_modules .turbo"
+    },
+    "dependencies": {
+        "@solana/actions": "^1.0.0",
+        "@solana/web3.js": "^1.91.0",
+        "hono": "^3.12.6",
+        "qrcode": "^1.5.3",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "@types/bun": "^1.0.0",
+        "@types/qrcode": "^1.5.5",
+        "typescript": "^5.3.3"
+    }
+}

@@ -1,0 +1,39 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+synapsepay_registry = "SYNRegistry111111111111111111111111111111111"
+synapsepay_payments = "SYNPayments111111111111111111111111111111111"
+synapsepay_scheduler = "SYNScheduler11111111111111111111111111111111"
+
+[programs.devnet]
+synapsepay_registry = "SYNRegistry111111111111111111111111111111111"
+synapsepay_payments = "SYNPayments111111111111111111111111111111111"
+synapsepay_scheduler = "SYNScheduler11111111111111111111111111111111"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "bun run tests/*.ts"
+
+[test]
+startup_wait = 5000
+
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+[[test.validator.clone]]
+address = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+
+[workspace]
+members = [
+    "programs/synapsepay-registry",
+    "programs/synapsepay-payments",
+    "programs/synapsepay-scheduler"
+]

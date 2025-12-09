@@ -1,0 +1,212 @@
+version: '3.8'
+
+name: synapsepay
+
+networks:
+  synapsepay-network:
+    driver: bridge
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # ⛓️ SOLANA VALIDATOR (Local Development)
+  # ═══════════════════════════════════════════════════════════════
+  solana-validator:
+    image: solanalabs/solana:v1.18.0
+    container_name: synapsepay-validator
+    ports:
+      - "8899:8899"
+      - "8900:8900"
+      - "9900:9900"
+    command: >
+      solana-test-validator
+      --reset
+      --quiet
+      --bpf-program SYNRegistry111111111111111111111111111111111 /programs/synapsepay_registry.so
+      --bpf-program SYNPayments111111111111111111111111111111111 /programs/synapsepay_payments.so
+      --bpf-program SYNScheduler11111111111111111111111111111111 /programs/synapsepay_scheduler.so
+    volumes:
+      - ./target/deploy:/programs:ro
+    networks:
+      - synapsepay-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8899/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════════════════════════════
+  # 💳 X402 FACILITATOR
+  # ═══════════════════════════════════════════════════════════════
+  x402-facilitator:
+    build:
+      context: ./apps/x402-facilitator
+      dockerfile: Dockerfile
+    container_name: synapsepay-facilitator
+    ports:
+      - "${FACILITATOR_PORT:-8403}:8403"
+    environment:
+      - NODE_ENV=development
+      - SOLANA_RPC_URL=${SOLANA_RPC_URL:-http://solana-validator:8899}
+      - FACILITATOR_PRIVATE_KEY=${FACILITATOR_PRIVATE_KEY}
+      - FACILITATOR_FEE_BPS=${FACILITATOR_FEE_BPS:-500}
+      - REGISTRY_PROGRAM_ID=${REGISTRY_PROGRAM_ID}
+      - PAYMENTS_PROGRAM_ID=${PAYMENTS_PROGRAM_ID}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      solana-validator:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - synapsepay-network
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🤖 RESOURCE SERVER (AI Agents)
+  # ═══════════════════════════════════════════════════════════════
+  resource-server:
+    build:
+      context: ./apps/resource-server
+      dockerfile: Dockerfile
+    container_name: synapsepay-resource
+    ports:
+      - "${RESOURCE_SERVER_PORT:-8404}:8404"
+    environment:
+      - NODE_ENV=development
+      - FACILITATOR_URL=http://x402-facilitator:8403
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - IPFS_API_URL=${IPFS_API_URL:-http://ipfs-node:5001}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - x402-facilitator
+      - redis
+    networks:
+      - synapsepay-network
+
+  # ═══════════════════════════════════════════════════════════════
+  # ⚡ SOLANA ACTIONS API
+  # ═══════════════════════════════════════════════════════════════
+  actions-api:
+    build:
+      context: ./apps/actions-api
+      dockerfile: Dockerfile
+    container_name: synapsepay-actions
+    ports:
+      - "${ACTIONS_API_PORT:-8405}:8405"
+    environment:
+      - NODE_ENV=development
+      - RESOURCE_SERVER_URL=http://resource-server:8404
+      - FACILITATOR_URL=http://x402-facilitator:8403
+      - ACTIONS_BASE_URL=${ACTIONS_BASE_URL}
+    depends_on:
+      - resource-server
+    networks:
+      - synapsepay-network
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🎨 WEB FRONTEND
+  # ═══════════════════════════════════════════════════════════════
+  web-frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: synapsepay-web
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_SOLANA_NETWORK=${VITE_SOLANA_NETWORK:-devnet}
+      - VITE_SOLANA_RPC_URL=${VITE_SOLANA_RPC_URL}
+      - VITE_FACILITATOR_URL=http://localhost:8403
+      - VITE_RESOURCE_SERVER_URL=http://localhost:8404
+      - VITE_ACTIONS_API_URL=http://localhost:8405
+    depends_on:
+      - resource-server
+      - actions-api
+    networks:
+      - synapsepay-network
+
+  # ═══════════════════════════════════════════════════════════════
+  # 📊 REDIS (Task Queue & Cache)
+  # ═══════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: synapsepay-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - synapsepay-network
+
+  # ═══════════════════════════════════════════════════════════════
+  # 💾 IPFS NODE
+  # ═══════════════════════════════════════════════════════════════
+  ipfs-node:
+    image: ipfs/kubo:latest
+    container_name: synapsepay-ipfs
+    ports:
+      - "5001:5001"
+      - "8080:8080"
+    volumes:
+      - ipfs-data:/data/ipfs
+    networks:
+      - synapsepay-network
+    profiles:
+      - storage
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🤖 AI ORCHESTRATOR (Optional)
+  # ═══════════════════════════════════════════════════════════════
+  ai-orchestrator:
+    build:
+      context: ./apps/resource-server
+      dockerfile: Dockerfile.ai
+    container_name: synapsepay-ai
+    ports:
+      - "8500:8500"
+    environment:
+      - OLLAMA_BASE_URL=http://llama-local:11434
+    depends_on:
+      - llama-local
+    networks:
+      - synapsepay-network
+    profiles:
+      - ai
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🦙 LOCAL LLM (Ollama)
+  # ═══════════════════════════════════════════════════════════════
+  llama-local:
+    image: ollama/ollama:latest
+    container_name: synapsepay-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - synapsepay-network
+    profiles:
+      - ai
+
+  # ═══════════════════════════════════════════════════════════════
+  # 🌐 DEVICE BRIDGE (IoT)
+  # ═══════════════════════════════════════════════════════════════
+  device-bridge:
+    build:
+      context: ./apps/resource-server
+      dockerfile: Dockerfile.iot
+    container_name: synapsepay-devices
+    ports:
+      - "8600:8600"
+    environment:
+      - MQTT_BROKER_URL=${MQTT_BROKER_URL}
+      - DEVICE_AUTH_SECRET=${DEVICE_AUTH_SECRET}
+    networks:
+      - synapsepay-network
+    profiles:
+      - iot
+
+volumes:
+  redis-data:
+  ipfs-data:
+  ollama-data:
