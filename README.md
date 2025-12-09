@@ -365,6 +365,268 @@ sequenceDiagram
 
 ---
 
+## � Payment Protocol Details
+
+### X402 Payment Payload Structure (Solana)
+
+```mermaid
+graph TB
+    subgraph PayloadStructure["📦 Payment Payload"]
+        Root[X-PAYMENT Header<br/>HTTP 402 Response]
+        Root --> Encoded[Base64 Encoded JSON]
+
+        Encoded --> Version[version: '1.0']
+        Encoded --> PaymentType[paymentType: 'solana']
+        Encoded --> Network[network: 'mainnet' | 'devnet']
+        Encoded --> Payload[payload: SolanaPaymentPayload]
+
+        subgraph SolanaPayload["💳 Solana Payment Payload"]
+            Payload --> PaymentId[paymentId: base58<br/>Unique Invoice ID]
+            Payload --> Payer[payer: PublicKey<br/>User Wallet Address]
+            Payload --> Recipient[recipient: PublicKey<br/>Agent Owner Address]
+            Payload --> Amount[amount: string<br/>USDC in lamports]
+            Payload --> TokenMint[tokenMint: PublicKey<br/>USDC-SPL Mint Address]
+            Payload --> AgentId[agentId: string<br/>Target Agent Identifier]
+            Payload --> TaskMeta[taskMetadata: JSON<br/>Task Parameters]
+            Payload --> Expiry[expiresAt: number<br/>Unix Timestamp]
+        end
+
+        subgraph Signatures["✍️ Signatures"]
+            Payload --> TxSig[transactionSignature: Ed25519]
+            Payload --> PaymentSig[paymentIntentSignature: Ed25519]
+            
+            TxSig --> TxSigBytes[signature: base58<br/>64 bytes]
+            TxSig --> TxPubkey[publicKey: base58<br/>32 bytes]
+            
+            PaymentSig --> PaySigBytes[signature: base58<br/>64 bytes]
+            PaymentSig --> PayNonce[nonce: number<br/>Replay Protection]
+        end
+    end
+
+    style Root fill:#3b82f6,color:#fff
+    style Encoded fill:#60a5fa,color:#fff
+    style Payload fill:#10b981,color:#fff
+    style TxSig fill:#f59e0b,color:#fff
+    style PaymentSig fill:#ef4444,color:#fff
+    style PaymentId fill:#8b5cf6,color:#fff
+    style Amount fill:#14b8a6,color:#fff
+    style TokenMint fill:#9945FF,color:#fff
+```
+
+### Payload Field Definitions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | string | Protocol version (`"1.0"`) |
+| `paymentType` | string | Blockchain type (`"solana"`) |
+| `network` | string | `"mainnet-beta"` or `"devnet"` |
+| `paymentId` | base58 | Unique invoice identifier (32 bytes) |
+| `payer` | PublicKey | User's wallet address |
+| `recipient` | PublicKey | Agent owner's wallet address |
+| `amount` | string | Payment amount in USDC (6 decimals) |
+| `tokenMint` | PublicKey | USDC-SPL token mint address |
+| `agentId` | string | Target AI agent identifier |
+| `taskMetadata` | JSON | Task-specific parameters |
+| `expiresAt` | number | Invoice expiration timestamp |
+| `transactionSignature` | Ed25519 | Signed Solana transaction |
+| `paymentIntentSignature` | Ed25519 | Signed payment intent |
+| `nonce` | number | Replay attack protection |
+
+### Example Payment Payload
+
+```json
+{
+  "version": "1.0",
+  "paymentType": "solana",
+  "network": "devnet",
+  "payload": {
+    "paymentId": "7xKXtg2CW87d9VqQzJkHT5J5E1mRQWz4vNrYhS9QT2Ni",
+    "payer": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+    "recipient": "HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH",
+    "amount": "50000",
+    "tokenMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "agentId": "pdf-summarizer-v1",
+    "taskMetadata": {
+      "inputCID": "QmXoypiz...",
+      "maxTokens": 1000,
+      "language": "en"
+    },
+    "expiresAt": 1702166400,
+    "transactionSignature": {
+      "signature": "5KtP9...",
+      "publicKey": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
+    },
+    "paymentIntentSignature": {
+      "signature": "4RmQ7...",
+      "nonce": 1702166000
+    }
+  }
+}
+```
+
+### Signature Verification Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  1. EXTRACT: Decode Base64 X-PAYMENT header                             │
+│  2. VALIDATE: Check version, network, expiry                            │
+│  3. VERIFY TX: Ed25519 verify transactionSignature with payer pubkey    │
+│  4. VERIFY INTENT: Ed25519 verify paymentIntentSignature                │
+│  5. CHECK NONCE: Ensure nonce not previously used (replay protection)   │
+│  6. VERIFY AMOUNT: Confirm amount matches agent price                   │
+│  7. VERIFY TOKEN: Confirm tokenMint is valid USDC-SPL                   │
+│  8. SETTLE: Submit transaction to Solana network                        │
+│  9. RECEIPT: Mint on-chain receipt via Anchor program                   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Token Addresses
+
+| Token | Network | Mint Address |
+|-------|---------|--------------|
+| USDC | Mainnet | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
+| USDC | Devnet | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` |
+
+---
+
+## 🔄 Payment States & Transitions
+
+### Payment Lifecycle State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> INVOICE_CREATED: createInvoice()
+
+    INVOICE_CREATED --> PENDING: settlePayment()<br/>(user signs tx)
+    INVOICE_CREATED --> EXPIRED: Time > expiresAt
+
+    PENDING --> EXECUTING: verifyPayment()<br/>(facilitator confirms)
+    PENDING --> FAILED: Invalid signature<br/>or insufficient funds
+
+    EXECUTING --> COMPLETED: agentExecute()<br/>(AI task success)
+    EXECUTING --> FAILED: Agent error<br/>or timeout
+
+    COMPLETED --> CLAIMED: claimPayment()<br/>(agent owner)
+    COMPLETED --> RECEIPT_MINTED: mintReceipt()<br/>(on-chain proof)
+
+    RECEIPT_MINTED --> CLAIMED: claimPayment()<br/>(agent owner)
+
+    EXPIRED --> REFUNDED: refundPayment()<br/>(payer)
+    FAILED --> REFUNDED: autoRefund()<br/>(system)
+
+    CLAIMED --> [*]
+    REFUNDED --> [*]
+
+    note right of INVOICE_CREATED
+        📋 Invoice generated
+        ⏱️ 5 min expiry window
+        💰 Price locked
+    end note
+
+    note right of PENDING
+        ✅ Payment received
+        🔒 USDC in escrow
+        ⏳ Awaiting verification
+    end note
+
+    note right of EXECUTING
+        🤖 AI Agent running
+        📊 Task in progress
+        💾 Storing results
+    end note
+
+    note right of COMPLETED
+        ✓ Task finished
+        📁 Result on IPFS
+        🎫 Ready for receipt
+    end note
+
+    note right of CLAIMED
+        💸 USDC transferred
+        to agent owner
+    end note
+
+    note right of REFUNDED
+        ↩️ USDC returned
+        to payer
+    end note
+```
+
+### State Definitions
+
+| State | Description | Next Actions |
+|-------|-------------|--------------|
+| `INVOICE_CREATED` | Invoice generated, awaiting payment | `settlePayment()`, expires after 5 min |
+| `PENDING` | Payment received, USDC in escrow | `verifyPayment()` by facilitator |
+| `EXECUTING` | AI Agent processing task | Wait for completion or timeout |
+| `COMPLETED` | Task finished, result stored on IPFS | `mintReceipt()`, `claimPayment()` |
+| `RECEIPT_MINTED` | On-chain receipt created | `claimPayment()` |
+| `CLAIMED` | Agent owner received USDC | Terminal state |
+| `EXPIRED` | Invoice timed out before payment | `refundPayment()` if paid |
+| `FAILED` | Verification or execution error | Auto-refund triggered |
+| `REFUNDED` | USDC returned to payer | Terminal state |
+
+### Anchor Program Instructions
+
+```rust
+// Payment State Transitions (Anchor)
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
+pub enum PaymentState {
+    InvoiceCreated,
+    Pending,
+    Executing,
+    Completed,
+    ReceiptMinted,
+    Claimed,
+    Expired,
+    Failed,
+    Refunded,
+}
+
+// Instructions
+pub fn create_invoice(ctx: Context<CreateInvoice>, amount: u64, agent_id: String) -> Result<()>
+pub fn settle_payment(ctx: Context<SettlePayment>, signature: [u8; 64]) -> Result<()>
+pub fn verify_payment(ctx: Context<VerifyPayment>) -> Result<()>
+pub fn complete_task(ctx: Context<CompleteTask>, result_cid: String) -> Result<()>
+pub fn mint_receipt(ctx: Context<MintReceipt>) -> Result<()>
+pub fn claim_payment(ctx: Context<ClaimPayment>) -> Result<()>
+pub fn refund_payment(ctx: Context<RefundPayment>) -> Result<()>
+```
+
+### State Transition Rules
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  INVOICE_CREATED → PENDING                                              │
+│    ✓ User must sign valid transaction                                   │
+│    ✓ USDC amount must match invoice                                     │
+│    ✓ Invoice must not be expired                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PENDING → EXECUTING                                                    │
+│    ✓ Facilitator verifies Ed25519 signature                             │
+│    ✓ USDC successfully transferred to escrow                            │
+│    ✓ Nonce not previously used                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  EXECUTING → COMPLETED                                                  │
+│    ✓ AI Agent returns valid result                                      │
+│    ✓ Result CID stored on IPFS/Arweave                                  │
+│    ✓ No timeout (max 60 seconds)                                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  COMPLETED → CLAIMED                                                    │
+│    ✓ Only agent owner can claim                                         │
+│    ✓ Platform fee (5%) deducted                                         │
+│    ✓ Remaining USDC transferred to owner                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  FAILED/EXPIRED → REFUNDED                                              │
+│    ✓ Automatic refund on failure                                        │
+│    ✓ Manual refund available for expired invoices                       │
+│    ✓ Full amount returned to payer                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Smart Contracts (Solana)
@@ -403,6 +665,95 @@ sequenceDiagram
 | Anthropic | Claude Models |
 | Llama | Open Source LLM |
 | DeepSeek | Code & Analysis |
+
+---
+
+## 🐳 Docker Service Dependencies
+
+```mermaid
+graph LR
+    subgraph DockerNetwork["🐳 Docker Network: synapsepay-network"]
+        direction TB
+        
+        subgraph Core["Core Services"]
+            Validator[solana-validator<br/>:8899<br/>Local RPC Node]
+            Facilitator[x402-facilitator<br/>:8403<br/>Payment Gateway]
+            Resource[resource-server<br/>:8404<br/>AI Agent API]
+            Web[web-frontend<br/>:5173<br/>React Dashboard]
+        end
+        
+        subgraph AI["AI Services"]
+            AIRunner[ai-orchestrator<br/>:8500<br/>Model Router]
+            LlamaLocal[llama-local<br/>:11434<br/>Ollama LLM]
+        end
+        
+        subgraph Storage["Storage Services"]
+            IPFS[ipfs-node<br/>:5001<br/>Result Storage]
+            Redis[redis<br/>:6379<br/>Task Queue]
+        end
+        
+        subgraph IoT["IoT Services"]
+            DeviceBridge[device-bridge<br/>:8600<br/>Hardware Gateway]
+        end
+    end
+
+    Validator -->|health check| Facilitator
+    Facilitator -->|depends on| Resource
+    Resource -->|routes tasks| AIRunner
+    AIRunner -->|local inference| LlamaLocal
+    Resource -->|stores results| IPFS
+    Resource -->|task queue| Redis
+    Resource -->|device commands| DeviceBridge
+    Facilitator -.->|serves| Web
+    Resource -.->|API calls| Web
+    IPFS -.->|CID lookup| Web
+
+    style Validator fill:#9945FF,color:#fff
+    style Facilitator fill:#10b981,color:#fff
+    style Resource fill:#8b5cf6,color:#fff
+    style Web fill:#3b82f6,color:#fff
+    style AIRunner fill:#14b8a6,color:#fff
+    style LlamaLocal fill:#0467DF,color:#fff
+    style IPFS fill:#65C2CB,color:#000
+    style Redis fill:#DC382D,color:#fff
+    style DeviceBridge fill:#6366f1,color:#fff
+```
+
+### Service Configuration
+
+| Service | Port | Description | Dependencies |
+|---------|------|-------------|--------------|
+| `solana-validator` | 8899 | Local Solana RPC node | None |
+| `x402-facilitator` | 8403 | Payment verification & settlement | `solana-validator` |
+| `resource-server` | 8404 | AI Agent execution API | `x402-facilitator`, `redis` |
+| `web-frontend` | 5173 | React dashboard | `resource-server` |
+| `ai-orchestrator` | 8500 | Routes tasks to AI models | `redis` |
+| `llama-local` | 11434 | Local LLM via Ollama | None |
+| `ipfs-node` | 5001 | Decentralized result storage | None |
+| `redis` | 6379 | Task queue & caching | None |
+| `device-bridge` | 8600 | IoT hardware gateway | None |
+
+### Docker Compose Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Start core services only
+docker-compose up -d solana-validator x402-facilitator resource-server web-frontend
+
+# Start with AI services
+docker-compose --profile ai up -d
+
+# Start with IoT support
+docker-compose --profile iot up -d
+
+# View logs
+docker-compose logs -f resource-server
+
+# Stop all services
+docker-compose down
+```
 
 ---
 
