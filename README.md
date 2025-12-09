@@ -45,45 +45,57 @@ Built for the **Solana Winter Build Challenge 2025** — demonstrates a realisti
 
 ```mermaid
 graph TB
-    subgraph "User & UX"
-        U[User (browser/app)]
-        Wallet[Wallet (Phantom / Solana Actions)]
+    subgraph User["User & UX"]
+        U[User browser/app]
+        Wallet[Wallet Phantom / Solana Actions]
     end
 
-    subgraph "Frontend"
+    subgraph Frontend
         Web[Next.js / React]
         UI[Marketplace, Run Modal, Dashboard]
     end
 
-    subgraph "Backend"
+    subgraph Backend
         Relayer[Relayer / Paymaster]
-        API[SynapsePay API (Bun / Node)]
+        API[SynapsePay API Bun / Node]
         X402Adapter[X402 Adapter]
     end
 
-    subgraph "Chain"
+    subgraph Chain
         Solana[Solana Devnet/Devnet]
         Anchor[Anchor Program: Registry, Receipts, Subscriptions]
         USDC[USDC-SPL Token]
     end
 
-    subgraph "Agents & Devices"
-        Agents[AI Agents (AurraCloud / Local LLM / Stubs)]
-        Devices[Device Gateway (Raspberry Pi / ESP32)]
+    subgraph AgentsDevices["Agents & Devices"]
+        Agents[AI Agents AurraCloud / Local LLM / Stubs]
+        Devices[Device Gateway Raspberry Pi / ESP32]
         Storage[IPFS / Arweave]
     end
 
     U -->|1. Browse / Run| Web
     Web -->|2. Create invoice| API
     API -->|3. 402 Response| Web
-    Web -->|4. Pay (Actions or Relayer)| Relayer
+    Web -->|4. Pay Actions or Relayer| Relayer
     Relayer -->|5. Verify tx| Anchor
     Anchor -->|6. Mint Receipt| Solana
-    Relayer -->|7. Trigger| Agents & Devices
+    Relayer -->|7. Trigger| Agents
     Agents -->|8. Store result| Storage
     Storage -->|9. CID| Anchor
     Web -->|10. Show result & tx| U
 ```
+
+**Flow Overview:**
+1. User browses marketplace and selects an agent to run
+2. Frontend requests invoice from API
+3. API returns HTTP 402 with payment details
+4. User pays via Solana Actions or Relayer (gasless)
+5. Relayer verifies transaction on-chain
+6. Anchor program mints receipt on Solana
+7. Agent/device executes the requested action
+8. Result stored on IPFS/Arweave
+9. CID recorded in Anchor program
+10. User sees result and transaction proof
 
 ---
 
