@@ -212,6 +212,92 @@ graph TB
 
 ---
 
+## 🎯 X402 Payment Flow with Solana
+
+### Complete Payment Lifecycle for AI Agent Execution
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User
+    participant Wallet as Wallet<br/>(Phantom)
+    participant Web as SynapsePay App<br/>:5173
+    participant Resource as AI Agent Server<br/>:8404
+    participant Facilitator as X402 Facilitator<br/>:8403
+    participant Blockchain as Solana Network<br/>(Devnet/Mainnet)
+
+    Note over User,Blockchain: 🔐 Payment Creation Phase
+    User->>Web: Click "Run AI Agent" (e.g., PDF Summary)
+    Web->>Wallet: Request Transaction Signature
+    Note over Wallet: User reviews payment<br/>0.05 USDC-SPL (no gas fee)
+    Wallet-->>Web: Signed Transaction
+
+    Web->>Wallet: Request Payment Intent Signature
+    Note over Wallet: User confirms agent task<br/>(gasless via x402)
+    Wallet-->>Web: Payment Signature
+
+    Note over User,Blockchain: 📦 Payment Payload Assembly
+    Web->>Web: Encode Payment Payload<br/>(signature + agent_id + task_metadata)
+    Web->>Web: Create X-PAYMENT Header
+
+    Note over User,Blockchain: ✅ Payment Verification Phase
+    Web->>Resource: POST /agent/execute<br/>+ X-PAYMENT header
+    Resource->>Facilitator: POST /verify<br/>(encoded payment payload)
+    Facilitator->>Facilitator: Decode & Validate Signatures
+    Facilitator->>Facilitator: Check USDC-SPL amount & recipient
+    Facilitator-->>Resource: ✓ Valid Payment
+
+    Note over User,Blockchain: ⛓️ On-Chain Settlement Phase
+    Resource->>Facilitator: POST /settle<br/>(same payload)
+    Facilitator->>Blockchain: Transfer USDC-SPL<br/>(facilitator relays tx)
+    Note over Blockchain: Solana Program:<br/>1. Validates signature<br/>2. Transfers USDC-SPL<br/>3. Mints Receipt NFT
+    Blockchain-->>Facilitator: Transaction Signature + Receipt
+    Facilitator-->>Resource: Settlement Response<br/>(txHash, receiptId, slot)
+
+    Note over User,Blockchain: 🤖 AI Agent Execution Phase
+    Resource->>Resource: Trigger AI Agent<br/>(OpenAI/Claude/Llama)
+    Resource->>Resource: Process Task<br/>(PDF/Image/Code)
+    Resource->>Resource: Upload Result to IPFS
+    Resource->>Blockchain: Store Result CID On-Chain
+
+    Note over User,Blockchain: 🎉 Result Delivered
+    Resource-->>Web: 200 OK + Task Result
+    Web-->>User: ✓ Task Complete!<br/>View Result + Solscan Receipt
+
+    Note over User,Blockchain: ⏱️ Post-Execution Actions
+    alt Subscription Active
+        Resource->>Blockchain: Schedule Next Run
+        Blockchain-->>Resource: Auto-trigger on schedule
+    else One-Time Task
+        User->>Web: Run another agent
+    end
+```
+
+### Payment Flow Breakdown
+
+| Phase | Description | Duration |
+|-------|-------------|----------|
+| 🔐 **Creation** | User signs payment intent via Phantom | ~2 sec |
+| 📦 **Assembly** | Payload encoded with x402 headers | ~100 ms |
+| ✅ **Verification** | Facilitator validates signatures | ~200 ms |
+| ⛓️ **Settlement** | USDC-SPL transferred on Solana | ~400 ms |
+| 🤖 **Execution** | AI Agent processes task | 1-10 sec |
+| 🎉 **Delivery** | Result returned + receipt minted | ~500 ms |
+
+> **Total Time:** Under 15 seconds for complete pay-to-result flow!
+
+### Key Advantages of x402 on Solana
+
+| Feature | Benefit |
+|---------|---------|
+| **Gasless UX** | Facilitator pays fees, user only signs |
+| **Instant Settlement** | ~400ms finality on Solana |
+| **Micropayment Ready** | 0.05 USDC viable (low fees) |
+| **On-Chain Receipts** | Immutable proof via Anchor |
+| **Multi-Agent Support** | Same flow for any agent type |
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Smart Contracts (Solana)
