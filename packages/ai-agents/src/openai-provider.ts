@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { z } from 'zod';
-import { BaseAgent, AgentConfig, TaskInput, TaskResult } from './base-agent';
+import { BaseAgent, TaskInput, TaskResult } from './base-agent';
 
 export interface OpenAIProviderConfig {
     apiKey: string;

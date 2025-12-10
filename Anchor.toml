@@ -1,22 +1,25 @@
+[toolchain]
+anchor_version = "0.32.1"
+
 [features]
 seeds = false
 skip-lint = false
 
 [programs.localnet]
-synapsepay_registry = "SYNRegistry111111111111111111111111111111111"
-synapsepay_payments = "SYNPayments111111111111111111111111111111111"
-synapsepay_scheduler = "SYNScheduler11111111111111111111111111111111"
+synapsepay_registry = "77JVfUtFyHTwAwUpfQU4akXmFHwEwxQGV5nR7sHFKcy6"
+synapsepay_payments = "5E9m8o6RS14mnJCSjEkoxh2XmYxcck9zvxc2Fb8aS647"
+synapsepay_scheduler = "AyCtTZPStuiMQtAy9NSQGhzVCfnMMqCxMsiwXcg4yRFC"
 
 [programs.devnet]
-synapsepay_registry = "SYNRegistry111111111111111111111111111111111"
-synapsepay_payments = "SYNPayments111111111111111111111111111111111"
-synapsepay_scheduler = "SYNScheduler11111111111111111111111111111111"
+synapsepay_registry = "77JVfUtFyHTwAwUpfQU4akXmFHwEwxQGV5nR7sHFKcy6"
+synapsepay_payments = "5E9m8o6RS14mnJCSjEkoxh2XmYxcck9zvxc2Fb8aS647"
+synapsepay_scheduler = "AyCtTZPStuiMQtAy9NSQGhzVCfnMMqCxMsiwXcg4yRFC"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

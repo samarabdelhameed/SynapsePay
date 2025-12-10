@@ -1,5 +1,4 @@
 import { decodePayload, validatePayload, extractPaymentHeader } from './payload';
-import { verifyPaymentSignature } from './signatures';
 import { X402PaymentPayload, PaymentSignature } from './types';
 
 export interface X402MiddlewareContext {

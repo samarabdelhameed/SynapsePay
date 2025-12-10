@@ -1,44 +1,54 @@
 import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
+// import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
+import { createFacilitatorFromEnv } from '../facilitator';
 
 export const settleRoutes = new Hono();
 
+// Initialize facilitator
+const facilitator = createFacilitatorFromEnv();
+
 const SettlePaymentSchema = z.object({
-    invoiceId: z.string(),
-    txSignature: z.string(),
+    payment: z.string(), // Base64 encoded X-PAYMENT payload
 });
 
-settleRoutes.post('/', zValidator('json', SettlePaymentSchema), async (c) => {
-    const body = c.req.valid('json');
+settleRoutes.post('/', async (c) => {
+    const body = await c.req.json();
 
     try {
-        // TODO: Verify transaction on Solana
-        // TODO: Confirm payment received
-        // TODO: Update invoice status
+        const result = await facilitator.settlePayment(body.payment);
+
+        if (!result.success) {
+            return c.json({
+                success: false,
+                error: result.error,
+            }, 400);
+        }
 
         return c.json({
-            settled: true,
-            invoiceId: body.invoiceId,
-            txSignature: body.txSignature,
+            success: true,
+            mode: result.mode,
+            txSignature: result.txSignature,
+            slot: result.slot,
             settledAt: new Date().toISOString(),
         });
     } catch (error) {
         return c.json({
-            settled: false,
+            success: false,
             error: error instanceof Error ? error.message : 'Settlement failed',
-        }, 400);
+        }, 500);
     }
 });
 
 // Check settlement status
-settleRoutes.get('/:invoiceId', async (c) => {
-    const invoiceId = c.req.param('invoiceId');
+settleRoutes.get('/:paymentId', async (c) => {
+    const paymentId = c.req.param('paymentId');
 
-    // TODO: Fetch settlement status from DB
+    // TODO: Query on-chain state for payment status
 
     return c.json({
-        invoiceId,
+        paymentId,
         status: 'pending',
+        demoMode: facilitator.isDemoMode(),
     });
 });

@@ -1,4 +1,4 @@
-import { PublicKey } from '@solana/web3.js';
+
 
 export interface X402PaymentPayload {
     version: '1.0';
@@ -17,6 +17,11 @@ export interface SolanaPaymentPayload {
     taskMetadata?: Record<string, unknown>;
     expiresAt: number;
     nonce: number;
+    /** Payment intent signature (added by client after signing) */
+    paymentIntentSignature?: {
+        signature: string;
+        nonce: number;
+    };
 }
 
 export interface PaymentSignature {

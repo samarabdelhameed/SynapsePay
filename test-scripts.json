@@ -1,0 +1,14 @@
+{
+    "scripts": {
+        "test": "anchor test",
+        "test:registry": "anchor test --skip-deploy tests/registry.test.ts",
+        "test:payments": "anchor test --skip-deploy tests/payments.test.ts",
+        "test:scheduler": "anchor test --skip-deploy tests/scheduler.test.ts",
+        "test:all": "anchor test tests/*.test.ts",
+        "build": "anchor build",
+        "deploy:devnet": "anchor deploy --provider.cluster devnet",
+        "deploy:localnet": "anchor deploy --provider.cluster localnet",
+        "copy-idls": "mkdir -p apps/web/src/idl && cp target/idl/*.json apps/web/src/idl/",
+        "clean": "anchor clean && rm -rf target"
+    }
+}

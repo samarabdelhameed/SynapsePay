@@ -1639,3 +1639,467 @@ curl http://localhost:8404/agents
 **🎯 الهدف:** تسليم قبل 14 ديسمبر!
 
 **📞 للمساعدة:** ابدأ بأي Phase وسأساعدك خطوة بخطوة!
+
+---
+
+# 🔄 Phase 7: PayBot → Solana Adaptation
+## ما يمكن استخدامه من PayBot على Solana
+
+### 📊 مقارنة التقنيات
+
+| العنصر | PayBot (EVM) | SynapsePay (Solana) |
+|--------|--------------|---------------------|
+| **Smart Contracts** | Solidity (Escrow.sol) | Anchor/Rust (synapsepay-payments) |
+| **Token Standard** | ERC-20 (QUSD) | SPL Token (USDC) |
+| **Gasless Approval** | EIP-2612 Permit | SPL Token Delegate |
+| **Signatures** | EIP-712 (typed data) | Ed25519 (native) |
+| **Wallet** | Wagmi + MetaMask | @solana/wallet-adapter + Phantom |
+| **RPC** | Viem | @solana/web3.js |
+| **Facilitator Pattern** | ✅ Same concept | ✅ Same concept |
+| **HTTP 402 Protocol** | ✅ Same | ✅ Same |
+| **X-PAYMENT Header** | ✅ Same format | ✅ Same format (adapted) |
+
+---
+
+### ✅ ما يمكن إعادة استخدامه مباشرة
+
+#### 1. **هيكل X402 Protocol**
+
+```typescript
+// نفس الهيكل - فقط تغيير paymentType
+interface X402PaymentPayload {
+  version: "1.0";
+  paymentType: "solana";  // بدلاً من "evm-permit"
+  network: "devnet" | "mainnet-beta";
+  payload: SolanaPaymentPayload;
+}
+```
+
+#### 2. **حالات الدفعة (Payment States)**
+
+```
+نفس التدفق بالضبط:
+
+INVOICE_CREATED → PENDING → EXECUTING → COMPLETED → CLAIMED
+                         ↘            ↘
+                        FAILED      EXPIRED → REFUNDED
+```
+
+#### 3. **Facilitator Server Pattern**
+
+```typescript
+// نفس الـ API endpoints
+POST /invoice    → إنشاء فاتورة
+POST /verify     → التحقق من التوقيع
+POST /settle     → تنفيذ الدفع على السلسلة
+GET  /status/:id → حالة الدفعة
+```
+
+#### 4. **Frontend Components Pattern**
+
+```
+BotAccessGate → DeviceAccessGate (نفس المنطق)
+PaymentModal → PaymentModal (نفس المنطق)
+CountdownTimer → SessionTimer (نفس المنطق)
+usePayment hook → usePayment hook (تغيير التنفيذ فقط)
+```
+
+---
+
+### 🔧 ما يحتاج تعديل للـ Solana
+
+#### 1. **عقد Escrow → synapsepay-payments**
+
+**PayBot (Solidity):**
+```solidity
+function createPaymentWithPermit(
+    bytes32 paymentId,
+    address payer,
+    address recipient,
+    uint256 amount,
+    uint256 duration,
+    uint256 deadline,
+    uint8 v, bytes32 r, bytes32 s,        // EIP-712 signature
+    uint8 permitV, bytes32 permitR, bytes32 permitS  // EIP-2612 permit
+) external
+```
+
+**SynapsePay (Anchor/Rust):**
+```rust
+pub fn settle_payment(
+    ctx: Context<SettlePayment>,
+    payment_id: [u8; 32],
+    amount: u64,
+    duration: i64,
+    signature: [u8; 64],  // Ed25519 signature
+) -> Result<()>
+// التوقيع مختلف - Ed25519 بدلاً من ECDSA
+// لا يوجد Permit - بل Delegate أو Token Transfer
+```
+
+#### 2. **توقيع المستخدم**
+
+**PayBot:** المستخدم يوقع مرتين (Permit + PaymentIntent)
+
+**SynapsePay:** المستخدم يوقع مرة واحدة (Transaction أو Message)
+
+```typescript
+// Solana - أبسط!
+const message = new TextEncoder().encode(
+  `SynapsePay Payment\n` +
+  `ID: ${paymentId}\n` +
+  `Amount: ${amount} USDC\n` +
+  `Recipient: ${recipient}\n` +
+  `Nonce: ${nonce}`
+);
+
+const signature = await wallet.signMessage(message);
+```
+
+#### 3. **Token Transfer**
+
+**PayBot:** يستخدم permit() للموافقة بدون gas
+
+**SynapsePay:** يستخدم SPL Token Transfer مباشرة
+
+```typescript
+// Solana SPL Token Transfer
+import { createTransferInstruction } from '@solana/spl-token';
+
+const transferIx = createTransferInstruction(
+  payerTokenAccount,
+  escrowTokenAccount,
+  payerPublicKey,
+  amount
+);
+```
+
+---
+
+### 📦 الملفات المطلوب إنشاؤها/تعديلها
+
+#### من PayBot → SynapsePay
+
+| PayBot File | SynapsePay Equivalent | الحالة |
+|-------------|----------------------|--------|
+| `contracts/Escrow.sol` | `programs/synapsepay-payments/` | ✅ موجود جزئياً |
+| `contracts/QUSDToken.sol` | لا حاجة (USDC-SPL موجود) | ✅ |
+| `x402/types.ts` | `packages/x402-solana/src/types.ts` | ✅ موجود |
+| `x402/protocol.ts` | `packages/x402-solana/src/payload.ts` | ✅ موجود |
+| `x402/signatures.ts` | `packages/x402-solana/src/signatures.ts` | ✅ موجود |
+| `x402/middleware.ts` | `packages/x402-solana/src/middleware.ts` | ✅ موجود |
+| `x402/client-helpers.ts` | `packages/x402-solana/src/client-helpers.ts` | ⚠️ يحتاج إضافة |
+| `facilitator.ts` | `apps/x402-facilitator/src/facilitator.ts` | ⚠️ يحتاج إضافة |
+| `hooks/usePayment.ts` | `apps/web/src/hooks/usePayment.ts` | ⚠️ يحتاج إضافة |
+| `BotAccessGate.tsx` | `DeviceAccessGate.tsx` | ✅ موجود |
+| `PaymentModal.tsx` | `apps/web/src/components/payment/` | ⚠️ يحتاج تحسين |
+| `CountdownTimer.tsx` | موجود في DeviceStatusPanel | ✅ موجود |
+
+---
+
+### 🆕 الملف الجديد: client-helpers.ts (Solana Version)
+
+**الملف:** `packages/x402-solana/src/client-helpers.ts`
+
+```typescript
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import { 
+  getAssociatedTokenAddress, 
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID 
+} from '@solana/spl-token';
+import { WalletContextState } from '@solana/wallet-adapter-react';
+import { createPaymentPayload, encodePayload } from './payload';
+import { createPaymentIntentMessage, signPaymentIntent } from './signatures';
+
+interface CreateX402HeaderParams {
+  connection: Connection;
+  wallet: WalletContextState;
+  recipient: string;
+  amountUsdc: number;
+  durationSeconds: number;
+  agentId: string;
+  network: 'devnet' | 'mainnet-beta';
+  usdcMint: string;
+}
+
+export async function createX402PaymentHeader(
+  params: CreateX402HeaderParams
+): Promise<{
+  paymentHeader: string;
+  paymentId: string;
+  payload: any;
+}> {
+  const { connection, wallet, recipient, amountUsdc, durationSeconds, agentId, network, usdcMint } = params;
+  
+  if (!wallet.publicKey || !wallet.signMessage) {
+    throw new Error('Wallet not connected');
+  }
+  
+  // Generate unique payment ID
+  const paymentId = generatePaymentId(wallet.publicKey.toBase58(), agentId);
+  
+  // Convert amount to lamports (USDC has 6 decimals)
+  const amountLamports = Math.floor(amountUsdc * 1_000_000);
+  
+  // Create payment intent message
+  const nonce = Date.now();
+  const intentMessage = createPaymentIntentMessage(
+    paymentId,
+    amountLamports.toString(),
+    recipient,
+    nonce
+  );
+  
+  // User signs the intent (only ONE signature needed!)
+  const signature = await wallet.signMessage(intentMessage);
+  
+  // Create payload
+  const payload = createPaymentPayload({
+    paymentId,
+    payer: wallet.publicKey.toBase58(),
+    recipient,
+    amount: amountLamports.toString(),
+    agentId,
+    tokenMint: usdcMint,
+    network,
+    expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes
+    taskMetadata: { durationSeconds },
+  });
+  
+  // Add signature to payload
+  payload.payload.paymentIntentSignature = {
+    signature: Buffer.from(signature).toString('base64'),
+    nonce,
+  };
+  
+  // Encode to Base64
+  const paymentHeader = encodePayload(payload);
+  
+  return {
+    paymentHeader,
+    paymentId,
+    payload,
+  };
+}
+
+function generatePaymentId(payer: string, agentId: string): string {
+  const data = `${payer}-${agentId}-${Date.now()}-${Math.random()}`;
+  // Simple hash - في الإنتاج استخدم crypto
+  return Buffer.from(data).toString('base64').slice(0, 32);
+}
+
+// Fetch with automatic 402 handling
+export async function fetchWithX402(
+  url: string,
+  options: RequestInit,
+  paymentParams: CreateX402HeaderParams
+): Promise<Response> {
+  // First try without payment
+  const initialResponse = await fetch(url, options);
+  
+  if (initialResponse.status !== 402) {
+    return initialResponse;
+  }
+  
+  // 402 received - create payment
+  const { paymentHeader } = await createX402PaymentHeader(paymentParams);
+  
+  // Retry with payment header
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'X-PAYMENT': paymentHeader,
+    },
+  });
+}
+```
+
+---
+
+### 🆕 الملف الجديد: facilitator.ts (Solana Version)
+
+**الملف:** `apps/x402-facilitator/src/facilitator.ts`
+
+```typescript
+import { 
+  Connection, 
+  Keypair, 
+  PublicKey, 
+  Transaction,
+  sendAndConfirmTransaction 
+} from '@solana/web3.js';
+import { 
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  TOKEN_PROGRAM_ID
+} from '@solana/spl-token';
+import { parseXPaymentHeader, verifySignature } from '@synapsepay/x402-solana';
+
+interface FacilitatorConfig {
+  connection: Connection;
+  facilitatorKeypair: Keypair;  // Facilitator wallet (pays gas)
+  escrowWallet: PublicKey;       // Where payments go
+  usdcMint: PublicKey;
+}
+
+export class PaymentFacilitator {
+  private connection: Connection;
+  private facilitatorKeypair: Keypair;
+  private escrowWallet: PublicKey;
+  private usdcMint: PublicKey;
+  
+  constructor(config: FacilitatorConfig) {
+    this.connection = config.connection;
+    this.facilitatorKeypair = config.facilitatorKeypair;
+    this.escrowWallet = config.escrowWallet;
+    this.usdcMint = config.usdcMint;
+  }
+  
+  // Verify payment payload
+  async verifyPayment(encodedPayment: string): Promise<{
+    valid: boolean;
+    paymentId?: string;
+    payer?: string;
+    amount?: string;
+    error?: string;
+  }> {
+    try {
+      const payload = parseXPaymentHeader(encodedPayment);
+      
+      if (!payload) {
+        return { valid: false, error: 'Invalid payload format' };
+      }
+      
+      // Check expiry
+      if (Date.now() > payload.payload.expiresAt) {
+        return { valid: false, error: 'Payment expired' };
+      }
+      
+      // Verify signature
+      if (payload.payload.paymentIntentSignature) {
+        const isValid = verifySignature(
+          payload.payload.paymentIntentSignature.signature,
+          payload.payload.paymentId,
+          payload.payload.payer
+        );
+        
+        if (!isValid) {
+          return { valid: false, error: 'Invalid signature' };
+        }
+      }
+      
+      return {
+        valid: true,
+        paymentId: payload.payload.paymentId,
+        payer: payload.payload.payer,
+        amount: payload.payload.amount,
+      };
+    } catch (error) {
+      return { valid: false, error: 'Verification failed' };
+    }
+  }
+  
+  // Settle payment on Solana
+  async settlePayment(encodedPayment: string): Promise<{
+    success: boolean;
+    txSignature?: string;
+    slot?: number;
+    error?: string;
+  }> {
+    try {
+      // Verify first
+      const verification = await this.verifyPayment(encodedPayment);
+      if (!verification.valid) {
+        return { success: false, error: verification.error };
+      }
+      
+      const payload = parseXPaymentHeader(encodedPayment)!;
+      const payer = new PublicKey(payload.payload.payer);
+      const recipient = new PublicKey(payload.payload.recipient);
+      const amount = BigInt(payload.payload.amount);
+      
+      // Get token accounts
+      const payerTokenAccount = await getAssociatedTokenAddress(
+        this.usdcMint,
+        payer
+      );
+      
+      const recipientTokenAccount = await getAssociatedTokenAddress(
+        this.usdcMint,
+        recipient
+      );
+      
+      // Create transfer instruction
+      // Note: In production, this would be a more complex flow
+      // with the user's pre-signed transaction
+      const transferIx = createTransferInstruction(
+        payerTokenAccount,
+        recipientTokenAccount,
+        payer,  // Authority - needs user signature
+        amount
+      );
+      
+      // For demo mode: simulate success
+      console.log('Demo mode: Simulating settlement');
+      console.log(`Transfer ${amount} from ${payer.toBase58()} to ${recipient.toBase58()}`);
+      
+      return {
+        success: true,
+        txSignature: `demo_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        slot: Math.floor(Math.random() * 1000000) + 250000000,
+      };
+      
+    } catch (error) {
+      console.error('Settlement error:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+  
+  // Check payment status on-chain
+  async checkPaymentStatus(paymentId: string): Promise<{
+    status: 'pending' | 'completed' | 'expired' | 'refunded';
+    amount?: string;
+    payer?: string;
+    recipient?: string;
+  }> {
+    // In production: query Anchor program for payment state
+    // For demo: return mock status
+    return {
+      status: 'pending',
+    };
+  }
+}
+```
+
+---
+
+### 📊 ملخص الفروقات الرئيسية
+
+| الجانب | PayBot (EVM) | SynapsePay (Solana) |
+|--------|--------------|---------------------|
+| **سرعة المعاملات** | ~15 ثانية | ~400ms ⚡ |
+| **تكلفة الغاز** | $0.10-$5+ | ~$0.001 |
+| **عدد التوقيعات** | 2 (Permit + Intent) | 1 (Intent فقط) |
+| **Token Approval** | EIP-2612 Permit | SPL Delegate/Transfer |
+| **نوع التوقيع** | ECDSA (secp256k1) | Ed25519 |
+
+---
+
+### ✅ خطوات التنفيذ المحدثة
+
+```
+الترتيب النهائي مع PayBot patterns:
+
+1️⃣  packages/x402-solana/src/client-helpers.ts  ← إضافة جديدة
+2️⃣  apps/x402-facilitator/src/facilitator.ts    ← إضافة جديدة
+3️⃣  programs/synapsepay-payments/ (Anchor)      ← تحديث
+4️⃣  apps/x402-facilitator/src/routes/           ← تحديث
+5️⃣  apps/resource-server/                       ← تحديث
+6️⃣  apps/web/src/hooks/usePayment.ts           ← نفس pattern من PayBot
+7️⃣  apps/web/src/components/payment/           ← نفس pattern من PayBot
+```

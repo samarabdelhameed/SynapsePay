@@ -10,7 +10,12 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-    origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
+    origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
+        'http://localhost:5173',
+        'http://localhost:5174'
+    ],
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'X-PAYMENT'],
 }));
 
 // Health check

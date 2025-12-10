@@ -1,5 +1,4 @@
-import bs58 from 'bs58';
-import { X402PaymentPayload, SolanaPaymentPayload } from './types';
+import { X402PaymentPayload } from './types';
 
 const X402_VERSION = '1.0' as const;
 
