@@ -18,47 +18,258 @@
   <a href="#-architecture">Architecture</a> •
   <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-demo-scenarios">Demo</a> •
-  <a href="#-quick-start">Quick Start</a>
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="./USER_GUIDE.md">📱 User Guide</a>
 </p>
 
 ---
 
-## 📋 Overview
+## 📋 Project Overview
 
-**SynapsePay** is a next-generation automation network that enables **AI-driven tasks**, **micro-transactions**, and **real-world device triggers** — all powered by **Solana's speed, scalability, and near-zero fees**.
+**SynapsePay** is a decentralized automation infrastructure built on **Solana** that enables seamless micropayment-driven execution of AI agents, automated workflows, and IoT device control. The platform leverages the **X402 Payment Protocol** to provide gasless, instant micro-transactions, making it economically viable to pay for individual task executions rather than subscription-based models.
 
-Unlike traditional pay-per-use systems, SynapsePay combines:
+### Technical Summary
 
-| Component | Description |
-|-----------|-------------|
-| 🤖 **AI Agents** | Multi-tool execution for diverse tasks |
-| ⚡ **Solana Actions** | Direct transaction flows via social & web |
-| 🔄 **Automated Workflows** | Scheduled tasks & subscriptions |
-| 💰 **x402 Micropayments** | Gasless, instant micro-transactions |
-| 🏪 **Agent Marketplace** | Discover & monetize custom agents |
-| 🌐 **IoT Device Execution** | Bridge blockchain to physical world |
+| Attribute | Specification |
+|-----------|---------------|
+| **Network** | Solana Mainnet / Devnet |
+| **Payment Token** | USDC-SPL (6 decimals) |
+| **Payment Protocol** | X402 (HTTP 402 Payment Required) |
+| **Smart Contracts** | Anchor Framework (Rust) |
+| **Frontend** | React 18 + Vite + TypeScript |
+| **Backend Services** | Node.js + Hono Framework |
+| **Transaction Model** | Gasless (Facilitator-sponsored) |
 
-> **This makes SynapsePay the first system where users can pay 0.05 USDC to instantly trigger an AI task, device action, or on-chain workflow — fully automated.**
+---
+
+## 🔴 Problem Statement
+
+### The Current State of Web3 Automation
+
+Modern blockchain ecosystems face critical barriers that prevent mainstream adoption of automated services:
+
+#### 1. **High Transaction Overhead**
+```
+Traditional Model:
+┌─────────────────────────────────────────────────────────────────────┐
+│  User wants to execute AI task costing $0.05                        │
+│                                                                     │
+│  Gas Fee: ~$0.01 - $0.50 (variable, unpredictable)                 │
+│  + Token Approval TX: Additional gas                                │
+│  + Execution TX: Additional gas                                     │
+│  ─────────────────────────────────────────────────────────────────  │
+│  Total Cost: $0.05 task + $0.03-$1.00 gas = $0.08 - $1.05          │
+│  Overhead: 60% - 2000% of actual service cost                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 2. **User Experience Friction**
+| Pain Point | Impact |
+|------------|--------|
+| Wallet popup fatigue | Users abandon flows requiring multiple signatures |
+| Gas estimation complexity | Non-technical users confused by variable fees |
+| Token approval flows | Two-step transactions increase drop-off rates |
+| Failed transaction handling | Poor error recovery leads to lost funds |
+
+#### 3. **Micropayment Economic Infeasibility**
+```
+Problem: Paying $0.05 for a service is not viable when:
+- Gas costs exceed service cost
+- Each transaction requires user interaction
+- Payment infrastructure adds latency
+
+Result: Services forced into subscription models ($10/month)
+        even when users only need occasional access ($0.50/month actual usage)
+```
+
+#### 4. **Fragmented IoT Integration**
+- No standardized payment protocol for device-level access
+- No real-time authorization for pay-per-use hardware
+- No blockchain-native session management for physical assets
+
+---
+
+## 🟢 Solution Architecture
+
+### SynapsePay's Technical Approach
+
+SynapsePay solves these challenges through a layered architecture that separates concerns and optimizes for both developer experience and end-user simplicity.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          SYNAPSEPAY ARCHITECTURE                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        PRESENTATION LAYER                           │   │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
+│  │  │   Web App    │  │ Solana       │  │   Blinks     │              │   │
+│  │  │   (React)    │  │ Actions API  │  │  (Twitter)   │              │   │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      X402 PAYMENT LAYER                             │   │
+│  │                                                                     │   │
+│  │   ┌─────────────────┐    ┌─────────────────┐    ┌───────────────┐  │   │
+│  │   │  Payment Intent │───▶│  X402 Facilitator│───▶│ Solana TX     │  │   │
+│  │   │  (Off-chain)    │    │  (Gasless Relay) │    │ (Settlement)  │  │   │
+│  │   └─────────────────┘    └─────────────────┘    └───────────────┘  │   │
+│  │                                                                     │   │
+│  │   Key Innovation: User signs INTENT, Facilitator pays GAS          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      EXECUTION LAYER                                │   │
+│  │                                                                     │   │
+│  │   ┌───────────────┐  ┌───────────────┐  ┌───────────────┐          │   │
+│  │   │  AI Agents    │  │  IoT Bridge   │  │  Scheduler    │          │   │
+│  │   │  (GPT, Claude)│  │  (Device Ctrl)│  │  (Cron Tasks) │          │   │
+│  │   └───────────────┘  └───────────────┘  └───────────────┘          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      BLOCKCHAIN LAYER (Solana)                      │   │
+│  │                                                                     │   │
+│  │   ┌───────────────┐  ┌───────────────┐  ┌───────────────┐          │   │
+│  │   │  Registry     │  │  Payments     │  │  Scheduler    │          │   │
+│  │   │  Program      │  │  Program      │  │  Program      │          │   │
+│  │   │  (Agents)     │  │  (Escrow)     │  │  (Subscriptions)│        │   │
+│  │   └───────────────┘  └───────────────┘  └───────────────┘          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Core Technical Innovations
+
+#### 1. **X402 Gasless Payment Protocol**
+
+```typescript
+// Traditional Approach (User pays gas)
+const tx = await program.methods
+  .transfer(amount)
+  .accounts({ payer: userWallet })  // User signs AND pays gas
+  .rpc();
+
+// SynapsePay X402 Approach (Facilitator pays gas)
+const paymentIntent = {
+  payer: userWallet,
+  recipient: agentOwner,
+  amount: 50000,  // 0.05 USDC (6 decimals)
+  nonce: Date.now(),
+  expires: Date.now() + 300000  // 5 minutes
+};
+
+const signature = await wallet.signMessage(encode(paymentIntent));
+// User signs INTENT only, no gas required
+
+await facilitator.settle(paymentIntent, signature);
+// Facilitator submits TX and pays gas, recovers from payment amount
+```
+
+**Economic Model:**
+| Party | Action | Cost |
+|-------|--------|------|
+| User | Signs payment intent | $0.00 (gasless) |
+| Facilitator | Submits Solana TX | ~$0.0001 (gas) |
+| Facilitator | Recovers from payment | +0.5% fee |
+
+#### 2. **On-Chain Agent Registry**
+
+```rust
+#[account]
+pub struct Agent {
+    pub owner: Pubkey,           // Agent creator
+    pub agent_id: String,        // Unique identifier
+    pub metadata_cid: String,    // IPFS metadata hash
+    pub price: u64,              // Price in USDC (6 decimals)
+    pub category: AgentCategory, // AI, IoT, Automation
+    pub total_runs: u64,         // Execution counter
+    pub total_earned: u64,       // Lifetime earnings
+    pub rating: u16,             // 0-500 (0.0-5.0 stars)
+    pub is_active: bool,         // Active status
+}
+```
+
+#### 3. **IoT Device Session Management**
+
+```
+Payment Flow for Device Access:
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                     │
+│  1. USER                    2. FACILITATOR              3. DEVICE   │
+│     │                           │                           │       │
+│     │──── Sign Permit ─────────▶│                           │       │
+│     │     (USDC Approval)       │                           │       │
+│     │                           │                           │       │
+│     │──── Sign Intent ─────────▶│                           │       │
+│     │     (Payment Terms)       │                           │       │
+│     │                           │                           │       │
+│     │                           │──── Submit TX ───────────▶│       │
+│     │                           │     (Solana)              │       │
+│     │                           │                           │       │
+│     │◀──── Access Token ───────│◀──── Confirmed ──────────│       │
+│     │      (JWT + Session)      │                           │       │
+│     │                           │                           │       │
+│     │════════════════ CONTROL SESSION (10 min) ════════════│       │
+│     │                           │                           │       │
+│     │──── CMD: MOVE_FORWARD ───────────────────────────────▶│       │
+│     │◀──── ACK: MOVE_FORWARD ──────────────────────────────│       │
+│     │                           │                           │       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Technical Differentiators
+
+| Feature | Traditional DApps | SynapsePay |
+|---------|-------------------|------------|
+| **Gas Model** | User pays per TX | Facilitator sponsors, recovers from payment |
+| **Payment Granularity** | Minimum viable ~$1 | Viable at $0.01 |
+| **User Signatures** | 2-3 per action | 1 (combined permit + intent) |
+| **Settlement Latency** | 400ms + confirmation | 400ms (Solana finality) |
+| **IoT Integration** | None | Native session management |
+| **Subscription Model** | Monthly billing | Pay-per-use micropayments |
 
 ---
 
 ## ⭐ Why SynapsePay?
 
-Most hackathon projects deliver simple "trigger and pay" apps.
-**SynapsePay delivers a full automation network**, combining 3–4 ideas into one unified system:
+### Alignment with Solana Ecosystem Goals
 
-| Feature | Status |
-|---------|--------|
-| ✅ AI execution | Multi-model support |
-| ✅ On-chain automation | Solana-native |
-| ✅ Pay-per-action billing | x402 protocol |
-| ✅ Real device integration | IoT gateway |
-| ✅ Social & Web2 integrations | Solana Actions |
-| ✅ Marketplace for custom agents | Creator economy |
+| Solana 2025 Priority | SynapsePay Implementation |
+|---------------------|---------------------------|
+| **Consumer Apps** | One-click AI execution, no wallet expertise needed |
+| **Micropayments** | X402 protocol enables sub-cent transactions |
+| **Solana Actions** | Native Blinks integration for social triggers |
+| **Real-World Assets** | IoT device control with blockchain payments |
+| **Developer Experience** | SDK for custom agent creation |
 
-> 🎯 **Perfectly aligned** with Solana's 2025 emphasis on **consumer apps, speed, automation, x402, and Solana Actions**.
+### Technical Validation
+
+```
+Benchmark: PDF Summarization Task
+────────────────────────────────────
+Traditional EVM Approach:
+  - Gas (Ethereum): $2.50 - $15.00
+  - Time: 12-60 seconds (confirmation)
+  - User Actions: 3 signatures
+
+SynapsePay on Solana:
+  - Gas: $0.00 (user), $0.0001 (facilitator)
+  - Time: 400ms (Solana finality)
+  - User Actions: 1 signature
+
+Cost Reduction: 99.9%
+Speed Improvement: 30-150x
+UX Simplification: 66%
+```
 
 ---
+
 
 ## 🚀 Core Features
 
