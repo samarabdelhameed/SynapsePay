@@ -13,4 +13,19 @@ export default defineConfig({
         port: 5173,
         host: true,
     },
+    build: {
+        outDir: 'dist',
+        sourcemap: false,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    solana: ['@solana/web3.js', '@solana/wallet-adapter-react'],
+                },
+            },
+        },
+    },
+    define: {
+        global: 'globalThis',
+    },
 });
