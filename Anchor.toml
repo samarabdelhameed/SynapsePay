@@ -1,5 +1,10 @@
 [toolchain]
-anchor_version = "0.32.1"
+anchor_version = "0.30.1"
+
+[build]
+# Use Solana's unified SBF toolchain instead of cargo-build-sbf
+sbf_out_dir = "target/sbf"
+sbf_program_entrypoint = "no-entrypoint"
 
 [features]
 seeds = false

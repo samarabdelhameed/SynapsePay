@@ -13,10 +13,19 @@ target/
 # Turbo
 .turbo/
 
-# Environment
+# Environment files (NEVER commit these!)
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+
+# Private keys and sensitive data
+*.key
+*.pem
+*-keypair.json
+wallet.json
 
 # IDE
 .idea/
