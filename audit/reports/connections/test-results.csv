@@ -1,0 +1,19 @@
+Test Name,Result,Details
+Solana RPC Health,PASS,RPC يعمل بشكل طبيعي
+Solana RPC Version,PASS,إصدار: 3.0.11
+Solana Current Slot,PASS,Slot: 427929032
+Solana CLI Config,PASS,RPC: https://api.devnet.solana.com
+Solana CLI Balance,PASS,الرصيد: 7.049365958 SOL
+Solana Cluster Version,PASS,الإصدار: 3.0.11
+Contract: synapsepay-registry,PASS,Program ID: 5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby, Size: 224912 bytes
+Contract: synapsepay-payments,PASS,Program ID: 8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP, Size: 348400 bytes
+Contract: synapsepay-scheduler,PASS,Program ID: 8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY, Size: 277824 bytes
+Solana Explorer,FAIL,غير متاح
+SolScan,FAIL,غير متاح
+Solana Faucet,PASS,متاح على: https://faucet.solana.com
+IPFS Gateway,FAIL,غير متاح
+Docker Daemon,FAIL,Docker غير متاح أو لا يعمل
+Node.js,PASS,الإصدار: v22.14.0
+npm,PASS,الإصدار: 10.9.2
+Rust,PASS,الإصدار: rustc 1.91.1 (ed61e7d7e 2025-11-07)
+Anchor,PASS,الإصدار: anchor-cli 0.30.1

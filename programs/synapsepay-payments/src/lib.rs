@@ -7,7 +7,7 @@ pub mod state;
 use instructions::*;
 use state::*;
 
-declare_id!("5E9m8o6RS14mnJCSjEkoxh2XmYxcck9zvxc2Fb8aS647");
+declare_id!("8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP");
 
 #[program]
 pub mod synapsepay_payments {

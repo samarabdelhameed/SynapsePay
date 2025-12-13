@@ -2,7 +2,6 @@ use anchor_lang::prelude::*;
 use crate::PaymentState;
 
 #[account]
-#[derive(Default)]
 pub struct Payment {
     /// PDA derived ID
     pub payment_id: Pubkey,
@@ -26,6 +25,24 @@ pub struct Payment {
     pub settled_at: i64,
     /// Bump seed
     pub bump: u8,
+}
+
+impl Default for Payment {
+    fn default() -> Self {
+        Self {
+            payment_id: Pubkey::default(),
+            invoice: Pubkey::default(),
+            payer: Pubkey::default(),
+            recipient: Pubkey::default(),
+            amount: 0,
+            platform_fee: 0,
+            state: PaymentState::default(),
+            result_cid: String::new(),
+            tx_signature: [0u8; 64],
+            settled_at: 0,
+            bump: 0,
+        }
+    }
 }
 
 impl Payment {

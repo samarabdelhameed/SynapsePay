@@ -6,7 +6,7 @@ pub mod state;
 use instructions::*;
 use state::*;
 
-declare_id!("AyCtTZPStuiMQtAy9NSQGhzVCfnMMqCxMsiwXcg4yRFC");
+declare_id!("8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY");
 
 #[program]
 pub mod synapsepay_scheduler {

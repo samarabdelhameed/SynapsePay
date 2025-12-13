@@ -1,47 +1,43 @@
 [toolchain]
 anchor_version = "0.30.1"
 
-[build]
-# Use Solana's unified SBF toolchain instead of cargo-build-sbf
-sbf_out_dir = "target/sbf"
-sbf_program_entrypoint = "no-entrypoint"
-
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
-[programs.localnet]
-synapsepay_registry = "77JVfUtFyHTwAwUpfQU4akXmFHwEwxQGV5nR7sHFKcy6"
-synapsepay_payments = "5E9m8o6RS14mnJCSjEkoxh2XmYxcck9zvxc2Fb8aS647"
-synapsepay_scheduler = "AyCtTZPStuiMQtAy9NSQGhzVCfnMMqCxMsiwXcg4yRFC"
-
 [programs.devnet]
-synapsepay_registry = "77JVfUtFyHTwAwUpfQU4akXmFHwEwxQGV5nR7sHFKcy6"
+synapsepay_payments = "8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP"
+synapsepay_registry = "5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby"
+synapsepay_scheduler = "8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY"
+
+[programs.localnet]
 synapsepay_payments = "5E9m8o6RS14mnJCSjEkoxh2XmYxcck9zvxc2Fb8aS647"
+synapsepay_registry = "77JVfUtFyHTwAwUpfQU4akXmFHwEwxQGV5nR7sHFKcy6"
 synapsepay_scheduler = "AyCtTZPStuiMQtAy9NSQGhzVCfnMMqCxMsiwXcg4yRFC"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
+
+[workspace]
+members = ["programs/synapsepay-registry", "programs/synapsepay-payments", "programs/synapsepay-scheduler"]
 
 [scripts]
 test = "bun run tests/*.ts"
 
 [test]
 startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
 
 [test.validator]
+bind_address = "0.0.0.0"
 url = "https://api.devnet.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
 
 [[test.validator.clone]]
 address = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
-
-[workspace]
-members = [
-    "programs/synapsepay-registry",
-    "programs/synapsepay-payments",
-    "programs/synapsepay-scheduler"
-]

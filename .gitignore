@@ -57,3 +57,5 @@ test-ledger/
 *.pem
 *.key
 .cache/
+# Environment backup files
+.env.backup.*

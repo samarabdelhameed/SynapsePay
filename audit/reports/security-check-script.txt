@@ -1,0 +1,30 @@
+🔍 بدء فحص الأمان لمشروع SynapsePay...
+[0;34m[INFO][0m تشغيل فحص Clippy...
+[1;33m[WARNING][0m فحص Clippy وجد مشاكل - راجع audit/reports/clippy-report.txt
+[0;34m[INFO][0m فحص الثغرات الأمنية المعروفة...
+[1;33m[WARNING][0m فحص الأمان وجد مشاكل محتملة - راجع audit/reports/security-audit.txt
+[0;34m[INFO][0m فحص تنسيق الكود...
+[1;33m[WARNING][0m تنسيق الكود يحتاج تحسين - راجع audit/reports/format-check.txt
+[0;34m[INFO][0m تشغيل اختبارات الوحدة...
+[1;33m[WARNING][0m تخطي اختبارات الوحدة للعقود الذكية (تحتاج إعداد validator)
+[0;34m[INFO][0m بناء العقود الذكية...
+[0;34m[INFO][0m بناء synapsepay-registry...
+[0;32m[SUCCESS][0m بناء synapsepay-registry مكتمل
+[0;34m[INFO][0m بناء synapsepay-payments...
+[0;32m[SUCCESS][0m بناء synapsepay-payments مكتمل
+[0;34m[INFO][0m بناء synapsepay-scheduler...
+[0;32m[SUCCESS][0m بناء synapsepay-scheduler مكتمل
+[0;32m[SUCCESS][0m بناء جميع العقود مكتمل بنجاح
+[0;34m[INFO][0m التحقق من ملفات .so...
+[0;32m[SUCCESS][0m ملف synapsepay_registry.so موجود (224912 bytes)
+[0;32m[SUCCESS][0m ملف synapsepay_payments.so موجود (348400 bytes)
+[0;32m[SUCCESS][0m ملف synapsepay_scheduler.so موجود (277824 bytes)
+[0;32m[SUCCESS][0m جميع ملفات .so موجودة وصالحة
+[0;34m[INFO][0m تشغيل اختبارات Anchor...
+[1;33m[WARNING][0m بعض اختبارات Anchor فشلت - راجع audit/reports/anchor-tests.txt
+[0;34m[INFO][0m إنشاء تقرير الملخص...
+[0;32m[SUCCESS][0m تقرير الأمان مكتمل - راجع audit/reports/security-summary.md
+[0;32m[SUCCESS][0m 🎉 فحص الأمان مكتمل بنجاح!
+
+
+--- STDERR ---

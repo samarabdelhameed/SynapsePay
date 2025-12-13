@@ -1,0 +1,691 @@
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/claim_payment.rs:1:
+[32m+use super::create_invoice::PaymentError;
+(B[m[32m+use crate::{state::Payment, PaymentState};
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::{PaymentState, state::Payment};
+(B[m[31m-use super::create_invoice::PaymentError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct ClaimPayment<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/claim_payment.rs:43:
+     let amount = payment.amount;
+ 
+     // Transfer USDC from escrow to recipient
+[31m-    let seeds = &[
+(B[m[31m-        b"escrow_authority".as_ref(),
+(B[m[31m-        &[ctx.bumps.escrow_authority],
+(B[m[31m-    ];
+(B[m[32m+    let seeds = &[b"escrow_authority".as_ref(), &[ctx.bumps.escrow_authority]];
+(B[m     let signer_seeds = &[&seeds[..]];
+ 
+     let cpi_accounts = Transfer {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/claim_payment.rs:63:
+     // Update payment state
+     payment.state = PaymentState::Claimed;
+ 
+[31m-    msg!("Payment claimed: {} - {} USDC transferred to recipient", payment.payment_id, amount);
+(B[m[32m+    msg!(
+(B[m[32m+        "Payment claimed: {} - {} USDC transferred to recipient",
+(B[m[32m+        payment.payment_id,
+(B[m[32m+        amount
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/complete_task.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::{PaymentState, state::Payment};
+(B[m use super::create_invoice::PaymentError;
+[32m+use crate::{state::Payment, PaymentState};
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct CompleteTask<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/complete_task.rs:17:
+ pub fn handler(ctx: Context<CompleteTask>, result_cid: String) -> Result<()> {
+     let payment = &mut ctx.accounts.payment;
+ 
+[31m-    require!(result_cid.len() <= Payment::MAX_RESULT_CID_LEN, PaymentError::AgentIdTooLong);
+(B[m[32m+    require!(
+(B[m[32m+        result_cid.len() <= Payment::MAX_RESULT_CID_LEN,
+(B[m[32m+        PaymentError::AgentIdTooLong
+(B[m[32m+    );
+(B[m 
+     payment.result_cid = result_cid.clone();
+     payment.state = PaymentState::Completed;
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/complete_task.rs:32:
+         completed_at: Clock::get()?.unix_timestamp,
+     });
+ 
+[31m-    msg!("Task completed: {} - result: {}", payment.payment_id, payment.result_cid);
+(B[m[32m+    msg!(
+(B[m[32m+        "Task completed: {} - result: {}",
+(B[m[32m+        payment.payment_id,
+(B[m[32m+        payment.result_cid
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/complete_task.rs:45:
+     pub result_cid: String,
+     pub completed_at: i64,
+ }
+[31m-
+(B[m 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/create_invoice.rs:1:
+[32m+use crate::{state::Invoice, PaymentState};
+(B[m use anchor_lang::prelude::*;
+[31m-use crate::{PaymentState, state::Invoice};
+(B[m 
+ #[derive(Accounts)]
+ #[instruction(agent_id: String)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/create_invoice.rs:32:
+     let clock = Clock::get()?;
+ 
+     require!(amount > 0, PaymentError::InvalidAmount);
+[31m-    require!(expires_at > clock.unix_timestamp, PaymentError::InvalidExpiry);
+(B[m[31m-    require!(agent_id.len() <= Invoice::MAX_AGENT_ID_LEN, PaymentError::AgentIdTooLong);
+(B[m[32m+    require!(
+(B[m[32m+        expires_at > clock.unix_timestamp,
+(B[m[32m+        PaymentError::InvalidExpiry
+(B[m[32m+    );
+(B[m[32m+    require!(
+(B[m[32m+        agent_id.len() <= Invoice::MAX_AGENT_ID_LEN,
+(B[m[32m+        PaymentError::AgentIdTooLong
+(B[m[32m+    );
+(B[m 
+     invoice.invoice_id = invoice.key();
+     invoice.payer = ctx.accounts.payer.key();
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/initialize_platform.rs:1:
+ use anchor_lang::prelude::*;
+[31m-use anchor_spl::token::{Token, TokenAccount, Mint};
+(B[m[32m+use anchor_spl::token::{Mint, Token, TokenAccount};
+(B[m 
+ #[derive(Accounts)]
+ pub struct InitializePlatform<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/initialize_platform.rs:43:
+ 
+ pub fn handler(ctx: Context<InitializePlatform>) -> Result<()> {
+     msg!("Platform initialized successfully");
+[31m-    msg!("Platform Authority: {}", ctx.accounts.platform_authority.key());
+(B[m[32m+    msg!(
+(B[m[32m+        "Platform Authority: {}",
+(B[m[32m+        ctx.accounts.platform_authority.key()
+(B[m[32m+    );
+(B[m     msg!("Escrow Authority: {}", ctx.accounts.escrow_authority.key());
+     msg!("Fee Treasury: {}", ctx.accounts.fee_treasury.key());
+     Ok(())
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/mint_receipt.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::{PaymentState, state::{Payment, Receipt, Invoice}};
+(B[m use super::create_invoice::PaymentError;
+[32m+use crate::{
+(B[m[32m+    state::{Invoice, Payment, Receipt},
+(B[m[32m+    PaymentState,
+(B[m[32m+};
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct MintReceipt<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/mint_receipt.rs:47:
+     // Update payment state
+     payment.state = PaymentState::ReceiptMinted;
+ 
+[31m-    msg!("Receipt minted: {} for payment: {}", receipt.receipt_id, payment.payment_id);
+(B[m[32m+    msg!(
+(B[m[32m+        "Receipt minted: {} for payment: {}",
+(B[m[32m+        receipt.receipt_id,
+(B[m[32m+        payment.payment_id
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+[31m-
+(B[m 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/mod.rs:1:
+[31m-pub mod initialize_platform;
+(B[m[31m-pub mod create_invoice;
+(B[m[31m-pub mod settle_payment;
+(B[m[31m-pub mod verify_payment;
+(B[m[32m+pub mod claim_payment;
+(B[m pub mod complete_task;
+[32m+pub mod create_invoice;
+(B[m[32m+pub mod initialize_platform;
+(B[m pub mod mint_receipt;
+[31m-pub mod claim_payment;
+(B[m pub mod refund_payment;
+[32m+pub mod settle_payment;
+(B[m[32m+pub mod verify_payment;
+(B[m pub mod withdraw_fees;
+ 
+[31m-pub use initialize_platform::*;
+(B[m[31m-pub use create_invoice::*;
+(B[m[31m-pub use settle_payment::*;
+(B[m[31m-pub use verify_payment::*;
+(B[m[32m+pub use claim_payment::*;
+(B[m pub use complete_task::*;
+[32m+pub use create_invoice::*;
+(B[m[32m+pub use initialize_platform::*;
+(B[m pub use mint_receipt::*;
+[31m-pub use claim_payment::*;
+(B[m pub use refund_payment::*;
+[32m+pub use settle_payment::*;
+(B[m[32m+pub use verify_payment::*;
+(B[m pub use withdraw_fees::*;
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/refund_payment.rs:1:
+[32m+use super::create_invoice::PaymentError;
+(B[m[32m+use crate::{state::Payment, PaymentState};
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::{PaymentState, state::Payment};
+(B[m[31m-use super::create_invoice::PaymentError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct RefundPayment<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/refund_payment.rs:42:
+     let amount = payment.amount;
+ 
+     // Transfer USDC from escrow back to payer
+[31m-    let seeds = &[
+(B[m[31m-        b"escrow_authority".as_ref(),
+(B[m[31m-        &[ctx.bumps.escrow_authority],
+(B[m[31m-    ];
+(B[m[32m+    let seeds = &[b"escrow_authority".as_ref(), &[ctx.bumps.escrow_authority]];
+(B[m     let signer_seeds = &[&seeds[..]];
+ 
+     let cpi_accounts = Transfer {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/refund_payment.rs:62:
+     // Update payment state
+     payment.state = PaymentState::Refunded;
+ 
+[31m-    msg!("Payment refunded: {} - {} USDC returned to payer", payment.payment_id, amount);
+(B[m[32m+    msg!(
+(B[m[32m+        "Payment refunded: {} - {} USDC returned to payer",
+(B[m[32m+        payment.payment_id,
+(B[m[32m+        amount
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/settle_payment.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::{PaymentState, state::{Invoice, Payment}};
+(B[m use super::create_invoice::PaymentError;
+[32m+use crate::{
+(B[m[32m+    state::{Invoice, Payment},
+(B[m[32m+    PaymentState,
+(B[m[32m+};
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct SettlePayment<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/settle_payment.rs:32:
+     let clock = Clock::get()?;
+ 
+     // Check expiry
+[31m-    require!(clock.unix_timestamp < invoice.expires_at, PaymentError::InvoiceExpired);
+(B[m[32m+    require!(
+(B[m[32m+        clock.unix_timestamp < invoice.expires_at,
+(B[m[32m+        PaymentError::InvoiceExpired
+(B[m[32m+    );
+(B[m 
+     // Calculate platform fee (5%)
+     let platform_fee = invoice.amount / 20;
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/verify_payment.rs:1:
+[32m+use super::create_invoice::PaymentError;
+(B[m[32m+use crate::{state::Payment, PaymentState};
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::{PaymentState, state::Payment};
+(B[m[31m-use super::create_invoice::PaymentError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct VerifyPayment<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/verify_payment.rs:40:
+ 
+ pub fn handler(ctx: Context<VerifyPayment>) -> Result<()> {
+     let payment = &mut ctx.accounts.payment;
+[31m-    
+(B[m[32m+
+(B[m     // Verify signature using Ed25519 instruction
+     // The signature verification is done via Ed25519Program instruction
+     // which should be passed before this instruction in the transaction
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/verify_payment.rs:47:
+[31m-    
+(B[m[32m+
+(B[m     // Calculate total amount (net + platform fee)
+     let total_amount = payment.amount + payment.platform_fee;
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/instructions/verify_payment.rs:73:
+     // Update payment state
+     payment.state = PaymentState::Executing;
+ 
+[31m-    msg!("Payment verified and escrowed: {} USDC (+ {} fee)", payment.amount, payment.platform_fee);
+(B[m[32m+    msg!(
+(B[m[32m+        "Payment verified and escrowed: {} USDC (+ {} fee)",
+(B[m[32m+        payment.amount,
+(B[m[32m+        payment.platform_fee
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/lib.rs:29:
+     }
+ 
+     /// Settle a payment after user signature
+[31m-    pub fn settle_payment(
+(B[m[31m-        ctx: Context<SettlePayment>,
+(B[m[31m-        signature: [u8; 64],
+(B[m[31m-    ) -> Result<()> {
+(B[m[32m+    pub fn settle_payment(ctx: Context<SettlePayment>, signature: [u8; 64]) -> Result<()> {
+(B[m         instructions::settle_payment::handler(ctx, signature)
+     }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/lib.rs:42:
+     }
+ 
+     /// Complete task and store result CID
+[31m-    pub fn complete_task(
+(B[m[31m-        ctx: Context<CompleteTask>,
+(B[m[31m-        result_cid: String,
+(B[m[31m-    ) -> Result<()> {
+(B[m[32m+    pub fn complete_task(ctx: Context<CompleteTask>, result_cid: String) -> Result<()> {
+(B[m         instructions::complete_task::handler(ctx, result_cid)
+     }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/lib.rs:69:
+         instructions::withdraw_fees::handler(ctx)
+     }
+ }
+[31m-
+(B[m 
+ #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+ pub enum PaymentState {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/state/invoice.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m use crate::PaymentState;
+[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[account]
+ #[derive(Default)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/state/invoice.rs:28:
+ 
+ impl Invoice {
+     pub const MAX_AGENT_ID_LEN: usize = 32;
+[31m-    
+(B[m[32m+
+(B[m     pub const LEN: usize = 8 + // discriminator
+         32 + // invoice_id
+         32 + // payer
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/state/payment.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m use crate::PaymentState;
+[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[account]
+ pub struct Payment {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/state/payment.rs:47:
+ 
+ impl Payment {
+     pub const MAX_RESULT_CID_LEN: usize = 64;
+[31m-    
+(B[m[32m+
+(B[m     pub const LEN: usize = 8 + // discriminator
+         32 + // payment_id
+         32 + // invoice
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-payments/src/state/receipt.rs:26:
+ impl Receipt {
+     pub const MAX_AGENT_ID_LEN: usize = 32;
+     pub const MAX_RESULT_CID_LEN: usize = 64;
+[31m-    
+(B[m[32m+
+(B[m     pub const LEN: usize = 8 + // discriminator
+         32 + // receipt_id
+         32 + // payment
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/deactivate_agent.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Agent;
+(B[m use super::register_agent::RegistryError;
+[32m+use crate::state::Agent;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct DeactivateAgent<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/mod.rs:1:
+[31m-pub mod register_agent;
+(B[m[31m-pub mod update_agent;
+(B[m pub mod deactivate_agent;
+ pub mod reactivate_agent;
+[32m+pub mod register_agent;
+(B[m pub mod transfer_ownership;
+[32m+pub mod update_agent;
+(B[m 
+[31m-pub use register_agent::*;
+(B[m[31m-pub use update_agent::*;
+(B[m pub use deactivate_agent::*;
+ pub use reactivate_agent::*;
+[32m+pub use register_agent::*;
+(B[m pub use transfer_ownership::*;
+[32m+pub use update_agent::*;
+(B[m 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/reactivate_agent.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Agent;
+(B[m use super::register_agent::RegistryError;
+[32m+use crate::state::Agent;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct ReactivateAgent<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/register_agent.rs:1:
+[32m+use crate::{state::Agent, AgentCategory};
+(B[m use anchor_lang::prelude::*;
+[31m-use crate::{AgentCategory, state::Agent};
+(B[m 
+ #[derive(Accounts)]
+ #[instruction(agent_id: String)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/register_agent.rs:26:
+     price: u64,
+     category: AgentCategory,
+ ) -> Result<()> {
+[31m-    require!(agent_id.len() <= Agent::MAX_AGENT_ID_LEN, RegistryError::AgentIdTooLong);
+(B[m[31m-    require!(metadata_cid.len() <= Agent::MAX_METADATA_CID_LEN, RegistryError::MetadataCidTooLong);
+(B[m[32m+    require!(
+(B[m[32m+        agent_id.len() <= Agent::MAX_AGENT_ID_LEN,
+(B[m[32m+        RegistryError::AgentIdTooLong
+(B[m[32m+    );
+(B[m[32m+    require!(
+(B[m[32m+        metadata_cid.len() <= Agent::MAX_METADATA_CID_LEN,
+(B[m[32m+        RegistryError::MetadataCidTooLong
+(B[m[32m+    );
+(B[m     require!(price > 0, RegistryError::InvalidPrice);
+ 
+     let agent = &mut ctx.accounts.agent;
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/transfer_ownership.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Agent;
+(B[m use super::register_agent::RegistryError;
+[32m+use crate::state::Agent;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct TransferOwnership<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/transfer_ownership.rs:23:
+     agent.owner = new_owner;
+     agent.updated_at = clock.unix_timestamp;
+ 
+[31m-    msg!("Agent ownership transferred: {} -> {}", agent.agent_id, new_owner);
+(B[m[32m+    msg!(
+(B[m[32m+        "Agent ownership transferred: {} -> {}",
+(B[m[32m+        agent.agent_id,
+(B[m[32m+        new_owner
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/update_agent.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Agent;
+(B[m use super::register_agent::RegistryError;
+[32m+use crate::state::Agent;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct UpdateAgent<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/instructions/update_agent.rs:25:
+     let clock = Clock::get()?;
+ 
+     if let Some(metadata_cid) = new_metadata_cid {
+[31m-        require!(metadata_cid.len() <= Agent::MAX_METADATA_CID_LEN, RegistryError::MetadataCidTooLong);
+(B[m[32m+        require!(
+(B[m[32m+            metadata_cid.len() <= Agent::MAX_METADATA_CID_LEN,
+(B[m[32m+            RegistryError::MetadataCidTooLong
+(B[m[32m+        );
+(B[m         agent.metadata_cid = metadata_cid;
+     }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/state/agent.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m use crate::AgentCategory;
+[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[account]
+ #[derive(Default)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-registry/src/state/agent.rs:35:
+ impl Agent {
+     pub const MAX_AGENT_ID_LEN: usize = 32;
+     pub const MAX_METADATA_CID_LEN: usize = 64;
+[31m-    
+(B[m[32m+
+(B[m     pub const LEN: usize = 8 + // discriminator
+         32 + // owner
+         4 + Self::MAX_AGENT_ID_LEN + // agent_id (string)
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/cancel_subscription.rs:1:
+[32m+use super::create_subscription::SchedulerError;
+(B[m[32m+use crate::state::Subscription;
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::state::Subscription;
+(B[m[31m-use super::create_subscription::SchedulerError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct CancelSubscription<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/create_subscription.rs:1:
+[32m+use crate::{state::Subscription, ScheduleCadence};
+(B[m use anchor_lang::prelude::*;
+[31m-use crate::{ScheduleCadence, state::Subscription};
+(B[m 
+ #[derive(Accounts)]
+ #[instruction(agent_id: String)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/create_subscription.rs:28:
+     let subscription = &mut ctx.accounts.subscription;
+     let clock = Clock::get()?;
+ 
+[31m-    require!(agent_id.len() <= Subscription::MAX_AGENT_ID_LEN, SchedulerError::AgentIdTooLong);
+(B[m[32m+    require!(
+(B[m[32m+        agent_id.len() <= Subscription::MAX_AGENT_ID_LEN,
+(B[m[32m+        SchedulerError::AgentIdTooLong
+(B[m[32m+    );
+(B[m 
+     let next_run = clock.unix_timestamp + cadence.to_seconds() as i64;
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/fund_subscription.rs:1:
+[32m+use super::create_subscription::SchedulerError;
+(B[m[32m+use crate::state::Subscription;
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::state::Subscription;
+(B[m[31m-use super::create_subscription::SchedulerError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct FundSubscription<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/fund_subscription.rs:49:
+     // Update subscription balance
+     subscription.balance += amount;
+ 
+[31m-    msg!("Subscription funded: {} - added {} USDC (new balance: {})",
+(B[m[32m+    msg!(
+(B[m[32m+        "Subscription funded: {} - added {} USDC (new balance: {})",
+(B[m         subscription.subscription_id,
+         amount,
+         subscription.balance
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/initialize_scheduler.rs:1:
+ use anchor_lang::prelude::*;
+[31m-use anchor_spl::token::{Token, TokenAccount, Mint};
+(B[m[32m+use anchor_spl::token::{Mint, Token, TokenAccount};
+(B[m 
+ #[derive(Accounts)]
+ pub struct InitializeScheduler<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/initialize_scheduler.rs:19:
+ 
+ pub fn handler(ctx: Context<InitializeScheduler>) -> Result<()> {
+     msg!("Scheduler initialized successfully");
+[31m-    msg!("Subscription Vault Authority: {}", ctx.accounts.vault_authority.key());
+(B[m[32m+    msg!(
+(B[m[32m+        "Subscription Vault Authority: {}",
+(B[m[32m+        ctx.accounts.vault_authority.key()
+(B[m[32m+    );
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/mod.rs:1:
+[31m-pub mod initialize_scheduler;
+(B[m[32m+pub mod cancel_subscription;
+(B[m pub mod create_subscription;
+[31m-pub mod update_subscription;
+(B[m[32m+pub mod fund_subscription;
+(B[m[32m+pub mod initialize_scheduler;
+(B[m pub mod pause_subscription;
+ pub mod resume_subscription;
+[31m-pub mod cancel_subscription;
+(B[m pub mod trigger_scheduled_task;
+[31m-pub mod fund_subscription;
+(B[m[32m+pub mod update_subscription;
+(B[m 
+[31m-pub use initialize_scheduler::*;
+(B[m[32m+pub use cancel_subscription::*;
+(B[m pub use create_subscription::*;
+[31m-pub use update_subscription::*;
+(B[m[32m+pub use fund_subscription::*;
+(B[m[32m+pub use initialize_scheduler::*;
+(B[m pub use pause_subscription::*;
+ pub use resume_subscription::*;
+[31m-pub use cancel_subscription::*;
+(B[m pub use trigger_scheduled_task::*;
+[31m-pub use fund_subscription::*;
+(B[m[32m+pub use update_subscription::*;
+(B[m 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/pause_subscription.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Subscription;
+(B[m use super::create_subscription::SchedulerError;
+[32m+use crate::state::Subscription;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct PauseSubscription<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/resume_subscription.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::state::Subscription;
+(B[m use super::create_subscription::SchedulerError;
+[32m+use crate::state::Subscription;
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct ResumeSubscription<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:1:
+[32m+use super::create_subscription::SchedulerError;
+(B[m[32m+use crate::state::Subscription;
+(B[m use anchor_lang::prelude::*;
+ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+[31m-use crate::state::Subscription;
+(B[m[31m-use super::create_subscription::SchedulerError;
+(B[m 
+ #[derive(Accounts)]
+ pub struct TriggerScheduledTask<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:56:
+     let clock = Clock::get()?;
+ 
+     // Check if it's time to run
+[31m-    require!(clock.unix_timestamp >= subscription.next_run_at, SchedulerError::NotTimeYet);
+(B[m[32m+    require!(
+(B[m[32m+        clock.unix_timestamp >= subscription.next_run_at,
+(B[m[32m+        SchedulerError::NotTimeYet
+(B[m[32m+    );
+(B[m 
+     // Check max runs
+     if subscription.max_runs > 0 {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:63:
+[31m-        require!(subscription.total_runs < subscription.max_runs, SchedulerError::MaxRunsReached);
+(B[m[32m+        require!(
+(B[m[32m+            subscription.total_runs < subscription.max_runs,
+(B[m[32m+            SchedulerError::MaxRunsReached
+(B[m[32m+        );
+(B[m     }
+ 
+     // Get agent price from agent account
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:67:
+     // For now, we'll use a fixed price or read from agent metadata
+     // In production, this would deserialize the Agent account
+     let agent_price: u64 = 1_000_000; // 1 USDC (6 decimals) - placeholder
+[31m-    
+(B[m[32m+
+(B[m     // Calculate platform fee (5%)
+     let platform_fee = agent_price / 20;
+     let total_cost = agent_price + platform_fee;
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:74:
+ 
+     // Check subscription balance
+[31m-    require!(subscription.balance >= total_cost, SchedulerError::InsufficientBalance);
+(B[m[32m+    require!(
+(B[m[32m+        subscription.balance >= total_cost,
+(B[m[32m+        SchedulerError::InsufficientBalance
+(B[m[32m+    );
+(B[m 
+     // Deduct from subscription balance
+     subscription.balance -= total_cost;
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:92:
+     };
+ 
+     let cpi_program = ctx.accounts.token_program.to_account_info();
+[31m-    let cpi_ctx_payment = CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts_payment, signer_seeds);
+(B[m[32m+    let cpi_ctx_payment =
+(B[m[32m+        CpiContext::new_with_signer(cpi_program.clone(), cpi_accounts_payment, signer_seeds);
+(B[m 
+     token::transfer(cpi_ctx_payment, agent_price)?;
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:120:
+         amount_paid: agent_price,
+     });
+ 
+[31m-    msg!("Scheduled task triggered: {}, run #{}, paid {} USDC", 
+(B[m[31m-        subscription.subscription_id, 
+(B[m[32m+    msg!(
+(B[m[32m+        "Scheduled task triggered: {}, run #{}, paid {} USDC",
+(B[m[32m+        subscription.subscription_id,
+(B[m         subscription.total_runs,
+         agent_price
+     );
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/trigger_scheduled_task.rs:128:
+[31m-    
+(B[m[32m+
+(B[m     Ok(())
+ }
+ 
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/instructions/update_subscription.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m[31m-use crate::{ScheduleCadence, state::Subscription};
+(B[m use super::create_subscription::SchedulerError;
+[32m+use crate::{state::Subscription, ScheduleCadence};
+(B[m[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[derive(Accounts)]
+ pub struct UpdateSubscription<'info> {
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/lib.rs:61:
+     }
+ }
+ 
+[31m-
+(B[m #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+ pub enum ScheduleCadence {
+     Hourly,
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/state/subscription.rs:1:
+[31m-use anchor_lang::prelude::*;
+(B[m use crate::ScheduleCadence;
+[32m+use anchor_lang::prelude::*;
+(B[m 
+ #[account]
+ #[derive(Default)]
+Diff in /Users/s/Solana-SynapsePay/programs/synapsepay-scheduler/src/state/subscription.rs:34:
+ 
+ impl Subscription {
+     pub const MAX_AGENT_ID_LEN: usize = 32;
+[31m-    
+(B[m[32m+
+(B[m     pub const LEN: usize = 8 + // discriminator
+         32 + // subscription_id
+         32 + // owner
+
+
+--- STDERR ---

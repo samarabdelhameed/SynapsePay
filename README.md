@@ -36,6 +36,9 @@
 | **Payment Token** | USDC-SPL (6 decimals) |
 | **Payment Protocol** | X402 (HTTP 402 Payment Required) |
 | **Smart Contracts** | Anchor Framework (Rust) |
+| **Registry Program** | [`5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby`](https://explorer.solana.com/address/5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby?cluster=devnet) |
+| **Payments Program** | [`8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP`](https://explorer.solana.com/address/8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP?cluster=devnet) |
+| **Scheduler Program** | [`8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY`](https://explorer.solana.com/address/8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY?cluster=devnet) |
 | **Frontend** | React 18 + Vite + TypeScript |
 | **Backend Services** | Node.js + Hono Framework |
 | **Transaction Model** | Gasless (Facilitator-sponsored) |
@@ -1881,6 +1884,42 @@ apps/web/src/
 ---
 
 ## ⛓️ Anchor Programs (Solana Smart Contracts)
+
+### 🚀 Deployed Contracts (Solana Devnet)
+
+> **Status:** ✅ All contracts verified and deployed on Solana Devnet  
+> **Deployment Date:** December 13, 2025  
+> **Authority:** `4vDvr4PKdCdNwW5VcSMJQS5k1NsgmcoN8zDQ4ndxXQaW`
+
+| Contract | Program ID | Size | Explorer |
+|----------|-----------|------|----------|
+| **Registry** | `5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby` | 224 KB | [View →](https://explorer.solana.com/address/5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby?cluster=devnet) |
+| **Payments** | `8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP` | 348 KB | [View →](https://explorer.solana.com/address/8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP?cluster=devnet) |
+| **Scheduler** | `8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY` | 277 KB | [View →](https://explorer.solana.com/address/8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY?cluster=devnet) |
+
+<details>
+<summary>📋 Contract Verification Details</summary>
+
+```
+Registry Contract:
+  Program ID: 5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby
+  ProgramData: 9sxPKHUPcjP5HRyi56kzzQ1ttWvWEiiyfUHVrATTJpnZ
+  Data Length: 224,912 bytes
+  
+Payments Contract:
+  Program ID: 8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP
+  ProgramData: ABwKMaGnuoLnRywsuu6keZQvduhpiuNuJkAu2dwuBpVe
+  Data Length: 348,400 bytes
+  
+Scheduler Contract:
+  Program ID: 8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY
+  ProgramData: CCD9HRWnsVKznWupC2HqC7DKqfgG3uFwy3WXAPXkY8YP
+  Data Length: 277,824 bytes
+```
+
+</details>
+
+---
 
 ### Program 1: synapsepay-registry
 

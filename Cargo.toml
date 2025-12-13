@@ -2,7 +2,8 @@
 members = [
     "programs/synapsepay-registry",
     "programs/synapsepay-payments",
-    "programs/synapsepay-scheduler"
+    "programs/synapsepay-scheduler",
+    "audit/property-tests"
 ]
 resolver = "2"
 

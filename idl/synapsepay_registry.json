@@ -1,0 +1,109 @@
+{
+  "address": "5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby",
+  "metadata": {
+    "name": "synapsepay_registry",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "register_agent",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 0],
+      "accounts": [
+        { "name": "owner", "writable": true, "signer": true },
+        { "name": "agent", "writable": true },
+        { "name": "system_program" }
+      ],
+      "args": [
+        { "name": "agent_id", "type": "string" },
+        { "name": "metadata_cid", "type": "string" },
+        { "name": "price", "type": "u64" },
+        { "name": "category", "type": { "defined": { "name": "AgentCategory" } } }
+      ]
+    },
+    {
+      "name": "update_agent",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 1],
+      "accounts": [
+        { "name": "owner", "signer": true },
+        { "name": "agent", "writable": true }
+      ],
+      "args": [
+        { "name": "new_metadata_cid", "type": { "option": "string" } },
+        { "name": "new_price", "type": { "option": "u64" } }
+      ]
+    },
+    {
+      "name": "deactivate_agent",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 2],
+      "accounts": [
+        { "name": "owner", "signer": true },
+        { "name": "agent", "writable": true }
+      ],
+      "args": []
+    },
+    {
+      "name": "reactivate_agent",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 3],
+      "accounts": [
+        { "name": "owner", "signer": true },
+        { "name": "agent", "writable": true }
+      ],
+      "args": []
+    },
+    {
+      "name": "transfer_ownership",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 4],
+      "accounts": [
+        { "name": "owner", "signer": true },
+        { "name": "agent", "writable": true }
+      ],
+      "args": [
+        { "name": "new_owner", "type": "pubkey" }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Agent",
+      "discriminator": [0, 0, 0, 0, 0, 0, 0, 0]
+    }
+  ],
+  "types": [
+    {
+      "name": "Agent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "owner", "type": "pubkey" },
+          { "name": "agent_id", "type": "string" },
+          { "name": "metadata_cid", "type": "string" },
+          { "name": "price", "type": "u64" },
+          { "name": "category", "type": { "defined": { "name": "AgentCategory" } } },
+          { "name": "total_runs", "type": "u64" },
+          { "name": "total_earned", "type": "u64" },
+          { "name": "rating", "type": "u16" },
+          { "name": "rating_count", "type": "u32" },
+          { "name": "is_active", "type": "bool" },
+          { "name": "created_at", "type": "i64" },
+          { "name": "updated_at", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "AgentCategory",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "AI" },
+          { "name": "IoT" },
+          { "name": "Automation" },
+          { "name": "Utility" },
+          { "name": "Trading" },
+          { "name": "NFT" }
+        ]
+      }
+    }
+  ]
+}
