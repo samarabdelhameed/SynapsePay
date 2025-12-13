@@ -14,7 +14,7 @@ Unode Tool Test,PASS,متوفر - v22.14.0
 Unpm Tool Test,PASS,متوفر - 10.9.2
 Development Tools Test,PASS,5 من 5 أدوات متوفرة
 Memory Usage Test,PASS,استهلاك الذاكرة: 1MB
-Disk Space Test,PASS,مساحة متاحة: 4GB
+Disk Space Test,PASS,مساحة متاحة: 16GB
 Processing Speed Test,PASS,معالجة 1000 عملية في 0s
 Development Workflow Test,PASS,جميع سيناريوهات التطوير نجحت (6/6)
 Stress Test,PASS,النظام مستقر تحت الضغط (50/50 عمليات)

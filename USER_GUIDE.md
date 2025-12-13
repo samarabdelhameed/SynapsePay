@@ -859,3 +859,684 @@ npm run dev
 ---
 
 **Made with ❤️ by SynapsePay Team**
+
+---
+
+# 📚 الجزء الثاني: API Documentation
+
+## 🔗 X402 Facilitator API
+
+الـ Facilitator هو الخادم المسؤول عن معالجة المدفوعات وتسويتها.
+
+### Base URL
+```
+http://localhost:8403
+```
+
+### Endpoints
+
+#### 1. إنشاء فاتورة (Create Invoice)
+```http
+POST /api/invoice
+Content-Type: application/json
+
+{
+  "agentId": "pdf-summarizer",
+  "amount": "50000",
+  "payer": "YOUR_WALLET_ADDRESS",
+  "recipient": "AGENT_OWNER_ADDRESS",
+  "taskMetadata": {
+    "fileType": "pdf",
+    "fileName": "document.pdf"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "invoice": {
+    "paymentId": "inv_abc123...",
+    "amount": "50000",
+    "expiresAt": 1702500000,
+    "nonce": 12345
+  }
+}
+```
+
+---
+
+#### 2. التحقق من الدفع (Verify Payment)
+```http
+POST /api/verify
+Content-Type: application/json
+X-PAYMENT: <base64_encoded_payment_payload>
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "paymentId": "inv_abc123...",
+  "payer": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "recipient": "9yMXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+  "amount": "50000",
+  "agentId": "pdf-summarizer"
+}
+```
+
+---
+
+#### 3. تسوية الدفع (Settle Payment)
+```http
+POST /api/settle
+Content-Type: application/json
+X-PAYMENT: <base64_encoded_payment_payload>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "txSignature": "5xK9m...7Qp2",
+  "slot": 280123456,
+  "mode": "real"
+}
+```
+
+---
+
+## 🤖 Resource Server API
+
+الـ Resource Server مسؤول عن تنفيذ المهام.
+
+### Base URL
+```
+http://localhost:8404
+```
+
+### Endpoints
+
+#### 1. تنفيذ مهمة (Execute Task)
+```http
+POST /api/task/execute
+Content-Type: multipart/form-data
+X-PAYMENT: <base64_encoded_payment_payload>
+
+{
+  "agentId": "pdf-summarizer",
+  "file": <binary_file>,
+  "options": {
+    "language": "ar",
+    "maxLength": 500
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "taskId": "task_xyz789...",
+  "result": {
+    "summary": "ملخص المستند...",
+    "wordCount": 234,
+    "keyPoints": ["نقطة 1", "نقطة 2"]
+  },
+  "resultCid": "QmXXXX..."
+}
+```
+
+---
+
+#### 2. حالة المهمة (Task Status)
+```http
+GET /api/task/:taskId/status
+```
+
+**Response:**
+```json
+{
+  "taskId": "task_xyz789...",
+  "status": "completed",
+  "progress": 100,
+  "result": {...}
+}
+```
+
+---
+
+## 📱 Solana Actions API (Blinks)
+
+### Base URL
+```
+http://localhost:8405
+```
+
+#### Get Action Metadata
+```http
+GET /api/actions/agent/:agentId
+```
+
+**Response (actions.json format):**
+```json
+{
+  "icon": "https://synapsepay.io/icons/pdf-summarizer.png",
+  "label": "PDF Summarizer",
+  "title": "Summarize PDF Document",
+  "description": "Upload a PDF and get an AI summary",
+  "links": {
+    "actions": [
+      {
+        "label": "Run Agent (0.05 USDC)",
+        "href": "/api/actions/agent/pdf-summarizer/run"
+      }
+    ]
+  }
+}
+```
+
+---
+
+# 🛠️ Developer Guide
+
+## 📁 هيكل المشروع (Project Structure)
+
+```
+Solana-SynapsePay/
+├── apps/
+│   ├── web/                    # Frontend (React + Vite)
+│   ├── x402-facilitator/       # Payment Facilitator Server
+│   ├── resource-server/        # Task Execution Server
+│   └── actions-api/            # Solana Actions (Blinks)
+│
+├── packages/
+│   ├── x402-solana/            # X402 Protocol Implementation
+│   ├── ai-agents/              # AI Agent Definitions
+│   ├── ui-kit/                 # Shared UI Components
+│   └── tsconfig/               # TypeScript Configurations
+│
+├── programs/                   # Anchor Smart Contracts
+│   ├── synapsepay-registry/    # Agent Registry
+│   ├── synapsepay-payments/    # Payment Processing
+│   └── synapsepay-scheduler/   # Subscriptions
+│
+├── tests/                      # Integration Tests
+├── idl/                        # Generated IDL Files
+└── docs/                       # Documentation
+```
+
+---
+
+## ⚙️ إعداد بيئة التطوير (Development Setup)
+
+### المتطلبات (Requirements)
+```bash
+# Required versions
+Node.js >= 18.0.0
+Bun >= 1.0.0
+Rust >= 1.70.0
+Anchor >= 0.29.0
+Solana CLI >= 1.17.0
+```
+
+### التثبيت (Installation)
+```bash
+# 1. Clone repository
+git clone https://github.com/your-org/Solana-SynapsePay.git
+cd Solana-SynapsePay
+
+# 2. Install dependencies
+bun install
+
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Configure your .env file
+nano .env
+
+# 5. Build all packages
+bun run build
+
+# 6. Start development servers
+bun run dev
+```
+
+---
+
+## 🔑 إعداد المحفظة (Wallet Setup)
+
+### للمستخدمين (For Users)
+
+#### 1. تثبيت Phantom Wallet
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. اذهب إلى: https://phantom.app                                   │
+│  2. حمّل الإضافة لمتصفحك (Chrome/Firefox/Edge)                      │
+│  3. أنشئ محفظة جديدة واحفظ الـ 12 كلمات سرية                        │
+│  4. غيّر الشبكة إلى Devnet من الإعدادات                             │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### 2. الحصول على SOL للاختبار
+```bash
+# من Terminal
+solana airdrop 2 YOUR_WALLET_ADDRESS --url devnet
+
+# أو من Faucet
+# https://faucet.solana.com
+```
+
+#### 3. الحصول على USDC للاختبار
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Devnet USDC Faucet:                                                │
+│  https://spl-token-faucet.com/?token-name=USDC-Dev                  │
+│                                                                     │
+│  أو استخدم SPL Token CLI:                                          │
+│  spl-token create-account 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### للمطورين (For Developers)
+
+#### إنشاء Keypair جديد
+```bash
+# Generate new keypair
+solana-keygen new --outfile ~/.config/solana/devnet.json
+
+# Set as default
+solana config set --keypair ~/.config/solana/devnet.json
+solana config set --url devnet
+
+# Get airdrop
+solana airdrop 5
+```
+
+#### استخراج Private Key لـ .env
+```bash
+# Show keypair as base58
+cat ~/.config/solana/devnet.json | python3 -c "
+import json, sys
+import base58
+data = json.load(sys.stdin)
+print(base58.b58encode(bytes(data)).decode())
+"
+```
+
+---
+
+# 🏗️ Architecture Overview
+
+## نظرة عامة على النظام
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SynapsePay Architecture                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
+│  │   Frontend   │    │ Facilitator  │    │  Resource    │                   │
+│  │  (React)     │───▶│   Server     │───▶│   Server     │                   │
+│  │  Port: 5174  │    │  Port: 8403  │    │  Port: 8404  │                   │
+│  └──────────────┘    └──────────────┘    └──────────────┘                   │
+│         │                   │                   │                            │
+│         │                   │                   │                            │
+│         ▼                   ▼                   ▼                            │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │                        Solana Blockchain                            │    │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │    │
+│  │  │  Registry   │  │  Payments   │  │  Scheduler  │                 │    │
+│  │  │  Program    │  │  Program    │  │  Program    │                 │    │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘                 │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## X402 Payment Flow
+
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                         X402 Payment Flow                                  │
+├────────────────────────────────────────────────────────────────────────────┤
+│                                                                            │
+│  User                 Frontend              Facilitator         Solana     │
+│   │                      │                      │                  │       │
+│   │  1. Click Pay        │                      │                  │       │
+│   │─────────────────────▶│                      │                  │       │
+│   │                      │  2. Create Invoice   │                  │       │
+│   │                      │─────────────────────▶│                  │       │
+│   │                      │                      │  3. createInvoice│       │
+│   │                      │                      │─────────────────▶│       │
+│   │                      │  4. Return Invoice   │                  │       │
+│   │                      │◀─────────────────────│                  │       │
+│   │  5. Sign Permit      │                      │                  │       │
+│   │◀─────────────────────│                      │                  │       │
+│   │  6. User Signs       │                      │                  │       │
+│   │─────────────────────▶│                      │                  │       │
+│   │                      │  7. Settle Payment   │                  │       │
+│   │                      │─────────────────────▶│                  │       │
+│   │                      │                      │  8. Transfer USDC│       │
+│   │                      │                      │─────────────────▶│       │
+│   │                      │  9. TX Confirmed     │                  │       │
+│   │                      │◀─────────────────────│                  │       │
+│   │  10. Success!        │                      │                  │       │
+│   │◀─────────────────────│                      │                  │       │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+# 📜 Smart Contracts Reference
+
+## Program IDs (Devnet)
+
+| Program | Address |
+|---------|---------|
+| **Registry** | `SYNRegistry111111111111111111111111111111111` |
+| **Payments** | `SYNPayments111111111111111111111111111111111` |
+| **Scheduler** | `SYNScheduler11111111111111111111111111111111` |
+
+---
+
+## Registry Program
+
+### Instructions
+
+| Instruction | Description | Parameters |
+|-------------|-------------|------------|
+| `register_agent` | تسجيل وكيل جديد | `agent_id`, `metadata_cid`, `price`, `category` |
+| `update_agent` | تحديث بيانات الوكيل | `new_metadata_cid`, `new_price` |
+| `deactivate_agent` | إلغاء تفعيل الوكيل | - |
+| `reactivate_agent` | إعادة تفعيل الوكيل | - |
+| `transfer_ownership` | نقل ملكية الوكيل | `new_owner` |
+
+### Agent Categories
+```rust
+pub enum AgentCategory {
+    AI,          // وكلاء ذكاء اصطناعي
+    IoT,         // أجهزة إنترنت الأشياء
+    Automation,  // أتمتة المهام
+    Analytics,   // تحليل البيانات
+    Other,       // أخرى
+}
+```
+
+---
+
+## Payments Program
+
+### Instructions
+
+| Instruction | Description |
+|-------------|-------------|
+| `initialize_platform` | تهيئة المنصة |
+| `create_invoice` | إنشاء فاتورة |
+| `settle_payment` | تسوية الدفع |
+| `verify_payment` | التحقق من الدفع |
+| `complete_task` | إكمال المهمة |
+| `mint_receipt` | سك إيصال |
+| `claim_payment` | المطالبة بالدفع |
+| `refund_payment` | استرداد المبلغ |
+
+### Payment States
+```
+InvoiceCreated → Pending → Executing → Completed → ReceiptMinted → Claimed
+                    │                      │
+                    ▼                      ▼
+                 Expired               Refunded
+```
+
+---
+
+## Scheduler Program
+
+### Instructions
+
+| Instruction | Description |
+|-------------|-------------|
+| `initialize_scheduler` | تهيئة المجدول |
+| `create_subscription` | إنشاء اشتراك |
+| `update_subscription` | تحديث الاشتراك |
+| `pause_subscription` | إيقاف مؤقت |
+| `resume_subscription` | استئناف |
+| `cancel_subscription` | إلغاء الاشتراك |
+| `fund_subscription` | تمويل الاشتراك |
+| `trigger_scheduled_task` | تنفيذ المهمة |
+
+### Schedule Cadence
+```rust
+pub enum ScheduleCadence {
+    Hourly,              // كل ساعة
+    Daily,               // يومياً
+    Weekly,              // أسبوعياً
+    Monthly,             // شهرياً
+    Custom { seconds },  // مخصص
+}
+```
+
+---
+
+# 🔧 Environment Variables Reference
+
+## ملف .env الكامل
+
+```bash
+# ═══════════════════════════════════════════════════════════════
+# ⛓️ SOLANA CONFIGURATION
+# ═══════════════════════════════════════════════════════════════
+SOLANA_NETWORK=devnet
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_WS_URL=wss://api.devnet.solana.com
+
+# Program IDs
+REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
+PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
+SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+
+# USDC Token Mint (Devnet)
+USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+
+# ═══════════════════════════════════════════════════════════════
+# 💳 X402 FACILITATOR
+# ═══════════════════════════════════════════════════════════════
+FACILITATOR_PORT=8403
+FACILITATOR_PRIVATE_KEY=your_base58_private_key
+FACILITATOR_FEE_BPS=500          # 5% fee
+
+# ═══════════════════════════════════════════════════════════════
+# 🤖 RESOURCE SERVER
+# ═══════════════════════════════════════════════════════════════
+RESOURCE_SERVER_PORT=8404
+TASK_TIMEOUT_SECONDS=60
+MAX_CONCURRENT_TASKS=10
+
+# ═══════════════════════════════════════════════════════════════
+# 🧠 AI SERVICES
+# ═══════════════════════════════════════════════════════════════
+OPENAI_API_KEY=sk-your-openai-key
+OPENAI_MODEL=gpt-4-turbo-preview
+
+# ═══════════════════════════════════════════════════════════════
+# 🎨 FRONTEND (VITE_* prefix)
+# ═══════════════════════════════════════════════════════════════
+VITE_APP_NAME=SynapsePay
+VITE_SOLANA_NETWORK=devnet
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_FACILITATOR_URL=http://localhost:8403
+VITE_RESOURCE_SERVER_URL=http://localhost:8404
+```
+
+---
+
+# 🧪 Testing Guide
+
+## تشغيل الاختبارات (Running Tests)
+
+### اختبارات العقود الذكية
+```bash
+# Build contracts
+anchor build
+
+# Run tests
+anchor test
+
+# Test specific program
+anchor test --program-name synapsepay-payments
+```
+
+### اختبارات التكامل
+```bash
+# Run all integration tests
+bun run test
+
+# Run with coverage
+bun run test:coverage
+```
+
+---
+
+## Demo Mode vs Real Mode
+
+| الوضع | الوصف | الاستخدام |
+|-------|-------|----------|
+| **Demo Mode** | محاكاة المدفوعات بدون تحويل حقيقي | التطوير والعرض |
+| **Real Mode** | تحويل USDC حقيقي على Solana | الإنتاج |
+
+### تفعيل Demo Mode
+```bash
+# Remove FACILITATOR_PRIVATE_KEY from .env
+# Or leave it empty
+FACILITATOR_PRIVATE_KEY=
+```
+
+### تفعيل Real Mode
+```bash
+# Add your private key
+FACILITATOR_PRIVATE_KEY=your_base58_private_key
+```
+
+---
+
+# 🔐 Security Best Practices
+
+## للمستخدمين
+
+1. **احمِ الـ Seed Phrase**
+   - لا تشاركها مع أي شخص
+   - احفظها في مكان آمن offline
+
+2. **تحقق من العناوين**
+   - تأكد من صحة عنوان المستلم قبل الدفع
+
+3. **ابدأ بمبالغ صغيرة**
+   - اختبر بـ 0.01 USDC أولاً
+
+---
+
+## للمطورين
+
+1. **Never commit `.env`**
+```bash
+# .gitignore
+.env
+*.pem
+*-keypair.json
+```
+
+2. **Use environment variables**
+```typescript
+const privateKey = process.env.FACILITATOR_PRIVATE_KEY;
+if (!privateKey) {
+  throw new Error('Missing FACILITATOR_PRIVATE_KEY');
+}
+```
+
+3. **Validate all inputs**
+```typescript
+if (amount <= 0) {
+  throw new Error('Invalid amount');
+}
+```
+
+---
+
+# ❓ FAQ - الأسئلة الشائعة
+
+## أسئلة عامة
+
+**س: ما هو X402؟**
+> X402 هو بروتوكول للمدفوعات الصغيرة يسمح بالدفع بدون رسوم غاز للمستخدم.
+
+**س: هل المدفوعات آمنة؟**
+> نعم، جميع المدفوعات موقعة بالـ Ed25519 ومحفوظة في Escrow على السلسلة.
+
+**س: ما هي العمولة؟**
+> 5% من قيمة المهمة تذهب للمنصة، 95% للوكيل.
+
+---
+
+## أسئلة تقنية
+
+**س: لماذا لا تعمل المحفظة؟**
+> تأكد من:
+> - أنك على شبكة Devnet
+> - لديك SOL كافي (للغاز)
+> - لديك USDC كافي (للدفع)
+
+**س: كيف أسجل وكيل جديد؟**
+```typescript
+await program.methods
+  .registerAgent("my-agent", "QmCID...", 1_000_000, { ai: {} })
+  .accounts({ owner, agent })
+  .rpc();
+```
+
+---
+
+# 📞 الدعم والتواصل
+
+## روابط مهمة
+
+| الرابط | الوصف |
+|--------|-------|
+| 🌐 Website | https://synapsepay.io |
+| 📚 Docs | https://docs.synapsepay.io |
+| 🐦 Twitter | @SynapsePaySol |
+| 💬 Discord | discord.gg/synapsepay |
+| 🐙 GitHub | github.com/synapsepay |
+
+---
+
+# 📄 الملحق: أكواد الأخطاء
+
+## Payment Errors
+
+| Code | Error | الحل |
+|------|-------|------|
+| `InvalidAmount` | المبلغ غير صالح | تأكد المبلغ > 0 |
+| `InvoiceExpired` | الفاتورة منتهية | أنشئ فاتورة جديدة |
+| `InvalidSignature` | توقيع غير صالح | وقّع مرة أخرى |
+| `InsufficientBalance` | رصيد غير كافي | أضف USDC |
+
+## Scheduler Errors
+
+| Code | Error | الحل |
+|------|-------|------|
+| `NotActive` | الاشتراك غير نشط | فعّل الاشتراك |
+| `IsPaused` | الاشتراك متوقف | استأنف الاشتراك |
+| `NotTimeYet` | لم يحن الموعد | انتظر الموعد المحدد |
+| `MaxRunsReached` | الحد الأقصى | أنشئ اشتراك جديد |
+
+---
+
+**📅 آخر تحديث:** ديسمبر 2024
+
+**🔖 الإصدار:** 1.0.0

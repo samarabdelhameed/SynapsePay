@@ -110,7 +110,7 @@ warning: unexpected `cfg` condition value: `anchor-debug`
    = note: this warning originates in the derive macro `Accounts` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 warning: `synapsepay-registry` (lib) generated 15 warnings (5 duplicates)
-    Finished `release` profile [optimized] target(s) in 0.34s
+    Finished `release` profile [optimized] target(s) in 6.34s
 error: failed to run `rustc` to learn about target-specific information
 
 Caused by:

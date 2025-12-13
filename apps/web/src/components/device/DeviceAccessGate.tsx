@@ -9,7 +9,7 @@ interface DeviceAccessGateProps {
     onInitiatePayment: () => void;
     onAccessGranted: () => void;
     isProcessing?: boolean;
-    walletConnected?: boolean;
+    connected?: boolean;
 }
 
 export default function DeviceAccessGate({
@@ -19,7 +19,7 @@ export default function DeviceAccessGate({
     onInitiatePayment,
     onAccessGranted,
     isProcessing = false,
-    walletConnected = false,
+    connected = false,
 }: DeviceAccessGateProps) {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
@@ -82,15 +82,15 @@ export default function DeviceAccessGate({
                         onInitiatePayment();
                         setIsPaymentModalOpen(true);
                     }}
-                    disabled={!walletConnected || isProcessing}
-                    className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-3 transition-all ${walletConnected
+                    disabled={!connected || isProcessing}
+                    className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-3 transition-all ${connected
                         ? 'bg-gradient-to-r from-synapse-purple to-synapse-orange hover:shadow-glow-purple cursor-pointer'
                         : 'bg-dark-border cursor-not-allowed opacity-50'
                         }`}
-                    whileHover={walletConnected ? { scale: 1.02 } : {}}
-                    whileTap={walletConnected ? { scale: 0.98 } : {}}
+                    whileHover={connected ? { scale: 1.02 } : {}}
+                    whileTap={connected ? { scale: 0.98 } : {}}
                 >
-                    {!walletConnected ? (
+                    {!connected ? (
                         'Connect Wallet to Unlock'
                     ) : (
                         <>
@@ -103,7 +103,7 @@ export default function DeviceAccessGate({
                     )}
                 </motion.button>
 
-                {!walletConnected && (
+                {!connected && (
                     <p className="text-center text-gray-400 text-sm mt-4">
                         Please connect your Phantom wallet to proceed
                     </p>

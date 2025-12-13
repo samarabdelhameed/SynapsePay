@@ -1,14 +1,14 @@
 Test Name,Result,Details,Duration
-Real Payment Processing,PASS,معالجة دفع بقيمة 1 USDC بنجاح,0.514s
+Real Payment Processing,PASS,معالجة دفع بقيمة 1 USDC بنجاح,0.547s
 Payment Settlement,PASS,تسوية الدفع تمت بنجاح,0.300s
 Receipt Generation,PASS,إصدار إيصال NFT بنجاح,0.100s
-Agent Registration,PASS,تسجيل وكيل ذكي بنجاح,0.211s
-Agent Task Execution,PASS,تنفيذ مهمة الوكيل الذكي بنجاح,1.010s
+Agent Registration,PASS,تسجيل وكيل ذكي بنجاح,0.229s
+Agent Task Execution,PASS,تنفيذ مهمة الوكيل الذكي بنجاح,1.046s
 Agent Status Update,PASS,تحديث حالة الوكيل بنجاح,0.050s
-Subscription Creation,PASS,إنشاء اشتراك يومي بنجاح,0.314s
-Scheduled Task Run 1,PASS,تنفيذ المهمة المجدولة رقم 1,0.213s
-Scheduled Task Run 2,PASS,تنفيذ المهمة المجدولة رقم 2,0.214s
-Scheduled Task Run 3,PASS,تنفيذ المهمة المجدولة رقم 3,0.210s
+Subscription Creation,PASS,إنشاء اشتراك يومي بنجاح,0.329s
+Scheduled Task Run 1,PASS,تنفيذ المهمة المجدولة رقم 1,0.271s
+Scheduled Task Run 2,PASS,تنفيذ المهمة المجدولة رقم 2,0.263s
+Scheduled Task Run 3,PASS,تنفيذ المهمة المجدولة رقم 3,0.219s
 Balance Management,PASS,إدارة رصيد الاشتراك بنجاح,0.050s
 Subscription Pause/Resume,PASS,إيقاف واستئناف الاشتراك بنجاح,0.100s
 UI Homepage Load,FAIL,فشل في تحميل الصفحة الرئيسية (كود: 000000),0.500s
@@ -16,10 +16,10 @@ Agent List Display,PASS,عرض قائمة الوكلاء الذكيين بنجا
 Payment History Display,PASS,عرض تاريخ المدفوعات بنجاح,0.200s
 Subscription Status Display,PASS,عرض حالة الاشتراكات بنجاح,0.200s
 UI Interaction,PASS,التفاعل مع عناصر الواجهة بنجاح,0.100s
-System Response Time,PASS,زمن استجابة النظام مقبول,0.543s
-Transaction Throughput,PASS,معدل المعاملات: 16.82 TPS,0.594s
-Memory Usage,PASS,استهلاك الذاكرة: 1.67MB,0.010s
-System Stability,PASS,النظام مستقر خلال فترة التشغيل,2.012s
+System Response Time,PASS,زمن استجابة النظام مقبول,0.660s
+Transaction Throughput,PASS,معدل المعاملات: 13.51 TPS,0.740s
+Memory Usage,PASS,استهلاك الذاكرة: 1.62MB,0.010s
+System Stability,PASS,النظام مستقر خلال فترة التشغيل,2.022s
 E2E: Agent Registration,PASS,تسجيل وكيل في السيناريو الشامل,0.200s
 E2E: Subscription Creation,PASS,إنشاء اشتراك في السيناريو الشامل,0.300s
 E2E: Task Execution 1,PASS,تنفيذ مهمة 1 في السيناريو الشامل,0.400s
@@ -27,4 +27,4 @@ E2E: Task Execution 2,PASS,تنفيذ مهمة 2 في السيناريو الش�
 E2E: Task Execution 3,PASS,تنفيذ مهمة 3 في السيناريو الشامل,0.400s
 E2E: Payment Processing,PASS,معالجة المدفوعات في السيناريو الشامل,0.500s
 E2E: UI Update,PASS,تحديث الواجهة في السيناريو الشامل,0.200s
-End-to-End Integration,PASS,السيناريو الشامل مكتمل بنجاح,2.461s
+End-to-End Integration,PASS,السيناريو الشامل مكتمل بنجاح,2.513s

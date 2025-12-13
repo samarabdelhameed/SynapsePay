@@ -45,8 +45,8 @@ pub fn handler(ctx: Context<VerifyPayment>) -> Result<()> {
     // The signature verification is done via Ed25519Program instruction
     // which should be passed before this instruction in the transaction
     
-    // Calculate total amount (net + platform fee)
-    let total_amount = payment.amount + payment.platform_fee;
+    // Calculate total amount (net + platform fee) - used for validation
+    let _total_amount = payment.amount + payment.platform_fee;
 
     // Transfer USDC from payer to escrow
     let cpi_accounts_escrow = Transfer {

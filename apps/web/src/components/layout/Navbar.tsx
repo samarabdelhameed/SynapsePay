@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 
 // Icons
 const SearchIcon = () => (
@@ -22,18 +24,25 @@ const WalletIcon = () => (
 );
 
 export default function Navbar() {
-    const [isWalletConnected, setIsWalletConnected] = useState(false);
+    // Use real wallet adapter
+    const { connected, publicKey, disconnect, wallet } = useWallet();
+    const { setVisible } = useWalletModal();
+
     const [walletDropdownOpen, setWalletDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
     const connectWallet = () => {
-        // TODO: Implement actual wallet connection
-        setIsWalletConnected(true);
+        setVisible(true);
     };
 
     const disconnectWallet = () => {
-        setIsWalletConnected(false);
+        disconnect();
         setWalletDropdownOpen(false);
+    };
+
+    // Format wallet address for display
+    const formatAddress = (address: string) => {
+        return `${address.slice(0, 4)}...${address.slice(-4)}`;
     };
 
     return (
@@ -108,7 +117,7 @@ export default function Navbar() {
 
                     {/* Wallet Button */}
                     <div className="relative">
-                        {isWalletConnected ? (
+                        {connected && publicKey ? (
                             <>
                                 <motion.button
                                     onClick={() => setWalletDropdownOpen(!walletDropdownOpen)}
@@ -120,8 +129,8 @@ export default function Navbar() {
                                         <span className="text-sm font-bold">👛</span>
                                     </div>
                                     <div className="text-left hidden sm:block">
-                                        <p className="text-xs text-gray-400">Balance</p>
-                                        <p className="text-sm font-semibold text-white">24.50 USDC</p>
+                                        <p className="text-xs text-gray-400">{wallet?.adapter.name || 'Wallet'}</p>
+                                        <p className="text-sm font-semibold text-white font-mono">{formatAddress(publicKey.toBase58())}</p>
                                     </div>
                                     <svg className={`w-4 h-4 text-gray-400 transition-transform ${walletDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -138,10 +147,12 @@ export default function Navbar() {
                                             className="absolute top-full right-0 mt-2 w-64 glass-card p-4 space-y-3"
                                         >
                                             <div className="flex items-center gap-3 pb-3 border-b border-dark-border">
-                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-synapse-purple to-synapse-green" />
+                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-synapse-purple to-synapse-green flex items-center justify-center">
+                                                    {wallet?.adapter.icon ? <img src={wallet.adapter.icon} alt="wallet" className="w-6 h-6" /> : '👛'}
+                                                </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-white">9WzD...QWWM</p>
-                                                    <p className="text-xs text-gray-400">Phantom Wallet</p>
+                                                    <p className="text-sm font-medium text-white font-mono">{formatAddress(publicKey.toBase58())}</p>
+                                                    <p className="text-xs text-gray-400">{wallet?.adapter.name || 'Connected'}</p>
                                                 </div>
                                             </div>
                                             <Link to="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-dark-card-hover transition-colors">

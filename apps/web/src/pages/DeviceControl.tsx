@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link } from 'react-router-dom';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import DeviceAccessGate from '../components/device/DeviceAccessGate';
 import DeviceStatusPanel from '../components/device/DeviceStatusPanel';
 import DirectionalControls from '../components/device/DirectionalControls';
@@ -60,8 +62,11 @@ export default function DeviceControl() {
     const { deviceId } = useParams<{ deviceId: string }>();
     const device = DEMO_DEVICES[deviceId || 'ugv-rover-01'] || DEMO_DEVICES['ugv-rover-01'];
 
+    // Use real wallet adapter
+    const { connected, publicKey } = useWallet();
+    const { setVisible } = useWalletModal();
+
     // State
-    const [walletConnected, setWalletConnected] = useState(false);
     const [accessGranted, setAccessGranted] = useState(false);
     const [sessionTimeRemaining, setSessionTimeRemaining] = useState(0);
     const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -80,13 +85,9 @@ export default function DeviceControl() {
         setLogs(prev => [...prev, createLogEntry(message, type)]);
     }, []);
 
-    // Simulate wallet connection
+    // Open wallet modal for connection
     const handleConnectWallet = () => {
-        addLog('Connecting to Phantom wallet...', 'info');
-        setTimeout(() => {
-            setWalletConnected(true);
-            addLog('Wallet connected: 9WzD...XAWWM', 'success');
-        }, 1000);
+        setVisible(true);
     };
 
     // Handle payment initiation
@@ -196,8 +197,8 @@ export default function DeviceControl() {
                     </div>
                     <div className="flex items-center gap-2 text-xs">
                         <span className="text-gray-500">NET</span>
-                        <span className={walletConnected ? 'text-synapse-green' : 'text-gray-400'}>
-                            {walletConnected ? 'OK' : '--'}
+                        <span className={connected ? 'text-synapse-green' : 'text-gray-400'}>
+                            {connected ? 'OK' : '--'}
                         </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
@@ -206,7 +207,7 @@ export default function DeviceControl() {
                     </div>
 
                     {/* Wallet Button */}
-                    {!walletConnected ? (
+                    {!connected ? (
                         <motion.button
                             onClick={handleConnectWallet}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-synapse-purple hover:bg-synapse-purple-light transition-colors"
@@ -228,7 +229,7 @@ export default function DeviceControl() {
             </div>
 
             <AnimatePresence mode="wait">
-                {!walletConnected ? (
+                {!connected ? (
                     /* Connect Wallet Screen */
                     <motion.div
                         key="connect"
@@ -280,7 +281,7 @@ export default function DeviceControl() {
                             durationMinutes={device.durationMinutes}
                             onInitiatePayment={handleInitiatePayment}
                             onAccessGranted={handleAccessGranted}
-                            walletConnected={walletConnected}
+                            connected={connected}
                         />
                     </motion.div>
                 ) : (
