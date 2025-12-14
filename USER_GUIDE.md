@@ -7,7 +7,7 @@
 
 ## 🌐 الموقع الحي (Live Demo)
 ```
-https://synapsepay.vercel.app
+https://synapsepay-demo.surge.sh
 ```
 
 ## تشغيل المشروع محلياً
@@ -1546,4 +1546,4 @@ await program.methods
 
 **🔖 الإصدار:** 1.1.0
 
-**🌐 Live Demo:** https://synapsepay.vercel.app
+**🌐 Live Demo:** https://synapsepay-demo.surge.sh
