@@ -163,6 +163,70 @@ Scheduler Contract (277 KB):
 
 ---
 
+## 🔥 Why X402 + Solana?
+
+### The Problem We Solve
+
+Traditional AI services charge **monthly subscriptions** for features you rarely use. Users pay $20-100/month even if they only need 5 tasks. This is **economically wasteful** and creates barriers for casual users.
+
+### Our Solution: Pay-Per-Action with X402
+
+SynapsePay uses the **X402 Payment Protocol** to enable true micropayments on Solana:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Traditional Model          │  SynapsePay Model                     │
+├─────────────────────────────┼───────────────────────────────────────┤
+│  $20/month subscription     │  $0.05 per task                       │
+│  Pay for unused features    │  Pay only for what you use            │
+│  Gas fees on every tx       │  GASLESS for users                    │
+│  Slow settlement (days)     │  ~400ms finality                      │
+│  High minimum payments      │  Micropayments ($0.01+)               │
+└─────────────────────────────┴───────────────────────────────────────┘
+```
+
+### How X402 Works in SynapsePay
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Wallet
+    participant App
+    participant Facilitator as X402 Facilitator
+    participant Solana
+
+    User->>App: Click "Run AI Agent"
+    App->>Wallet: Request Signature (Gasless!)
+    Wallet-->>App: Signed Payment Intent
+    App->>Facilitator: X-PAYMENT Header
+    Facilitator->>Facilitator: Verify Signature
+    Facilitator->>Solana: Submit USDC Transfer
+    Solana-->>Facilitator: TX Confirmed (~400ms)
+    Facilitator-->>App: Settlement Proof
+    App->>App: Execute AI Task
+    App-->>User: Result + Solana Explorer Link
+```
+
+### Key Technical Benefits
+
+| Feature | How It Works | Why It Matters |
+|---------|--------------|----------------|
+| **Gasless Transactions** | Facilitator pays gas fees | Users only pay for the service ($0.05 USDC), not gas |
+| **Ed25519 Signatures** | Standard Solana wallet signing | No new tools needed, works with Phantom/Solflare |
+| **Instant Settlement** | Solana's ~400ms finality | Payment confirmed before task starts |
+| **USDC Micropayments** | Pay as little as $0.01 | Economically viable for single tasks |
+| **Verifiable Receipts** | On-chain proof of payment | Full transparency, auditable |
+
+### Why Solana is Essential
+
+1. **Speed**: ~400ms finality makes real-time payments possible
+2. **Cost**: $0.00025 tx fees enable true micropayments
+3. **Scalability**: 65k TPS supports high-volume automation
+4. **USDC Native**: Deep liquidity for stablecoin payments
+5. **Actions/Blinks**: Embedded payments in any interface
+
+---
+
 ## 🚀 Core Features
 
 ### 1. 🤖 AI Agents (Multi-Tool Execution)

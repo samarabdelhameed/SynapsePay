@@ -199,7 +199,7 @@ describe('Chain-of-Thought Processing Properties', () => {
                 fc.record({
                     task: fc.string({ minLength: 15, maxLength: 100 }),
                     context: fc.object(),
-                    maxSteps: fc.integer({ min: 3, max: 7 })
+                    maxSteps: fc.integer({ min: 2, max: 7 })
                 }),
                 async ({ task, context, maxSteps }) => {
                     const result = await orchestrator.executeChainOfThought(task, context, maxSteps);
@@ -302,7 +302,7 @@ describe('Chain-of-Thought Processing Properties', () => {
                 fc.record({
                     task: fc.string({ minLength: 10, maxLength: 100 }),
                     context: fc.object(),
-                    maxSteps: fc.integer({ min: 3, max: 8 })
+                    maxSteps: fc.integer({ min: 2, max: 8 })
                 }),
                 async ({ task, context, maxSteps }) => {
                     const result = await orchestrator.executeChainOfThought(task, context, maxSteps);

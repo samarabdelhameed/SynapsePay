@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import OnboardingGuide, { QuickStartBanner, HelpButton } from '../components/common/OnboardingGuide';
 
 // Stats data
 const stats = [
@@ -61,6 +63,8 @@ const itemVariants = {
 };
 
 export default function Home() {
+    const [showGuide, setShowGuide] = useState(false);
+
     return (
         <motion.div
             initial="hidden"
@@ -68,6 +72,14 @@ export default function Home() {
             variants={containerVariants}
             className="space-y-8"
         >
+            {/* Onboarding Guide Modal */}
+            <OnboardingGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
+
+            {/* Help Button (floating) */}
+            <HelpButton onClick={() => setShowGuide(true)} />
+
+            {/* Quick Start Banner for new users */}
+            <QuickStartBanner onStartGuide={() => setShowGuide(true)} />
             {/* Hero Section */}
             <motion.section variants={itemVariants} className="relative overflow-hidden rounded-3xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-synapse-purple/30 via-transparent to-synapse-orange/30" />

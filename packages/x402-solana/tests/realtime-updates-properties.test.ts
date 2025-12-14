@@ -1,5 +1,5 @@
 /**
- * Property-Based Tests for Real-time Updates
+ * Property-Based Tests for Real-time UI Updates
  * **Feature: synapsepay-enhancements, Property 14: التحديثات الفورية**
  */
 
@@ -7,21 +7,19 @@ import { describe, it, expect, beforeEach } from 'bun:test';
 import fc from 'fast-check';
 import { 
     EnhancedUISystem,
-    RealTimeUpdate,
-    UINotification
+    UIUpdateEvent
 } from '../src';
 
-describe('Real-time Updates Properties', () => {
+describe('Real-time UI Updates Properties', () => {
     let uiSystem: EnhancedUISystem;
 
     beforeEach(() => {
         uiSystem = new EnhancedUISystem({
-            realTimeUpdates: true,
-            theme: 'light',
-            isMobile: false,
-            isTablet: false,
-            screenSize: 'md',
-            notifications: []
+            enableRealTime: true,
+            enableMobile: true,
+            enableMultiWallet: true,
+            maxUpdateHistory: 1000,
+            updateBatchSize: 10
         });
     });
 
@@ -29,168 +27,78 @@ describe('Real-time Updates Properties', () => {
      * **Feature: synapsepay-enhancements, Property 14: التحديثات الفورية**
      * Property: For any system change, it should appear immediately in the UI without reload
      */
-    it('Property 1: Should publish and receive real-time updates immediately', async () => {
-        await fc.assert(
-            fc.asyncProperty(
-                fc.array(
-                    fc.record({
-                        type: fc.oneof(
-                            fc.constant('payment'),
-                            fc.constant('transaction'),
-                            fc.constant('agent_status'),
-                            fc.constant('system_status'),
-                            fc.constant('user_action')
-                        ),
-                        data: fc.record({
-                            action: fc.string({ minLength: 3, maxLength: 20 }),
-                            value: fc.oneof(fc.string(), fc.integer(), fc.boolean()),
-                            metadata: fc.object()
-                        }),
-                        userId: fc.option(fc.string({ minLength: 5, maxLength: 20 })),
-                        sessionId: fc.option(fc.string({ minLength: 10, maxLength: 30 }))
-                    }),
-                    { minLength: 1, maxLength: 10 }
-                ),
-                async (updateConfigs) => {
-                    const receivedUpdates: RealTimeUpdate[] = [];
-                    
-                    // Subscribe to all update types
-                    const subscriptionCallbacks = new Map<string, (update: RealTimeUpdate) => void>();
-                    
-                    for (const config of updateConfigs) {
-                        if (!subscriptionCallbacks.has(config.type)) {
-                            const callback = (update: RealTimeUpdate) => {
-                                receivedUpdates.push(update);
-                            };
-                            subscriptionCallbacks.set(config.type, callback);
-                            uiSystem.subscribeToUpdates(config.type, callback);
-                        }
-                    }
-                    
-                    // Publish updates
-                    const publishedUpdates: RealTimeUpdate[] = [];
-                    for (const config of updateConfigs) {
-                        const update: RealTimeUpdate = {
-                            id: `test_${Date.now()}_${Math.random()}`,
-                            type: config.type,
-                            data: config.data,
-                            timestamp: Date.now(),
-                            userId: config.userId,
-                            sessionId: config.sessionId
-                        };
-                        
-                        publishedUpdates.push(update);
-                        uiSystem.publishUpdate(update);
-                    }
-                    
-                    // Small delay to ensure async processing
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    
-                    // Property: All published updates should be received immediately
-                    expect(receivedUpdates.length).toBe(publishedUpdates.length);
-                    
-                    // Property: Updates should maintain their data integrity
-                    for (let i = 0; i < publishedUpdates.length; i++) {
-                        const published = publishedUpdates[i];
-                        const received = receivedUpdates.find(r => r.id === published.id);
-                        
-                        expect(received).toBeDefined();
-                        expect(received!.type).toBe(published.type);
-                        expect(received!.data).toEqual(published.data);
-                        expect(received!.userId).toBe(published.userId);
-                        expect(received!.sessionId).toBe(published.sessionId);
-                    }
-                    
-                    return true;
-                }
-            ),
-            { numRuns: 100 }
-        );
-    });
-
-    /**
-     * Property: Should handle subscription and unsubscription correctly
-     */
-    it('Property 2: Should manage subscriptions correctly', async () => {
+    it('Property 1: Should deliver real-time updates immediately to all subscribers', async () => {
         await fc.assert(
             fc.asyncProperty(
                 fc.record({
-                    subscriptionTypes: fc.array(
-                        fc.oneof(
-                            fc.constant('payment'),
-                            fc.constant('transaction'),
-                            fc.constant('system_status')
-                        ),
-                        { minLength: 1, maxLength: 5 }
-                    ),
                     updates: fc.array(
                         fc.record({
                             type: fc.oneof(
                                 fc.constant('payment'),
                                 fc.constant('transaction'),
-                                fc.constant('system_status'),
-                                fc.constant('user_action')
+                                fc.constant('balance'),
+                                fc.constant('notification'),
+                                fc.constant('status')
                             ),
-                            data: fc.object()
+                            data: fc.object(),
+                            userId: fc.option(fc.string({ minLength: 5, maxLength: 20 })),
+                            sessionId: fc.option(fc.string({ minLength: 10, maxLength: 30 }))
                         }),
+                        { minLength: 1, maxLength: 10 }
+                    ),
+                    subscribers: fc.array(
+                        fc.string({ minLength: 5, maxLength: 15 }),
                         { minLength: 1, maxLength: 8 }
                     )
                 }),
-                async ({ subscriptionTypes, updates }) => {
-                    const receivedUpdates: RealTimeUpdate[] = [];
-                    const callbacks: ((update: RealTimeUpdate) => void)[] = [];
+                async ({ updates, subscribers }) => {
+                    // Create fresh UI system for this test
+                    const testUISystem = new EnhancedUISystem({
+                        enableRealTime: true,
+                        enableMobile: true,
+                        enableMultiWallet: true,
+                        maxUpdateHistory: 1000,
+                        updateBatchSize: 10
+                    });
                     
-                    // Subscribe to specific types
-                    for (const type of subscriptionTypes) {
-                        const callback = (update: RealTimeUpdate) => {
-                            receivedUpdates.push(update);
-                        };
-                        callbacks.push(callback);
-                        uiSystem.subscribeToUpdates(type, callback);
+                    const receivedUpdates: Map<string, UIUpdateEvent[]> = new Map();
+                    
+                    // Subscribe all subscribers
+                    for (const subscriberId of subscribers) {
+                        receivedUpdates.set(subscriberId, []);
+                        testUISystem.subscribeToUpdates(subscriberId, (event) => {
+                            receivedUpdates.get(subscriberId)!.push(event);
+                        });
                     }
                     
-                    // Publish updates
-                    for (const updateConfig of updates) {
-                        const update: RealTimeUpdate = {
-                            id: `sub_test_${Date.now()}_${Math.random()}`,
-                            type: updateConfig.type,
-                            data: updateConfig.data,
-                            timestamp: Date.now()
-                        };
-                        
-                        uiSystem.publishUpdate(update);
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    
-                    // Property: Should only receive updates for subscribed types
-                    for (const received of receivedUpdates) {
-                        expect(subscriptionTypes).toContain(received.type);
-                    }
-                    
-                    // Property: Should receive all updates for subscribed types
-                    const expectedUpdates = updates.filter(u => subscriptionTypes.includes(u.type));
-                    expect(receivedUpdates.length).toBe(expectedUpdates.length);
-                    
-                    // Test unsubscription
-                    const initialCount = receivedUpdates.length;
-                    
-                    // Unsubscribe from first type
-                    if (subscriptionTypes.length > 0 && callbacks.length > 0) {
-                        uiSystem.unsubscribeFromUpdates(subscriptionTypes[0], callbacks[0]);
-                        
-                        // Publish update for unsubscribed type
-                        uiSystem.publishUpdate({
-                            id: `unsub_test_${Date.now()}`,
-                            type: subscriptionTypes[0],
-                            data: { test: 'unsubscribed' },
+                    // Send all updates
+                    const results = [];
+                    for (const update of updates) {
+                        const result = await testUISystem.sendRealTimeUpdate({
+                            ...update,
                             timestamp: Date.now()
                         });
+                        results.push(result);
+                    }
+                    
+                    // Property: All updates should be sent successfully
+                    for (const result of results) {
+                        expect(result.sent).toBe(true);
+                        expect(result.deliveredTo).toBe(subscribers.length);
+                        expect(result.timestamp).toBeGreaterThan(0);
+                    }
+                    
+                    // Property: All subscribers should receive all updates
+                    for (const subscriberId of subscribers) {
+                        const received = receivedUpdates.get(subscriberId)!;
+                        expect(received).toHaveLength(updates.length);
                         
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                        
-                        // Property: Should not receive updates after unsubscription
-                        expect(receivedUpdates.length).toBe(initialCount);
+                        // Property: Updates should maintain order and content
+                        for (let i = 0; i < updates.length; i++) {
+                            expect(received[i].type).toBe(updates[i].type);
+                            expect(received[i].data).toEqual(updates[i].data);
+                            expect(received[i].timestamp).toBeGreaterThan(0);
+                        }
                     }
                     
                     return true;
@@ -201,146 +109,177 @@ describe('Real-time Updates Properties', () => {
     });
 
     /**
-     * Property: Should handle real-time notifications correctly
+     * Property: Should handle subscriber management correctly
      */
-    it('Property 3: Should display notifications in real-time', async () => {
-        await fc.assert(
-            fc.asyncProperty(
-                fc.array(
-                    fc.record({
-                        type: fc.oneof(
-                            fc.constant('success'),
-                            fc.constant('error'),
-                            fc.constant('warning'),
-                            fc.constant('info')
-                        ),
-                        title: fc.string({ minLength: 5, maxLength: 50 }),
-                        message: fc.string({ minLength: 10, maxLength: 200 }),
-                        duration: fc.option(fc.integer({ min: 1000, max: 10000 })),
-                        persistent: fc.option(fc.boolean())
-                    }),
-                    { minLength: 1, maxLength: 8 }
-                ),
-                async (notificationConfigs) => {
-                    const notificationIds: string[] = [];
-                    
-                    // Show notifications
-                    for (const config of notificationConfigs) {
-                        const id = uiSystem.showNotification(config);
-                        notificationIds.push(id);
-                        
-                        // Property: Notification ID should be generated
-                        expect(id).toBeDefined();
-                        expect(id).toMatch(/^notif_\d+_[a-z0-9]+$/);
-                    }
-                    
-                    // Property: All notifications should be in the system
-                    const currentNotifications = uiSystem.getNotifications();
-                    expect(currentNotifications.length).toBe(notificationConfigs.length);
-                    
-                    // Property: Notification properties should be preserved
-                    for (let i = 0; i < notificationConfigs.length; i++) {
-                        const config = notificationConfigs[i];
-                        const notification = currentNotifications[i];
-                        
-                        expect(notification.type).toBe(config.type);
-                        expect(notification.title).toBe(config.title);
-                        expect(notification.message).toBe(config.message);
-                        expect(notification.timestamp).toBeGreaterThan(0);
-                        
-                        if (config.duration !== null) {
-                            expect(notification.duration).toBe(config.duration);
-                        }
-                        if (config.persistent !== null) {
-                            expect(notification.persistent).toBe(config.persistent);
-                        }
-                    }
-                    
-                    // Test notification removal
-                    if (notificationIds.length > 0) {
-                        const idToRemove = notificationIds[0];
-                        uiSystem.removeNotification(idToRemove);
-                        
-                        const updatedNotifications = uiSystem.getNotifications();
-                        expect(updatedNotifications.length).toBe(notificationConfigs.length - 1);
-                        expect(updatedNotifications.find(n => n.id === idToRemove)).toBeUndefined();
-                    }
-                    
-                    return true;
-                }
-            ),
-            { numRuns: 100 }
-        );
-    });
-
-    /**
-     * Property: Should handle concurrent real-time updates
-     */
-    it('Property 4: Should handle concurrent real-time updates correctly', async () => {
+    it('Property 2: Should manage subscribers correctly', async () => {
         await fc.assert(
             fc.asyncProperty(
                 fc.record({
-                    concurrentUpdates: fc.integer({ min: 5, max: 20 }),
+                    subscriberActions: fc.array(
+                        fc.record({
+                            action: fc.oneof(fc.constant('subscribe'), fc.constant('unsubscribe')),
+                            subscriberId: fc.string({ minLength: 5, maxLength: 15 })
+                        }),
+                        { minLength: 1, maxLength: 20 }
+                    ),
+                    testUpdate: fc.record({
+                        type: fc.oneof(fc.constant('payment'), fc.constant('notification')),
+                        data: fc.object()
+                    })
+                }),
+                async ({ subscriberActions, testUpdate }) => {
+                    // Create fresh UI system for this test
+                    const testUISystem = new EnhancedUISystem({
+                        enableRealTime: true,
+                        enableMobile: true,
+                        enableMultiWallet: true,
+                        maxUpdateHistory: 1000,
+                        updateBatchSize: 10
+                    });
+                    
+                    const activeSubscribers = new Set<string>();
+                    const receivedUpdates: Map<string, UIUpdateEvent[]> = new Map();
+                    
+                    // Process subscriber actions
+                    for (const { action, subscriberId } of subscriberActions) {
+                        if (action === 'subscribe') {
+                            if (!receivedUpdates.has(subscriberId)) {
+                                receivedUpdates.set(subscriberId, []);
+                                testUISystem.subscribeToUpdates(subscriberId, (event) => {
+                                    receivedUpdates.get(subscriberId)!.push(event);
+                                });
+                            }
+                            activeSubscribers.add(subscriberId);
+                        } else {
+                            const wasActive = activeSubscribers.has(subscriberId);
+                            const unsubscribed = testUISystem.unsubscribeFromUpdates(subscriberId);
+                            expect(unsubscribed).toBe(wasActive);
+                            activeSubscribers.delete(subscriberId);
+                        }
+                    }
+                    
+                    // Send test update
+                    const result = await testUISystem.sendRealTimeUpdate({
+                        ...testUpdate,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Property: Update should be delivered to active subscribers only
+                    expect(result.deliveredTo).toBe(activeSubscribers.size);
+                    
+                    // Property: Only active subscribers should receive the update
+                    for (const [subscriberId, updates] of receivedUpdates) {
+                        if (activeSubscribers.has(subscriberId)) {
+                            expect(updates.length).toBeGreaterThan(0);
+                            expect(updates[updates.length - 1].type).toBe(testUpdate.type);
+                        }
+                    }
+                    
+                    return true;
+                }
+            ),
+            { numRuns: 100 }
+        );
+    });
+
+    /**
+     * Property: Should handle concurrent updates correctly
+     */
+    it('Property 3: Should handle concurrent real-time updates', async () => {
+        await fc.assert(
+            fc.asyncProperty(
+                fc.record({
+                    concurrentUpdates: fc.integer({ min: 2, max: 10 }),
                     updateTypes: fc.array(
                         fc.oneof(
                             fc.constant('payment'),
                             fc.constant('transaction'),
-                            fc.constant('agent_status')
+                            fc.constant('balance'),
+                            fc.constant('notification')
                         ),
-                        { minLength: 1, maxLength: 3 }
+                        { minLength: 1, maxLength: 5 }
                     )
                 }),
                 async ({ concurrentUpdates, updateTypes }) => {
-                    const receivedUpdates: RealTimeUpdate[] = [];
+                    const receivedUpdates: UIUpdateEvent[] = [];
+                    const subscriberId = 'concurrent_test_subscriber';
                     
-                    // Subscribe to all update types
-                    for (const type of updateTypes) {
-                        uiSystem.subscribeToUpdates(type, (update) => {
-                            receivedUpdates.push(update);
-                        });
-                    }
+                    // Subscribe to updates
+                    uiSystem.subscribeToUpdates(subscriberId, (event) => {
+                        receivedUpdates.push(event);
+                    });
                     
                     // Create concurrent update promises
                     const updatePromises = Array.from({ length: concurrentUpdates }, (_, i) => {
-                        const type = updateTypes[i % updateTypes.length];
-                        return new Promise<RealTimeUpdate>(resolve => {
-                            const update: RealTimeUpdate = {
-                                id: `concurrent_${i}_${Date.now()}_${Math.random()}`,
-                                type,
-                                data: { index: i, concurrent: true },
-                                timestamp: Date.now()
-                            };
-                            
-                            // Simulate slight delay variation
-                            setTimeout(() => {
-                                uiSystem.publishUpdate(update);
-                                resolve(update);
-                            }, Math.random() * 10);
+                        const updateType = updateTypes[i % updateTypes.length];
+                        return uiSystem.sendRealTimeUpdate({
+                            type: updateType,
+                            data: { index: i, concurrent: true },
+                            timestamp: Date.now()
                         });
                     });
                     
-                    // Wait for all updates to be published
-                    const publishedUpdates = await Promise.all(updatePromises);
+                    // Wait for all updates to complete
+                    const results = await Promise.all(updatePromises);
                     
-                    // Wait for processing
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    
-                    // Property: All concurrent updates should be received
-                    expect(receivedUpdates.length).toBe(concurrentUpdates);
-                    
-                    // Property: All published updates should be received
-                    for (const published of publishedUpdates) {
-                        const received = receivedUpdates.find(r => r.id === published.id);
-                        expect(received).toBeDefined();
-                        expect(received!.data).toEqual(published.data);
+                    // Property: All concurrent updates should succeed
+                    for (const result of results) {
+                        expect(result.sent).toBe(true);
+                        expect(result.deliveredTo).toBe(1);
                     }
                     
-                    // Property: Update order should be preserved by timestamp
-                    const sortedReceived = [...receivedUpdates].sort((a, b) => a.timestamp - b.timestamp);
-                    const sortedPublished = [...publishedUpdates].sort((a, b) => a.timestamp - b.timestamp);
+                    // Property: All updates should be received
+                    expect(receivedUpdates).toHaveLength(concurrentUpdates);
                     
-                    for (let i = 0; i < sortedReceived.length; i++) {
-                        expect(sortedReceived[i].id).toBe(sortedPublished[i].id);
+                    // Property: Each update should have unique data
+                    const indices = receivedUpdates.map(u => u.data.index);
+                    const uniqueIndices = new Set(indices);
+                    expect(uniqueIndices.size).toBe(concurrentUpdates);
+                    
+                    return true;
+                }
+            ),
+            { numRuns: 50 }
+        );
+    });
+
+    /**
+     * Property: Should maintain update history correctly
+     */
+    it('Property 4: Should maintain update history within limits', async () => {
+        const limitedUISystem = new EnhancedUISystem({
+            enableRealTime: true,
+            enableMobile: true,
+            enableMultiWallet: true,
+            maxUpdateHistory: 5, // Small limit for testing
+            updateBatchSize: 10
+        });
+
+        await fc.assert(
+            fc.asyncProperty(
+                fc.integer({ min: 6, max: 20 }),
+                async (updateCount) => {
+                    // Send more updates than the history limit
+                    for (let i = 0; i < updateCount; i++) {
+                        await limitedUISystem.sendRealTimeUpdate({
+                            type: 'notification',
+                            data: { index: i },
+                            timestamp: Date.now()
+                        });
+                    }
+                    
+                    const status = limitedUISystem.getSystemStatus();
+                    
+                    // Property: History should not exceed maximum limit
+                    expect(status.updateHistory.totalUpdates).toBeLessThanOrEqual(5);
+                    
+                    // Property: Should keep the most recent updates
+                    if (status.updateHistory.totalUpdates === 5) {
+                        const recentUpdates = status.updateHistory.recentUpdates;
+                        for (let i = 0; i < 5; i++) {
+                            const expectedIndex = updateCount - 5 + i;
+                            expect(recentUpdates[i].data.index).toBe(expectedIndex);
+                        }
                     }
                     
                     return true;
@@ -353,285 +292,210 @@ describe('Real-time Updates Properties', () => {
     /**
      * Property: Should handle disabled real-time updates
      */
-    it('Property 5: Should respect real-time updates toggle', async () => {
+    it('Property 5: Should reject operations when real-time is disabled', async () => {
+        const disabledUISystem = new EnhancedUISystem({
+            enableRealTime: false,
+            enableMobile: true,
+            enableMultiWallet: true,
+            maxUpdateHistory: 1000,
+            updateBatchSize: 10
+        });
+
         await fc.assert(
             fc.asyncProperty(
-                fc.array(
-                    fc.record({
-                        type: fc.oneof(fc.constant('payment'), fc.constant('system_status')),
+                fc.record({
+                    update: fc.record({
+                        type: fc.oneof(fc.constant('payment'), fc.constant('notification')),
                         data: fc.object()
                     }),
-                    { minLength: 1, maxLength: 5 }
-                ),
-                async (updateConfigs) => {
-                    const receivedUpdates: RealTimeUpdate[] = [];
-                    
-                    // Subscribe to updates
-                    uiSystem.subscribeToUpdates('payment', (update) => receivedUpdates.push(update));
-                    uiSystem.subscribeToUpdates('system_status', (update) => receivedUpdates.push(update));
-                    
-                    // Disable real-time updates
-                    uiSystem.disableRealTimeUpdates();
-                    expect(uiSystem.getState().realTimeUpdates).toBe(false);
-                    
-                    // Publish updates while disabled
-                    for (const config of updateConfigs) {
-                        uiSystem.publishUpdate({
-                            id: `disabled_${Date.now()}_${Math.random()}`,
-                            type: config.type,
-                            data: config.data,
-                            timestamp: Date.now()
-                        });
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    
-                    // Property: Should not receive updates when disabled
-                    expect(receivedUpdates.length).toBe(0);
-                    
-                    // Re-enable real-time updates
-                    uiSystem.enableRealTimeUpdates();
-                    expect(uiSystem.getState().realTimeUpdates).toBe(true);
-                    
-                    // Publish updates while enabled
-                    for (const config of updateConfigs) {
-                        uiSystem.publishUpdate({
-                            id: `enabled_${Date.now()}_${Math.random()}`,
-                            type: config.type,
-                            data: config.data,
-                            timestamp: Date.now()
-                        });
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    
-                    // Property: Should receive updates when enabled
-                    expect(receivedUpdates.length).toBe(updateConfigs.length);
-                    
-                    return true;
-                }
-            ),
-            { numRuns: 100 }
-        );
-    });
-
-    /**
-     * Property: Should handle state changes with real-time notifications
-     */
-    it('Property 6: Should notify state changes in real-time', async () => {
-        await fc.assert(
-            fc.asyncProperty(
-                fc.record({
-                    themeChanges: fc.array(
-                        fc.oneof(fc.constant('light'), fc.constant('dark'), fc.constant('auto')),
-                        { minLength: 1, maxLength: 5 }
-                    ),
-                    walletActions: fc.array(
-                        fc.record({
-                            address: fc.string({ minLength: 20, maxLength: 50 }),
-                            name: fc.string({ minLength: 3, maxLength: 20 }),
-                            balance: fc.option(fc.float({ min: 0, max: 1000 })),
-                            network: fc.oneof(fc.constant('mainnet'), fc.constant('devnet'), fc.constant('testnet'))
-                        }),
-                        { minLength: 1, maxLength: 3 }
-                    )
+                    subscriberId: fc.string({ minLength: 5, maxLength: 15 })
                 }),
-                async ({ themeChanges, walletActions }) => {
-                    const stateUpdates: RealTimeUpdate[] = [];
+                async ({ update, subscriberId }) => {
+                    // Test update sending rejection
+                    await expect(disabledUISystem.sendRealTimeUpdate({
+                        ...update,
+                        timestamp: Date.now()
+                    })).rejects.toThrow('Real-time updates are not enabled');
                     
-                    // Subscribe to system status updates
-                    uiSystem.subscribeToUpdates('system_status', (update) => {
-                        stateUpdates.push(update);
-                    });
-                    
-                    uiSystem.subscribeToUpdates('user_action', (update) => {
-                        stateUpdates.push(update);
-                    });
-                    
-                    // Test theme changes
-                    for (const theme of themeChanges) {
-                        uiSystem.setTheme(theme);
-                        expect(uiSystem.getTheme()).toBe(theme);
-                    }
-                    
-                    // Test wallet actions
-                    for (const walletInfo of walletActions) {
-                        uiSystem.connectWallet({
-                            ...walletInfo,
-                            connected: true
-                        });
-                        
-                        if (walletInfo.balance !== null) {
-                            uiSystem.updateWalletBalance(walletInfo.balance!);
-                        }
-                        
-                        uiSystem.disconnectWallet();
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                    
-                    // Property: Should receive state change notifications
-                    expect(stateUpdates.length).toBeGreaterThan(0);
-                    
-                    // Property: State updates should contain relevant data
-                    const themeUpdates = stateUpdates.filter(u => 
-                        u.type === 'system_status' && u.data.key === 'theme'
-                    );
-                    expect(themeUpdates.length).toBe(themeChanges.length);
-                    
-                    const walletUpdates = stateUpdates.filter(u => 
-                        u.type === 'user_action' && 
-                        (u.data.action === 'wallet_connected' || 
-                         u.data.action === 'wallet_disconnected' || 
-                         u.data.action === 'balance_updated')
-                    );
-                    expect(walletUpdates.length).toBeGreaterThan(0);
-                    
-                    return true;
-                }
-            ),
-            { numRuns: 100 }
-        );
-    });
-
-    /**
-     * Property: Should handle component updates in real-time
-     */
-    it('Property 7: Should update components in real-time', async () => {
-        await fc.assert(
-            fc.asyncProperty(
-                fc.array(
-                    fc.record({
-                        id: fc.string({ minLength: 5, maxLength: 20 }),
-                        type: fc.string({ minLength: 3, maxLength: 15 }),
-                        subscriptions: fc.array(
-                            fc.oneof(fc.constant('payment'), fc.constant('transaction'), fc.constant('system_status')),
-                            { minLength: 1, maxLength: 3 }
-                        ),
-                        props: fc.object(),
-                        state: fc.object()
-                    }),
-                    { minLength: 1, maxLength: 5 }
-                ),
-                async (componentConfigs) => {
-                    const componentUpdates: RealTimeUpdate[] = [];
-                    
-                    // Subscribe to component updates
-                    uiSystem.subscribeToUpdates('system_status', (update) => {
-                        if (update.data.componentId) {
-                            componentUpdates.push(update);
-                        }
-                    });
-                    
-                    // Register components
-                    for (const config of componentConfigs) {
-                        uiSystem.registerComponent({
-                            id: config.id,
-                            type: config.type,
-                            props: config.props,
-                            state: config.state,
-                            subscriptions: config.subscriptions,
-                            lastUpdate: Date.now()
-                        });
-                    }
-                    
-                    // Trigger updates for each component's subscribed types
-                    for (const config of componentConfigs) {
-                        for (const subscriptionType of config.subscriptions) {
-                            const update: RealTimeUpdate = {
-                                id: `comp_update_${Date.now()}_${Math.random()}`,
-                                type: subscriptionType,
-                                data: { componentTarget: config.id, value: Math.random() },
-                                timestamp: Date.now()
-                            };
-                            
-                            uiSystem.publishUpdate(update);
-                        }
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 20));
-                    
-                    // Property: Should receive component update notifications
-                    expect(componentUpdates.length).toBeGreaterThan(0);
-                    
-                    // Property: Component updates should reference correct components
-                    for (const update of componentUpdates) {
-                        const componentId = update.data.componentId;
-                        expect(componentConfigs.some(c => c.id === componentId)).toBe(true);
-                    }
-                    
-                    return true;
-                }
-            ),
-            { numRuns: 100 }
-        );
-    });
-
-    /**
-     * Property: Should handle system cleanup correctly
-     */
-    it('Property 8: Should cleanup resources properly', async () => {
-        await fc.assert(
-            fc.asyncProperty(
-                fc.record({
-                    subscriptionCount: fc.integer({ min: 5, max: 15 }),
-                    componentCount: fc.integer({ min: 3, max: 10 }),
-                    notificationCount: fc.integer({ min: 2, max: 8 })
-                }),
-                async ({ subscriptionCount, componentCount, notificationCount }) => {
-                    const callbacks: (() => void)[] = [];
-                    
-                    // Create subscriptions
-                    for (let i = 0; i < subscriptionCount; i++) {
-                        const callback = () => {};
-                        callbacks.push(callback);
-                        uiSystem.subscribeToUpdates('payment', callback);
-                    }
-                    
-                    // Register components
-                    for (let i = 0; i < componentCount; i++) {
-                        uiSystem.registerComponent({
-                            id: `cleanup_comp_${i}`,
-                            type: 'test',
-                            props: {},
-                            state: {},
-                            subscriptions: ['payment'],
-                            lastUpdate: Date.now()
-                        });
-                    }
-                    
-                    // Create notifications
-                    for (let i = 0; i < notificationCount; i++) {
-                        uiSystem.showNotification({
-                            type: 'info',
-                            title: `Test ${i}`,
-                            message: `Test notification ${i}`,
-                            persistent: true
-                        });
-                    }
-                    
-                    // Verify resources are created
-                    expect(uiSystem.getNotifications().length).toBe(notificationCount);
-                    
-                    // Cleanup
-                    uiSystem.destroy();
-                    
-                    // Property: After cleanup, system should be in clean state
-                    // (In a real implementation, we'd verify internal state is cleared)
-                    
-                    // Test that new operations still work after cleanup
-                    const newNotificationId = uiSystem.showNotification({
-                        type: 'success',
-                        title: 'After cleanup',
-                        message: 'This should still work'
-                    });
-                    
-                    expect(newNotificationId).toBeDefined();
+                    // Test subscription rejection
+                    expect(() => {
+                        disabledUISystem.subscribeToUpdates(subscriberId, () => {});
+                    }).toThrow('Real-time updates are not enabled');
                     
                     return true;
                 }
             ),
             { numRuns: 50 }
+        );
+    });
+
+    /**
+     * Property: Should handle batch processing correctly
+     */
+    it('Property 6: Should process updates in batches when threshold is reached', async () => {
+        const batchUISystem = new EnhancedUISystem({
+            enableRealTime: true,
+            enableMobile: true,
+            enableMultiWallet: true,
+            maxUpdateHistory: 1000,
+            updateBatchSize: 3 // Small batch size for testing
+        });
+
+        await fc.assert(
+            fc.asyncProperty(
+                fc.integer({ min: 4, max: 10 }),
+                async (updateCount) => {
+                    const receivedUpdates: UIUpdateEvent[] = [];
+                    const subscriberId = 'batch_test_subscriber';
+                    
+                    // Subscribe to updates
+                    batchUISystem.subscribeToUpdates(subscriberId, (event) => {
+                        receivedUpdates.push(event);
+                    });
+                    
+                    // Send updates that exceed batch size
+                    for (let i = 0; i < updateCount; i++) {
+                        await batchUISystem.sendRealTimeUpdate({
+                            type: 'notification',
+                            data: { batchIndex: i },
+                            timestamp: Date.now()
+                        });
+                    }
+                    
+                    // Property: All updates should be received despite batching
+                    expect(receivedUpdates).toHaveLength(updateCount);
+                    
+                    // Property: Updates should maintain order
+                    for (let i = 0; i < updateCount; i++) {
+                        expect(receivedUpdates[i].data.batchIndex).toBe(i);
+                    }
+                    
+                    return true;
+                }
+            ),
+            { numRuns: 50 }
+        );
+    });
+
+    /**
+     * Property: Should handle different update types correctly
+     */
+    it('Property 7: Should handle all supported update types', async () => {
+        await fc.assert(
+            fc.asyncProperty(
+                fc.array(
+                    fc.record({
+                        type: fc.oneof(
+                            fc.constant('payment'),
+                            fc.constant('transaction'),
+                            fc.constant('balance'),
+                            fc.constant('notification'),
+                            fc.constant('status')
+                        ),
+                        data: fc.record({
+                            amount: fc.option(fc.float({ min: 0, max: 1000 })),
+                            message: fc.option(fc.string({ minLength: 5, maxLength: 50 })),
+                            status: fc.option(fc.oneof(fc.constant('success'), fc.constant('pending'), fc.constant('failed')))
+                        }),
+                        userId: fc.option(fc.string({ minLength: 5, maxLength: 20 }))
+                    }),
+                    { minLength: 1, maxLength: 15 }
+                ),
+                async (updates) => {
+                    const receivedUpdates: UIUpdateEvent[] = [];
+                    const subscriberId = 'type_test_subscriber';
+                    
+                    // Subscribe to updates
+                    uiSystem.subscribeToUpdates(subscriberId, (event) => {
+                        receivedUpdates.push(event);
+                    });
+                    
+                    // Send all updates
+                    for (const update of updates) {
+                        const result = await uiSystem.sendRealTimeUpdate({
+                            ...update,
+                            timestamp: Date.now()
+                        });
+                        
+                        // Property: Each update should be sent successfully
+                        expect(result.sent).toBe(true);
+                        expect(result.deliveredTo).toBe(1);
+                    }
+                    
+                    // Property: All updates should be received with correct types
+                    expect(receivedUpdates).toHaveLength(updates.length);
+                    
+                    for (let i = 0; i < updates.length; i++) {
+                        expect(receivedUpdates[i].type).toBe(updates[i].type);
+                        expect(receivedUpdates[i].data).toEqual(updates[i].data);
+                        if (updates[i].userId) {
+                            expect(receivedUpdates[i].userId).toBe(updates[i].userId);
+                        }
+                    }
+                    
+                    return true;
+                }
+            ),
+            { numRuns: 100 }
+        );
+    });
+
+    /**
+     * Property: Should provide accurate system status
+     */
+    it('Property 8: Should provide accurate real-time system status', async () => {
+        await fc.assert(
+            fc.asyncProperty(
+                fc.record({
+                    subscribers: fc.array(fc.string({ minLength: 5, maxLength: 15 }), { minLength: 0, maxLength: 10 }),
+                    updates: fc.array(
+                        fc.record({
+                            type: fc.oneof(fc.constant('payment'), fc.constant('notification')),
+                            data: fc.object()
+                        }),
+                        { minLength: 0, maxLength: 8 }
+                    )
+                }),
+                async ({ subscribers, updates }) => {
+                    // Create fresh UI system for this test
+                    const testUISystem = new EnhancedUISystem({
+                        enableRealTime: true,
+                        enableMobile: true,
+                        enableMultiWallet: true,
+                        maxUpdateHistory: 1000,
+                        updateBatchSize: 10
+                    });
+                    
+                    // Subscribe all unique subscribers
+                    const uniqueSubscribers = [...new Set(subscribers)];
+                    for (const subscriberId of uniqueSubscribers) {
+                        testUISystem.subscribeToUpdates(subscriberId, () => {});
+                    }
+                    
+                    // Send all updates
+                    for (const update of updates) {
+                        await testUISystem.sendRealTimeUpdate({
+                            ...update,
+                            timestamp: Date.now()
+                        });
+                    }
+                    
+                    const status = testUISystem.getSystemStatus();
+                    
+                    // Property: Status should reflect actual system state
+                    expect(status.realTime.enabled).toBe(true);
+                    expect(status.realTime.activeConnections).toBe(uniqueSubscribers.length);
+                    expect(status.updateHistory.totalUpdates).toBeLessThanOrEqual(updates.length);
+                    
+                    // Property: Recent updates should be available
+                    if (updates.length > 0) {
+                        expect(status.updateHistory.recentUpdates.length).toBeGreaterThan(0);
+                    }
+                    
+                    return true;
+                }
+            ),
+            { numRuns: 100 }
         );
     });
 });

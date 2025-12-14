@@ -1,0 +1,53 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "version": 2,
+    "name": "synapsepay",
+    "buildCommand": "cd apps/web && npm install && npm run build",
+    "outputDirectory": "apps/web/dist",
+    "installCommand": "npm install",
+    "framework": null,
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-XSS-Protection",
+                    "value": "1; mode=block"
+                }
+            ]
+        },
+        {
+            "source": "/assets/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ],
+    "env": {
+        "VITE_SOLANA_NETWORK": "devnet",
+        "VITE_SOLANA_RPC_URL": "https://api.devnet.solana.com",
+        "VITE_FACILITATOR_URL": "https://synapsepay-facilitator.onrender.com",
+        "VITE_RESOURCE_SERVER_URL": "https://synapsepay-resource.onrender.com",
+        "VITE_ACTIONS_API_URL": "https://synapsepay-actions.onrender.com",
+        "VITE_REGISTRY_PROGRAM_ID": "5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby",
+        "VITE_PAYMENTS_PROGRAM_ID": "8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP",
+        "VITE_SCHEDULER_PROGRAM_ID": "8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY"
+    }
+}

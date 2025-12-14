@@ -63,7 +63,7 @@ export default function DeviceControl() {
     const device = DEMO_DEVICES[deviceId || 'ugv-rover-01'] || DEMO_DEVICES['ugv-rover-01'];
 
     // Use real wallet adapter
-    const { connected, publicKey } = useWallet();
+    const { connected } = useWallet();
     const { setVisible } = useWalletModal();
 
     // State

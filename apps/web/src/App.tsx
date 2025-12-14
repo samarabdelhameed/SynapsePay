@@ -9,6 +9,7 @@ import CreateAgent from './pages/CreateAgent';
 import Settings from './pages/Settings';
 import Devices from './pages/Devices';
 import DeviceControl from './pages/DeviceControl';
+import TransactionSuccess from './pages/TransactionSuccess';
 
 function App() {
     return (
@@ -45,6 +46,7 @@ function App() {
                     <Route path="settings" element={<Settings />} />
                     <Route path="devices" element={<Devices />} />
                     <Route path="devices/:deviceId" element={<DeviceControl />} />
+                    <Route path="tx/success" element={<TransactionSuccess />} />
                 </Route>
             </Routes>
         </>

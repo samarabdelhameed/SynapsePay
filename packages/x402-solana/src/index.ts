@@ -13,3 +13,4 @@ export * from './advanced-client';
 export * from './enhanced-middleware';
 export * from './ai-orchestrator';
 export * from './ui-system';
+export * from './monitoring-system';

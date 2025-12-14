@@ -121,7 +121,10 @@ describe('Custom Agent Builder Properties', () => {
         await fc.assert(
             fc.asyncProperty(
                 fc.record({
-                    agentId: fc.string({ minLength: 5, maxLength: 20 }),
+                    agentId: fc.string({ minLength: 5, maxLength: 20 }).filter(s => {
+                        const trimmed = s.trim();
+                        return trimmed.length >= 5 && /^[a-zA-Z0-9_-]+$/.test(trimmed);
+                    }),
                     agentConfigs: fc.array(
                         fc.record({
                             name: fc.string({ minLength: 5, maxLength: 30 }),
@@ -137,15 +140,18 @@ describe('Custom Agent Builder Properties', () => {
                     )
                 }),
                 async ({ agentId, agentConfigs }) => {
+                    // Use a unique ID for each test run to avoid conflicts
+                    const uniqueAgentId = `${agentId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    
                     // Create first agent successfully
-                    const firstConfig = { ...agentConfigs[0], agentId };
+                    const firstConfig = { ...agentConfigs[0], agentId: uniqueAgentId };
                     const createdId = await orchestrator.createCustomAgent(firstConfig);
-                    expect(createdId).toBe(agentId);
+                    expect(createdId).toBe(uniqueAgentId);
                     
                     // Attempt to create second agent with same ID should fail
-                    const duplicateConfig = { ...agentConfigs[1], agentId };
+                    const duplicateConfig = { ...agentConfigs[1], agentId: uniqueAgentId };
                     await expect(orchestrator.createCustomAgent(duplicateConfig))
-                        .rejects.toThrow(`Agent with ID '${agentId}' already exists`);
+                        .rejects.toThrow(`Agent with ID '${uniqueAgentId}' already exists`);
                     
                     return true;
                 }

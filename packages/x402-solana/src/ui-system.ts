@@ -49,7 +49,7 @@ export class EnhancedUISystem {
     }
   ) {
     this.realTimeSystem = {
-      isConnected: false,
+      isConnected: this.config.enableRealTime,
       activeConnections: 0,
       updateQueue: [],
       subscribers: new Map()
@@ -120,8 +120,12 @@ export class EnhancedUISystem {
       throw new Error('Real-time updates are not enabled');
     }
 
+    // Only increment if this is a new subscriber
+    if (!this.realTimeSystem.subscribers.has(subscriberId)) {
+      this.realTimeSystem.activeConnections++;
+    }
+    
     this.realTimeSystem.subscribers.set(subscriberId, callback);
-    this.realTimeSystem.activeConnections++;
     
     return subscriberId;
   }

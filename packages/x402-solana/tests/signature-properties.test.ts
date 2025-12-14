@@ -146,7 +146,11 @@ describe('Signature-Only Approval Properties', () => {
             
             // Extract signature
             const signature = payload.paymentIntentSignature!.signature;
+            
+            // Convert base64 to bs58 for consistency
             const signatureBytes = Buffer.from(signature, 'base64');
+            const bs58 = require('bs58');
+            const signatureBase58 = bs58.encode(signatureBytes);
             
             // Create the same message that was signed
             const message = createSigningMessage(payload);
@@ -161,9 +165,9 @@ describe('Signature-Only Approval Properties', () => {
             
             expect(isValid).toBe(true);
             
-            // Also test with the built-in verification function
+            // Also test with the built-in verification function using bs58 format
             const paymentSignature = {
-                signature,
+                signature: signatureBase58,
                 publicKey: userKeypair.publicKey.toBase58()
             };
             

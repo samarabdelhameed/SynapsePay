@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { AgentCardSkeleton } from '../components/ui/Skeleton';
 
 // Sample agents data
 const agents = [
@@ -146,6 +147,15 @@ export default function Marketplace() {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('popular');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate initial loading for better perceived performance
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 800); // Brief loading state for smooth transition
+        return () => clearTimeout(timer);
+    }, []);
 
     // Filter agents
     const filteredAgents = agents.filter((agent) => {
@@ -247,8 +257,8 @@ export default function Marketplace() {
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-3 rounded-xl border transition-all ${viewMode === 'grid'
-                                    ? 'bg-synapse-purple/20 border-synapse-purple text-synapse-purple'
-                                    : 'bg-dark-bg border-dark-border text-gray-400 hover:text-white'
+                                ? 'bg-synapse-purple/20 border-synapse-purple text-synapse-purple'
+                                : 'bg-dark-bg border-dark-border text-gray-400 hover:text-white'
                                 }`}
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -258,8 +268,8 @@ export default function Marketplace() {
                         <button
                             onClick={() => setViewMode('list')}
                             className={`p-3 rounded-xl border transition-all ${viewMode === 'list'
-                                    ? 'bg-synapse-purple/20 border-synapse-purple text-synapse-purple'
-                                    : 'bg-dark-bg border-dark-border text-gray-400 hover:text-white'
+                                ? 'bg-synapse-purple/20 border-synapse-purple text-synapse-purple'
+                                : 'bg-dark-bg border-dark-border text-gray-400 hover:text-white'
                                 }`}
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -276,8 +286,8 @@ export default function Marketplace() {
                             key={cat.id}
                             onClick={() => setSelectedCategory(cat.id)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl whitespace-nowrap transition-all ${selectedCategory === cat.id
-                                    ? 'bg-gradient-to-r from-synapse-orange to-synapse-purple text-white'
-                                    : 'bg-dark-bg border border-dark-border text-gray-400 hover:text-white hover:border-synapse-purple/50'
+                                ? 'bg-gradient-to-r from-synapse-orange to-synapse-purple text-white'
+                                : 'bg-dark-bg border border-dark-border text-gray-400 hover:text-white hover:border-synapse-purple/50'
                                 }`}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -298,7 +308,19 @@ export default function Marketplace() {
 
             {/* Agent Grid / List */}
             <AnimatePresence mode="wait">
-                {viewMode === 'grid' ? (
+                {isLoading ? (
+                    <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <AgentCardSkeleton key={i} />
+                        ))}
+                    </motion.div>
+                ) : viewMode === 'grid' ? (
                     <motion.div
                         key="grid"
                         initial={{ opacity: 0 }}
