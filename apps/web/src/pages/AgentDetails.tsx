@@ -63,13 +63,80 @@ export default function AgentDetails() {
         setShowPaymentModal(false);
         setIsExecuting(true);
 
-        // Simulate execution
-        toast.loading('Executing agent...', { id: 'execute' });
+        try {
+            toast.loading('Creating payment invoice...', { id: 'execute' });
 
-        setTimeout(() => {
+            // Step 1: Create invoice with X402 Facilitator
+            const invoiceResponse = await fetch('http://localhost:8403/invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agentId: agent.id,
+                    payer: 'demo-wallet-address', // In real app, get from wallet
+                }),
+            });
+
+            if (!invoiceResponse.ok) {
+                throw new Error('Failed to create invoice');
+            }
+
+            const invoice = await invoiceResponse.json();
+            console.log('Invoice created:', invoice);
+
+            toast.loading('Verifying payment...', { id: 'execute' });
+
+            // Step 2: Verify payment
+            const verifyResponse = await fetch('http://localhost:8403/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payment: invoice.xPaymentHeader,
+                }),
+            });
+
+            if (!verifyResponse.ok) {
+                throw new Error('Payment verification failed');
+            }
+
+            const verification = await verifyResponse.json();
+            console.log('Payment verified:', verification);
+
+            toast.loading('Settling payment...', { id: 'execute' });
+
+            // Step 3: Settle payment
+            const settleResponse = await fetch('http://localhost:8403/settle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payment: invoice.xPaymentHeader,
+                }),
+            });
+
+            if (!settleResponse.ok) {
+                throw new Error('Payment settlement failed');
+            }
+
+            const settlement = await settleResponse.json();
+            console.log('Payment settled:', settlement);
+
+            toast.loading('Executing AI agent...', { id: 'execute' });
+
+            // Step 4: Execute agent (simulate for now)
+            setTimeout(() => {
+                setIsExecuting(false);
+                toast.success(`Task completed! ${settlement.mode === 'demo' ? '(Demo Mode)' : ''} TX: ${settlement.txSignature}`, { 
+                    id: 'execute',
+                    duration: 5000,
+                });
+            }, 2000);
+
+        } catch (error) {
+            console.error('Payment flow error:', error);
             setIsExecuting(false);
-            toast.success('Task completed! Result saved to IPFS', { id: 'execute' });
-        }, 3000);
+            toast.error(`Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { 
+                id: 'execute' 
+            });
+        }
     };
 
     return (

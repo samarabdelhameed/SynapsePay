@@ -7,7 +7,7 @@ interface DeviceAccessGateProps {
     priceUsdc: number;
     durationMinutes: number;
     onInitiatePayment: () => void;
-    onAccessGranted: () => void;
+    onAccessGranted: (result?: any) => void;
     isProcessing?: boolean;
     connected?: boolean;
 }
@@ -23,9 +23,9 @@ export default function DeviceAccessGate({
 }: DeviceAccessGateProps) {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-    const handlePaymentSuccess = () => {
+    const handlePaymentSuccess = (result: any) => {
         setIsPaymentModalOpen(false);
-        onAccessGranted();
+        onAccessGranted(result);
     };
 
     return (

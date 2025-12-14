@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { Transaction } from '@solana/web3.js';
 
 /**
  * Payment flow state
@@ -22,6 +23,7 @@ export interface PaymentResult {
     slot?: number;
     result?: unknown;
     error?: string;
+    explorerUrl?: string;
 }
 
 /**
@@ -83,29 +85,27 @@ async function checkBackendHealth(url: string): Promise<boolean> {
 }
 
 /**
- * usePayment - Main hook for handling X402 payments
+ * usePayment - Main hook for handling X402 payments with REAL Solana transactions
  * 
  * This hook manages the entire payment flow:
- * 1. Create invoice
- * 2. Sign payment intent
- * 3. Settle on Solana
+ * 1. Create transaction (via Facilitator)
+ * 2. User signs the transaction in wallet
+ * 3. Submit signed transaction to Solana
  * 4. Execute agent task
- * 
- * Supports demo mode for testing without a backend.
  * 
  * @example
  * ```tsx
  * const { executePayment, state, logs } = usePayment({
- *   facilitatorUrl: 'http://localhost:4021',
- *   resourceServerUrl: 'http://localhost:4020',
- *   demoMode: true, // Enable demo mode
+ *   facilitatorUrl: 'http://localhost:8403',
+ *   resourceServerUrl: 'http://localhost:8404',
  * });
  * 
  * const result = await executePayment('pdf-summarizer-v1', 0.05, 600, { file: 'test.pdf' });
  * ```
  */
 export function usePayment(config: UsePaymentConfig) {
-    const { publicKey, signMessage, connected } = useWallet();
+    const { publicKey, signTransaction, connected } = useWallet();
+    // Note: we could use connection from useConnection() for direct RPC calls
     const [state, setState] = useState<PaymentState>('idle');
     const [error, setError] = useState<string | null>(null);
     const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -174,19 +174,144 @@ export function usePayment(config: UsePaymentConfig) {
     }, [addLog]);
 
     /**
-     * Execute the full payment flow
+     * Execute REAL payment flow with actual Solana transaction
+     */
+    const executeRealPayment = useCallback(async (
+        agentId: string,
+        _amountUsdc: number,
+        _durationSeconds: number,
+        taskParams?: Record<string, unknown>
+    ): Promise<PaymentResult> => {
+        // Validate wallet
+        if (!connected || !publicKey || !signTransaction) {
+            return { success: false, error: 'Wallet not connected or does not support signing' };
+        }
+
+        try {
+            setError(null);
+            setLogs([]);
+
+            // Step 1: Create Transaction via Facilitator
+            setState('creating_invoice');
+            addLog('Creating payment transaction...');
+
+            const createRes = await fetch(`${config.facilitatorUrl}/transaction/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    agentId,
+                    payer: publicKey.toBase58(),
+                }),
+            });
+
+            if (!createRes.ok) {
+                const errorData = await createRes.json().catch(() => ({}));
+                throw new Error(errorData.error || `Failed to create transaction: ${createRes.statusText}`);
+            }
+
+            const txData = await createRes.json();
+            addLog(`✓ Transaction created: ${txData.amountDisplay}`, 'success');
+
+            // Step 2: Deserialize and sign the transaction
+            setState('awaiting_signature');
+            addLog('Requesting wallet signature...');
+
+            // Deserialize the transaction
+            const transactionBuffer = Buffer.from(txData.transaction, 'base64');
+            const transaction = Transaction.from(transactionBuffer);
+
+            // Sign the transaction with user's wallet
+            const signedTransaction = await signTransaction(transaction);
+            addLog('✓ Transaction signed', 'success');
+
+            // Step 3: Submit signed transaction to Solana via Facilitator
+            setState('settling');
+            addLog('Submitting to Solana network...');
+
+            const submitRes = await fetch(`${config.facilitatorUrl}/transaction/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    signedTransaction: Buffer.from(signedTransaction.serialize()).toString('base64'),
+                    paymentId: txData.paymentId,
+                }),
+            });
+
+            if (!submitRes.ok) {
+                const errorData = await submitRes.json().catch(() => ({}));
+                throw new Error(errorData.error || `Failed to submit transaction: ${submitRes.statusText}`);
+            }
+
+            const submitData = await submitRes.json();
+            addLog(`✓ Transaction confirmed: ${submitData.txSignature.slice(0, 20)}...`, 'success');
+
+            // Step 4: Execute Agent
+            setState('executing');
+            addLog(`Executing ${agentId}...`);
+
+            // Try to execute agent (optional - may not have resource server)
+            try {
+                const executeRes = await fetch(`${config.resourceServerUrl}/agent/execute`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-TX-SIGNATURE': submitData.txSignature,
+                    },
+                    body: JSON.stringify({ agentId, taskParams }),
+                });
+
+                if (executeRes.ok) {
+                    const result = await executeRes.json();
+                    addLog('✓ Task completed successfully!', 'success');
+                    setState('completed');
+
+                    return {
+                        success: true,
+                        txSignature: submitData.txSignature,
+                        slot: submitData.slot,
+                        result: result.result,
+                        explorerUrl: submitData.explorerUrl,
+                    };
+                }
+            } catch {
+                // Resource server may not be running - that's OK for payment
+                addLog('⚠️ Agent execution unavailable, but payment succeeded', 'info');
+            }
+
+            addLog('✓ Payment completed!', 'success');
+            setState('completed');
+
+            return {
+                success: true,
+                txSignature: submitData.txSignature,
+                slot: submitData.slot,
+                explorerUrl: submitData.explorerUrl,
+                result: {
+                    status: 'success',
+                    message: `Payment for ${agentId} completed`,
+                    timestamp: new Date().toISOString(),
+                },
+            };
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setState('failed');
+            setError(errorMessage);
+            addLog(`✗ Error: ${errorMessage}`, 'error');
+            return { success: false, error: errorMessage };
+        }
+    }, [publicKey, signTransaction, connected, config, addLog]);
+
+    /**
+     * Execute the payment flow (chooses between real and demo)
      */
     const executePayment = useCallback(async (
         agentId: string,
         amountUsdc: number,
-        _durationSeconds: number,
+        durationSeconds: number,
         taskParams?: Record<string, unknown>
     ): Promise<PaymentResult> => {
         // Check if we should use demo mode
-        // Demo mode is used when:
-        // 1. demoMode is explicitly enabled in config
-        // 2. Backend is not available (automatic fallback)
-
         let useDemoMode = config.demoMode ?? false;
 
         // If demo mode is not explicitly enabled, check if backend is available
@@ -203,154 +328,9 @@ export function usePayment(config: UsePaymentConfig) {
             return executeDemoPayment(agentId, amountUsdc);
         }
 
-        // Validate wallet for real payments
-        if (!connected || !publicKey || !signMessage) {
-            return { success: false, error: 'Wallet not connected' };
-        }
-
-        try {
-            setError(null);
-            setLogs([]);
-
-            // Step 1: Create Invoice
-            setState('creating_invoice');
-            addLog('Creating payment invoice...');
-
-            const invoiceRes = await fetch(`${config.facilitatorUrl}/invoice`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    agentId,
-                    amount: (amountUsdc * 1_000_000).toString(),
-                    payer: publicKey.toBase58(),
-                }),
-            });
-
-            if (!invoiceRes.ok) {
-                throw new Error(`Failed to create invoice: ${invoiceRes.statusText}`);
-            }
-
-            const invoice = await invoiceRes.json();
-            addLog(`✓ Invoice created: ${amountUsdc} USDC`, 'success');
-
-            // Step 2: Sign Payment Intent
-            setState('awaiting_signature');
-            addLog('Requesting signature from wallet...');
-
-            // Create the message to sign
-            const nonce = Date.now();
-            const messageLines = [
-                'SynapsePay Payment Intent',
-                `PaymentID: ${invoice.invoiceId}`,
-                `Payer: ${publicKey.toBase58()}`,
-                `Recipient: ${invoice.recipient}`,
-                `Amount: ${invoice.amount}`,
-                `Token: ${config.network === 'mainnet-beta'
-                    ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-                    : '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'}`,
-                `Agent: ${agentId}`,
-                `Expires: ${invoice.expiresAt}`,
-                `Nonce: ${nonce}`,
-            ];
-            const message = new TextEncoder().encode(messageLines.join('\n'));
-
-            // Helper for browser-safe base64 encoding
-            const bytesToBase64 = (bytes: Uint8Array) => {
-                let binary = '';
-                for (let i = 0; i < bytes.byteLength; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                return window.btoa(binary);
-            };
-
-            const stringToBase64 = (str: string) => {
-                const bytes = new TextEncoder().encode(str);
-                return bytesToBase64(bytes);
-            };
-
-            // Request signature
-            const signature = await signMessage(message);
-            addLog('✓ Signature received', 'success');
-
-            // Create X-PAYMENT payload
-            const payload = {
-                version: '1.0',
-                paymentType: 'solana',
-                network: config.network || 'devnet',
-                payload: {
-                    paymentId: invoice.invoiceId,
-                    payer: publicKey.toBase58(),
-                    recipient: invoice.recipient,
-                    amount: invoice.amount,
-                    tokenMint: config.network === 'mainnet-beta'
-                        ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-                        : '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-                    agentId,
-                    expiresAt: invoice.expiresAt,
-                    nonce,
-                    paymentIntentSignature: {
-                        signature: bytesToBase64(signature),
-                        nonce,
-                    },
-                },
-            };
-
-            const paymentHeader = stringToBase64(JSON.stringify(payload));
-
-            // Step 3: Settle Payment
-            setState('settling');
-            addLog('Submitting payment to Solana...');
-
-            const settleRes = await fetch(`${config.facilitatorUrl}/settle`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payment: paymentHeader }),
-            });
-
-            if (!settleRes.ok) {
-                throw new Error(`Settlement failed: ${settleRes.statusText}`);
-            }
-
-            const settlement = await settleRes.json();
-            addLog(`✓ Payment settled: ${settlement.txSignature?.slice(0, 20)}...`, 'success');
-
-            // Step 4: Execute Agent
-            setState('executing');
-            addLog(`Executing ${agentId}...`);
-
-            const executeRes = await fetch(`${config.resourceServerUrl}/agent/execute`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-PAYMENT': paymentHeader,
-                },
-                body: JSON.stringify({ agentId, taskParams }),
-            });
-
-            if (!executeRes.ok) {
-                throw new Error(`Agent execution failed: ${executeRes.statusText}`);
-            }
-
-            const result = await executeRes.json();
-            addLog('✓ Task completed successfully!', 'success');
-
-            setState('completed');
-
-            return {
-                success: true,
-                txSignature: settlement.txSignature,
-                slot: settlement.slot,
-                result: result.result,
-            };
-
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-            setState('failed');
-            setError(errorMessage);
-            addLog(`✗ Error: ${errorMessage}`, 'error');
-            return { success: false, error: errorMessage };
-        }
-    }, [publicKey, signMessage, connected, config, addLog, executeDemoPayment]);
+        // Use real payment
+        return executeRealPayment(agentId, amountUsdc, durationSeconds, taskParams);
+    }, [config, addLog, executeDemoPayment, executeRealPayment]);
 
     /**
      * Reset the payment state
@@ -371,4 +351,3 @@ export function usePayment(config: UsePaymentConfig) {
         isConnected: connected,
     };
 }
-

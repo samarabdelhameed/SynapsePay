@@ -150,14 +150,31 @@ export default function DirectionalControls({
                 <DirectionButton direction="down" icon={<ArrowIcon direction="down" />} />
             </div>
 
-            {/* Instructions */}
-            <div className="text-center space-y-2">
-                <p className="text-xs text-gray-400 uppercase tracking-wider">
-                    {disabled ? 'Controls Locked' : 'Manual Override Engaged'}
-                </p>
+            {/* Professional Status Display */}
+            <div className="text-center space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${disabled ? 'bg-red-500' : 'bg-synapse-green animate-pulse'}`} />
+                    <p className="text-xs text-gray-400 uppercase tracking-wider font-mono">
+                        {disabled ? 'SYSTEM LOCKED' : 'REMOTE CONTROL ACTIVE'}
+                    </p>
+                </div>
+                
+                {!disabled && (
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-dark-border/30 rounded px-2 py-1">
+                            <span className="text-gray-500">MODE:</span>
+                            <span className="text-synapse-green ml-1 font-mono">MANUAL</span>
+                        </div>
+                        <div className="bg-dark-border/30 rounded px-2 py-1">
+                            <span className="text-gray-500">FUNC:</span>
+                            <span className="text-synapse-cyan ml-1 font-mono">DRIVE</span>
+                        </div>
+                    </div>
+                )}
+                
                 {!disabled && enableKeyboard && (
-                    <p className="text-xs text-gray-500">
-                        Use <span className="font-mono bg-dark-border px-2 py-0.5 rounded">WASD</span> keys
+                    <p className="text-xs text-gray-500 font-mono">
+                        WASD / ARROWS ENABLED
                     </p>
                 )}
             </div>

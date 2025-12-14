@@ -4,6 +4,7 @@ import { logger } from 'hono/logger';
 import { invoiceRoutes } from './routes/invoice';
 import { verifyRoutes } from './routes/verify';
 import { settleRoutes } from './routes/settle';
+import { transactionRoutes } from './routes/transaction';
 
 const app = new Hono();
 
@@ -31,6 +32,7 @@ app.get('/health', (c) => {
 app.route('/invoice', invoiceRoutes);
 app.route('/verify', verifyRoutes);
 app.route('/settle', settleRoutes);
+app.route('/transaction', transactionRoutes);
 
 // 404 handler
 app.notFound((c) => {

@@ -7,9 +7,9 @@ const app = new Hono();
 // Middleware
 app.use('*', logger());
 app.use('*', cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: '*', // Allow all origins for development
     allowMethods: ['GET', 'POST', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'X-PAYMENT'],
+    allowHeaders: ['Content-Type', 'X-PAYMENT', 'X-TX-SIGNATURE'],
 }));
 
 // Health check (no payment required)

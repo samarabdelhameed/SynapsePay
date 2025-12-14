@@ -31,7 +31,7 @@ export const config = {
 
     // Feature Flags
     features: {
-        demoMode: true,  // Use demo mode for payments
+        demoMode: import.meta.env.VITE_DEMO_MODE === 'true' || false,  // Demo mode disabled by default for real transactions
         enableIoT: true, // Enable IoT device control
         enableAI: true,  // Enable AI agents
     },

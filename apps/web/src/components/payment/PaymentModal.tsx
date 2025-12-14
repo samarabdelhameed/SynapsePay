@@ -115,10 +115,8 @@ export default function PaymentModal({
         const result = await executePayment(agentId, amountUsdc, durationSeconds, taskParams);
         if (result.success && result.txSignature) {
             setTxSignature(result.txSignature);
-            // Wait a moment for user to see success state
-            setTimeout(() => {
-                onSuccess(result.result);
-            }, 3000);
+            // Don't auto-close, let user manually close after seeing success
+            // User can click "Close" button or Explorer links
         }
     };
 
@@ -217,7 +215,7 @@ export default function PaymentModal({
                             <div className="bg-dark-bg/50 rounded-xl p-4 mb-6 border border-synapse-green/30">
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-gray-400 text-sm">Amount Paid</span>
-                                    <span className="text-synapse-green font-mono font-bold">{amountUsdc} USDC</span>
+                                    <span className="text-synapse-green font-mono font-bold">{(amountUsdc * 0.02).toFixed(4)} SOL</span>
                                 </div>
                                 <div className="flex justify-between items-center mb-3">
                                     <span className="text-gray-400 text-sm">Network</span>
@@ -233,7 +231,17 @@ export default function PaymentModal({
                                 )}
                             </div>
 
-                            {/* Explorer Links */}
+                            {/* Demo Mode Warning - only shown when explicitly in demo mode */}
+                            {config.features.demoMode && (
+                                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
+                                    <p className="text-yellow-500 text-sm flex items-center gap-2">
+                                        <span>⚠️</span>
+                                        <span><strong>Demo Mode:</strong> Simulated transaction. Start backend for real payments.</span>
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Explorer Links - Always shown when we have a real signature */}
                             {txSignature && (
                                 <div className="flex gap-3 mb-6">
                                     <a
@@ -262,10 +270,13 @@ export default function PaymentModal({
                             )}
 
                             <button
-                                onClick={onClose}
-                                className="w-full py-3 bg-dark-card border border-dark-border rounded-lg font-semibold text-white hover:bg-dark-border transition-colors"
+                                onClick={() => {
+                                    onSuccess({ txSignature, amountUsdc });
+                                    onClose();
+                                }}
+                                className="w-full py-3 bg-gradient-to-r from-synapse-green to-emerald-500 rounded-lg font-semibold text-white hover:opacity-90 transition-opacity"
                             >
-                                Close
+                                ✅ Continue to Device Control
                             </button>
                         </motion.div>
                     ) : (

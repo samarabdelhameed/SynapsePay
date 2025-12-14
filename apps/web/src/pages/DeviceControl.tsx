@@ -62,8 +62,8 @@ export default function DeviceControl() {
     const { deviceId } = useParams<{ deviceId: string }>();
     const device = DEMO_DEVICES[deviceId || 'ugv-rover-01'] || DEMO_DEVICES['ugv-rover-01'];
 
-    // Use real wallet adapter
-    const { connected } = useWallet();
+    // Use real wallet adapter with full functionality
+    const { connected, publicKey } = useWallet();
     const { setVisible } = useWalletModal();
 
     // State
@@ -90,22 +90,33 @@ export default function DeviceControl() {
         setVisible(true);
     };
 
-    // Handle payment initiation
+    // Handle payment initiation - just show the modal
     const handleInitiatePayment = () => {
-        setTxActive(true);
-        addLog('Initializing X402 payment sequence...', 'info');
+        if (!connected) {
+            addLog('ERROR: Wallet not connected', 'error');
+            return;
+        }
+
+        addLog('Opening payment interface...', 'info');
+        // The modal will handle the actual payment flow
     };
 
-    // Handle access granted
-    const handleAccessGranted = () => {
+
+
+    // Handle access granted after successful payment
+    const handleAccessGranted = (paymentResult?: any) => {
         setAccessGranted(true);
         setSessionTimeRemaining(device.durationMinutes * 60);
         setDeviceMetrics(prev => ({ ...prev, status: 'online' }));
         setTxActive(false);
-        addLog(`Device access granted for ${device.durationMinutes} minutes`, 'success');
-        addLog('Establishing secure connection to device...', 'info');
+
+        if (paymentResult?.txSignature) {
+            addLog(`✅ Payment successful! TX: ${paymentResult.txSignature}`, 'success');
+        }
+        addLog(`🔓 Device access granted for ${device.durationMinutes} minutes`, 'success');
+        addLog('🔗 Establishing secure connection to device...', 'info');
         setTimeout(() => {
-            addLog('Device control interface active', 'success');
+            addLog('✨ Device control interface active', 'success');
         }, 1500);
     };
 
@@ -221,8 +232,10 @@ export default function DeviceControl() {
                         </motion.button>
                     ) : (
                         <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-synapse-green/20 border border-synapse-green/30">
-                            <div className="w-2 h-2 rounded-full bg-synapse-green" />
-                            <span className="text-sm font-mono text-synapse-green">0x71C...9A23</span>
+                            <div className="w-2 h-2 rounded-full bg-synapse-green animate-pulse" />
+                            <span className="text-sm font-mono text-synapse-green">
+                                {publicKey ? `${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}` : 'Connected'}
+                            </span>
                         </div>
                     )}
                 </div>
