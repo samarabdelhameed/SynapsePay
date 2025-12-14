@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import {
     AreaChart,
     Area,
@@ -18,6 +19,41 @@ import {
     ResponsiveContainer,
     Legend,
 } from 'recharts';
+
+// Types
+interface Subscription {
+    id: string;
+    agent: string;
+    cadence: string;
+    nextRun: string;
+    cost: string;
+    active: boolean;
+    icon?: string;
+}
+
+interface NewSubscription {
+    taskType: 'price-report' | 'backup' | 'alerts' | 'analytics' | '';
+    frequency: 'hourly' | 'daily' | 'weekly' | 'monthly';
+    time: string;
+    tokens: string[];
+}
+
+// Task types data
+const taskTypes = [
+    { id: 'price-report', name: 'Price Report', icon: '📈', cost: '0.01', desc: 'Get crypto price updates' },
+    { id: 'backup', name: 'Backup', icon: '💾', cost: '0.05', desc: 'Automated data backups' },
+    { id: 'alerts', name: 'Alerts', icon: '🔔', cost: '0.02', desc: 'Wallet activity notifications' },
+    { id: 'analytics', name: 'Analytics', icon: '📊', cost: '0.03', desc: 'Portfolio analysis reports' },
+];
+
+const frequencies = [
+    { id: 'hourly', label: 'Hourly', multiplier: 24 },
+    { id: 'daily', label: 'Daily', multiplier: 1 },
+    { id: 'weekly', label: 'Weekly', multiplier: 0.14 },
+    { id: 'monthly', label: 'Monthly', multiplier: 0.033 },
+];
+
+const tokens = ['SOL', 'USDC', 'ETH', 'BTC', 'BONK', 'JUP'];
 
 // Sample data for charts
 const spendingData = [
@@ -69,10 +105,10 @@ const recentTasks = [
     { id: '5', agent: 'Trading Signals', status: 'completed', cost: '0.20', time: '3 hours ago', icon: '📈' },
 ];
 
-const subscriptions = [
-    { id: '1', agent: 'Daily Report', cadence: 'Daily', nextRun: 'Tomorrow 9:00 AM', cost: '0.10', active: true },
-    { id: '2', agent: 'Wallet Monitor', cadence: 'Hourly', nextRun: 'In 45 mins', cost: '0.02', active: true },
-    { id: '3', agent: 'Price Alerts', cadence: 'Every 6h', nextRun: 'In 2 hours', cost: '0.05', active: false },
+const initialSubscriptions: Subscription[] = [
+    { id: '1', agent: 'Daily Report', cadence: 'Daily', nextRun: 'Tomorrow 9:00 AM', cost: '0.10', active: true, icon: '📈' },
+    { id: '2', agent: 'Wallet Monitor', cadence: 'Hourly', nextRun: 'In 45 mins', cost: '0.02', active: true, icon: '🔔' },
+    { id: '3', agent: 'Price Alerts', cadence: 'Every 6h', nextRun: 'In 2 hours', cost: '0.05', active: false, icon: '💰' },
 ];
 
 // Custom Tooltip
@@ -95,6 +131,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'subscriptions' | 'analytics'>('overview');
     const [chartPeriod, setChartPeriod] = useState('30D');
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [subscriptionsList, setSubscriptionsList] = useState<Subscription[]>(initialSubscriptions);
+    const [newSub, setNewSub] = useState<NewSubscription>({
+        taskType: '',
+        frequency: 'daily',
+        time: '09:00',
+        tokens: ['SOL', 'USDC'],
+    });
+    const [isCreating, setIsCreating] = useState(false);
 
     return (
         <motion.div
@@ -172,8 +217,8 @@ export default function Dashboard() {
                                     key={period}
                                     onClick={() => setChartPeriod(period)}
                                     className={`px-3 py-1 rounded-lg text-sm transition-all ${chartPeriod === period
-                                            ? 'bg-synapse-purple text-white'
-                                            : 'text-gray-400 hover:text-white hover:bg-dark-card'
+                                        ? 'bg-synapse-purple text-white'
+                                        : 'text-gray-400 hover:text-white hover:bg-dark-card'
                                         }`}
                                 >
                                     {period}
@@ -332,8 +377,8 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-center gap-6">
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${task.status === 'completed'
-                                            ? 'bg-synapse-green/20 text-synapse-green'
-                                            : 'bg-red-500/20 text-red-400'
+                                        ? 'bg-synapse-green/20 text-synapse-green'
+                                        : 'bg-red-500/20 text-red-400'
                                         }`}>
                                         {task.status}
                                     </span>
@@ -354,12 +399,20 @@ export default function Dashboard() {
                 >
                     <div className="p-4 border-b border-dark-border flex items-center justify-between">
                         <h3 className="font-semibold text-white">Active Subscriptions</h3>
-                        <button className="text-sm text-synapse-purple hover:text-synapse-purple-light">
-                            Manage →
-                        </button>
+                        <div className="flex gap-3">
+                            <motion.button
+                                onClick={() => setShowCreateModal(true)}
+                                className="btn-primary text-sm flex items-center gap-2"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <span>➕</span>
+                                <span>Create New</span>
+                            </motion.button>
+                        </div>
                     </div>
                     <div className="divide-y divide-dark-border">
-                        {subscriptions.map((sub, index) => (
+                        {subscriptionsList.map((sub, index) => (
                             <motion.div
                                 key={sub.id}
                                 initial={{ opacity: 0, x: -20 }}
@@ -368,7 +421,9 @@ export default function Dashboard() {
                                 className="p-4 flex items-center justify-between hover:bg-dark-card/50 transition-colors"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-3 h-3 rounded-full ${sub.active ? 'bg-synapse-green animate-pulse' : 'bg-gray-500'}`} />
+                                    <div className="w-10 h-10 rounded-xl bg-dark-card flex items-center justify-center text-xl">
+                                        {sub.icon || '🔄'}
+                                    </div>
                                     <div>
                                         <p className="font-medium text-white">{sub.agent}</p>
                                         <p className="text-sm text-gray-400">{sub.cadence} • Next: {sub.nextRun}</p>
@@ -376,7 +431,15 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <span className="text-white font-medium">${sub.cost}/run</span>
-                                    <button className={`relative w-12 h-6 rounded-full transition-colors ${sub.active ? 'bg-synapse-green' : 'bg-dark-border'}`}>
+                                    <button
+                                        onClick={() => {
+                                            setSubscriptionsList(prev => prev.map(s =>
+                                                s.id === sub.id ? { ...s, active: !s.active } : s
+                                            ));
+                                            toast.success(sub.active ? 'Subscription paused' : 'Subscription resumed');
+                                        }}
+                                        className={`relative w-12 h-6 rounded-full transition-colors ${sub.active ? 'bg-synapse-green' : 'bg-dark-border'}`}
+                                    >
                                         <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${sub.active ? 'left-7' : 'left-1'}`} />
                                     </button>
                                 </div>
@@ -469,6 +532,198 @@ export default function Dashboard() {
                     </Link>
                 ))}
             </div>
+
+            {/* Create Subscription Modal */}
+            <AnimatePresence>
+                {showCreateModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowCreateModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="glass-card w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-dark-border flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-white">➕ Create Subscription</h2>
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="w-8 h-8 rounded-lg bg-dark-card flex items-center justify-center text-gray-400 hover:text-white"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="p-6 space-y-6">
+                                {/* Task Type Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-3">Select Task Type</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {taskTypes.map((task) => (
+                                            <motion.button
+                                                key={task.id}
+                                                onClick={() => setNewSub(prev => ({ ...prev, taskType: task.id as any }))}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className={`p-4 rounded-xl border transition-all text-left ${newSub.taskType === task.id
+                                                        ? 'border-synapse-purple bg-synapse-purple/20'
+                                                        : 'border-dark-border bg-dark-card hover:border-gray-600'
+                                                    }`}
+                                            >
+                                                <div className="text-2xl mb-2">{task.icon}</div>
+                                                <p className="font-medium text-white">{task.name}</p>
+                                                <p className="text-xs text-gray-400 mt-1">{task.desc}</p>
+                                                <p className="text-xs text-synapse-green mt-2">${task.cost}/run</p>
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Frequency Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-3">Frequency</label>
+                                    <div className="flex gap-2">
+                                        {frequencies.map((freq) => (
+                                            <button
+                                                key={freq.id}
+                                                onClick={() => setNewSub(prev => ({ ...prev, frequency: freq.id as any }))}
+                                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${newSub.frequency === freq.id
+                                                        ? 'bg-synapse-purple text-white'
+                                                        : 'bg-dark-card text-gray-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                {freq.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Time Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-3">Time</label>
+                                    <input
+                                        type="time"
+                                        value={newSub.time}
+                                        onChange={(e) => setNewSub(prev => ({ ...prev, time: e.target.value }))}
+                                        className="w-full bg-dark-card border border-dark-border rounded-lg px-4 py-3 text-white focus:border-synapse-purple focus:outline-none"
+                                    />
+                                </div>
+
+                                {/* Token Selection (for price report) */}
+                                {newSub.taskType === 'price-report' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-3">Tokens to Track</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {tokens.map((token) => (
+                                                <button
+                                                    key={token}
+                                                    onClick={() => {
+                                                        setNewSub(prev => ({
+                                                            ...prev,
+                                                            tokens: prev.tokens.includes(token)
+                                                                ? prev.tokens.filter(t => t !== token)
+                                                                : [...prev.tokens, token]
+                                                        }));
+                                                    }}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${newSub.tokens.includes(token)
+                                                            ? 'bg-synapse-green/20 text-synapse-green border border-synapse-green'
+                                                            : 'bg-dark-card text-gray-400 border border-dark-border hover:border-gray-600'
+                                                        }`}
+                                                >
+                                                    {newSub.tokens.includes(token) && '✓ '}{token}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Cost Summary */}
+                                {newSub.taskType && (
+                                    <div className="p-4 rounded-xl bg-dark-card border border-dark-border">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-gray-400">Cost per run</span>
+                                            <span className="text-white font-medium">
+                                                ${taskTypes.find(t => t.id === newSub.taskType)?.cost} USDC
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-400">Est. monthly cost</span>
+                                            <span className="text-synapse-green font-medium">
+                                                ~${(parseFloat(taskTypes.find(t => t.id === newSub.taskType)?.cost || '0') * 30 * (frequencies.find(f => f.id === newSub.frequency)?.multiplier || 1)).toFixed(2)} USDC
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-6 border-t border-dark-border flex gap-3">
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="flex-1 btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <motion.button
+                                    onClick={() => {
+                                        if (!newSub.taskType) {
+                                            toast.error('Please select a task type');
+                                            return;
+                                        }
+                                        setIsCreating(true);
+
+                                        // Simulate creation
+                                        setTimeout(() => {
+                                            const taskType = taskTypes.find(t => t.id === newSub.taskType);
+                                            const newSubscription: Subscription = {
+                                                id: Date.now().toString(),
+                                                agent: taskType?.name || 'Custom Task',
+                                                cadence: frequencies.find(f => f.id === newSub.frequency)?.label || 'Daily',
+                                                nextRun: newSub.frequency === 'hourly' ? 'In 1 hour' : `Tomorrow ${newSub.time}`,
+                                                cost: taskType?.cost || '0.01',
+                                                active: true,
+                                                icon: taskType?.icon || '📊',
+                                            };
+
+                                            setSubscriptionsList(prev => [newSubscription, ...prev]);
+                                            setIsCreating(false);
+                                            setShowCreateModal(false);
+                                            setNewSub({
+                                                taskType: '',
+                                                frequency: 'daily',
+                                                time: '09:00',
+                                                tokens: ['SOL', 'USDC'],
+                                            });
+                                            toast.success('🎉 Subscription created successfully!');
+                                        }, 1500);
+                                    }}
+                                    disabled={!newSub.taskType || isCreating}
+                                    className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={!isCreating ? { scale: 1.02 } : {}}
+                                    whileTap={!isCreating ? { scale: 0.98 } : {}}
+                                >
+                                    {isCreating ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            Creating...
+                                        </span>
+                                    ) : (
+                                        '✅ Create Subscription'
+                                    )}
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 }

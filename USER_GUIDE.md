@@ -5,7 +5,12 @@
 
 # 🚀 البداية السريعة
 
-## تشغيل المشروع
+## 🌐 الموقع الحي (Live Demo)
+```
+https://synapsepay.vercel.app
+```
+
+## تشغيل المشروع محلياً
 
 ```bash
 # 1. افتح Terminal وادخل لمجلد المشروع
@@ -15,9 +20,9 @@ cd /Users/s/Solana-SynapsePay
 cd apps/web && npm run dev
 ```
 
-## الرابط الأساسي
+## الرابط المحلي
 ```
-http://localhost:5174/
+http://localhost:5173/
 ```
 
 ---
@@ -81,7 +86,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 1️⃣ - الصفحة الرئيسية
 
-**🔗 الرابط:** `http://localhost:5174/`
+**🔗 الرابط:** `http://localhost:5173/`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -108,7 +113,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 2️⃣ - سوق الوكلاء (Agent Marketplace)
 
-**🔗 الرابط:** `http://localhost:5174/marketplace`
+**🔗 الرابط:** `http://localhost:5173/marketplace`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -149,7 +154,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 3️⃣ - تفاصيل الوكيل (Agent Details)
 
-**🔗 الرابط:** `http://localhost:5174/agent/pdf-summarizer`
+**🔗 الرابط:** `http://localhost:5173/agent/pdf-summarizer`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -345,7 +350,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 1️⃣ - الصفحة الرئيسية
 
-**🔗 الرابط:** `http://localhost:5174/`
+**🔗 الرابط:** `http://localhost:5173/`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -372,7 +377,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 2️⃣ - صفحة الأجهزة (IoT Device Hub)
 
-**🔗 الرابط:** `http://localhost:5174/devices`
+**🔗 الرابط:** `http://localhost:5173/devices`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -415,7 +420,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 3️⃣ - ربط المحفظة
 
-**🔗 الرابط:** `http://localhost:5174/devices/ugv-rover-01`
+**🔗 الرابط:** `http://localhost:5173/devices/ugv-rover-01`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -617,7 +622,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 1️⃣ - الصفحة الرئيسية
 
-**🔗 الرابط:** `http://localhost:5174/`
+**🔗 الرابط:** `http://localhost:5173/`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -641,7 +646,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 
 ### الخطوة 2️⃣ - لوحة التحكم (Dashboard)
 
-**🔗 الرابط:** `http://localhost:5174/dashboard`
+**🔗 الرابط:** `http://localhost:5173/dashboard`
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -669,7 +674,7 @@ SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
 └──────────┴─────────────────────────────────────────────────────────┘
 ```
 
-**👆 الفعل:** اضغط على `➕ Create New Subscription`
+**👆 الفعل:** اضغط على `➕ Create New` لفتح نافذة إنشاء اشتراك جديد
 
 ---
 
@@ -870,7 +875,7 @@ npm run dev
 
 ### Base URL
 ```
-http://localhost:8403
+http://localhost:4021
 ```
 
 ### Endpoints
@@ -953,7 +958,7 @@ X-PAYMENT: <base64_encoded_payment_payload>
 
 ### Base URL
 ```
-http://localhost:8404
+http://localhost:4020
 ```
 
 ### Endpoints
@@ -1181,7 +1186,7 @@ print(base58.b58encode(bytes(data)).decode())
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
 │  │   Frontend   │    │ Facilitator  │    │  Resource    │                   │
 │  │  (React)     │───▶│   Server     │───▶│   Server     │                   │
-│  │  Port: 5174  │    │  Port: 8403  │    │  Port: 8404  │                   │
+│  │  Port: 5173  │    │  Port: 4021  │    │  Port: 4020  │                   │
 │  └──────────────┘    └──────────────┘    └──────────────┘                   │
 │         │                   │                   │                            │
 │         │                   │                   │                            │
@@ -1240,9 +1245,9 @@ print(base58.b58encode(bytes(data)).decode())
 
 | Program | Address |
 |---------|---------|
-| **Registry** | `SYNRegistry111111111111111111111111111111111` |
-| **Payments** | `SYNPayments111111111111111111111111111111111` |
-| **Scheduler** | `SYNScheduler11111111111111111111111111111111` |
+| **Registry** | `5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby` |
+| **Payments** | `8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP` |
+| **Scheduler** | `8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY` |
 
 ---
 
@@ -1336,10 +1341,10 @@ SOLANA_NETWORK=devnet
 SOLANA_RPC_URL=https://api.devnet.solana.com
 SOLANA_WS_URL=wss://api.devnet.solana.com
 
-# Program IDs
-REGISTRY_PROGRAM_ID=SYNRegistry111111111111111111111111111111111
-PAYMENTS_PROGRAM_ID=SYNPayments111111111111111111111111111111111
-SCHEDULER_PROGRAM_ID=SYNScheduler11111111111111111111111111111111
+# Program IDs (Devnet - Deployed)
+REGISTRY_PROGRAM_ID=5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby
+PAYMENTS_PROGRAM_ID=8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP
+SCHEDULER_PROGRAM_ID=8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY
 
 # USDC Token Mint (Devnet)
 USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
@@ -1347,14 +1352,14 @@ USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
 # ═══════════════════════════════════════════════════════════════
 # 💳 X402 FACILITATOR
 # ═══════════════════════════════════════════════════════════════
-FACILITATOR_PORT=8403
+FACILITATOR_PORT=4021
 FACILITATOR_PRIVATE_KEY=your_base58_private_key
 FACILITATOR_FEE_BPS=500          # 5% fee
 
 # ═══════════════════════════════════════════════════════════════
 # 🤖 RESOURCE SERVER
 # ═══════════════════════════════════════════════════════════════
-RESOURCE_SERVER_PORT=8404
+RESOURCE_SERVER_PORT=4020
 TASK_TIMEOUT_SECONDS=60
 MAX_CONCURRENT_TASKS=10
 
@@ -1370,8 +1375,8 @@ OPENAI_MODEL=gpt-4-turbo-preview
 VITE_APP_NAME=SynapsePay
 VITE_SOLANA_NETWORK=devnet
 VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
-VITE_FACILITATOR_URL=http://localhost:8403
-VITE_RESOURCE_SERVER_URL=http://localhost:8404
+VITE_FACILITATOR_URL=http://localhost:4021
+VITE_RESOURCE_SERVER_URL=http://localhost:4020
 ```
 
 ---
@@ -1537,6 +1542,8 @@ await program.methods
 
 ---
 
-**📅 آخر تحديث:** ديسمبر 2024
+**📅 آخر تحديث:** 14 ديسمبر 2024
 
-**🔖 الإصدار:** 1.0.0
+**🔖 الإصدار:** 1.1.0
+
+**🌐 Live Demo:** https://synapsepay.vercel.app
