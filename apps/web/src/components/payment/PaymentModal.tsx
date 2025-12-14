@@ -91,6 +91,7 @@ export default function PaymentModal({
         facilitatorUrl: config.facilitatorUrl,
         resourceServerUrl: config.resourceServerUrl,
         network: config.solana.network,
+        demoMode: config.features.demoMode,
     });
 
     // Reset when modal opens
@@ -305,17 +306,17 @@ export default function PaymentModal({
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: index * 0.1 }}
                                         className={`flex items-center p-3 rounded-xl border transition-all duration-300 ${getStepStatus(step.id) === 'complete'
-                                                ? 'border-synapse-green/30 bg-synapse-green/5'
-                                                : getStepStatus(step.id) === 'active'
-                                                    ? 'border-synapse-purple/50 bg-synapse-purple/10 shadow-lg shadow-synapse-purple/20'
-                                                    : 'border-dark-border bg-dark-bg/30'
+                                            ? 'border-synapse-green/30 bg-synapse-green/5'
+                                            : getStepStatus(step.id) === 'active'
+                                                ? 'border-synapse-purple/50 bg-synapse-purple/10 shadow-lg shadow-synapse-purple/20'
+                                                : 'border-dark-border bg-dark-bg/30'
                                             }`}
                                     >
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg mr-3 transition-all ${getStepStatus(step.id) === 'complete'
-                                                ? 'bg-synapse-green text-dark-bg'
-                                                : getStepStatus(step.id) === 'active'
-                                                    ? 'bg-synapse-purple text-white animate-pulse'
-                                                    : 'bg-dark-border text-gray-500'
+                                            ? 'bg-synapse-green text-dark-bg'
+                                            : getStepStatus(step.id) === 'active'
+                                                ? 'bg-synapse-purple text-white animate-pulse'
+                                                : 'bg-dark-border text-gray-500'
                                             }`}>
                                             {getStepStatus(step.id) === 'complete' ? '✓' : step.icon}
                                         </div>
@@ -346,7 +347,7 @@ export default function PaymentModal({
                                 ) : (
                                     logs.map((log, i) => (
                                         <div key={i} className={`mb-1 ${log.type === 'error' ? 'text-red-400' :
-                                                log.type === 'success' ? 'text-synapse-green' : 'text-gray-400'
+                                            log.type === 'success' ? 'text-synapse-green' : 'text-gray-400'
                                             }`}>
                                             <span className="text-gray-600">[{log.timestamp}]</span> {log.message}
                                         </div>

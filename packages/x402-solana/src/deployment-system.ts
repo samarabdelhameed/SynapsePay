@@ -353,13 +353,16 @@ export class EnvironmentManager {
     // Simulate running tests with faster execution for testing
     return new Promise((resolve) => {
       setTimeout(() => {
-        const results: TestResult[] = pipeline.stages.map(stage => ({
-          suite: pipeline.name,
-          name: stage.name,
-          status: Math.random() > 0.1 ? 'passed' : 'failed', // 90% pass rate
-          duration: Math.floor(Math.random() * Math.min(stage.timeout, 1000)), // Cap at 1 second for tests
-          error: Math.random() > 0.9 ? 'Simulated test error' : undefined
-        }));
+        const results: TestResult[] = pipeline.stages.map(stage => {
+          const passed = Math.random() > 0.1; // 90% pass rate
+          return {
+            suite: pipeline.name,
+            name: stage.name,
+            status: passed ? 'passed' : 'failed',
+            duration: Math.floor(Math.random() * Math.min(stage.timeout, 1000)), // Cap at 1 second for tests
+            error: passed ? undefined : 'Simulated test error' // Failed tests always have error messages
+          };
+        });
 
         const allPassed = results.every(r => r.status === 'passed');
         pipeline.status = allPassed ? 'passed' : 'failed';
@@ -418,42 +421,108 @@ export class EnvironmentManager {
   }
 
   // Rollback System Methods
-  rollbackDeployment(deploymentId: string, reason: string): Promise<boolean> {
-    const deployment = this.deploymentHistory.find(d => d.id === deploymentId);
-    if (!deployment) {
-      throw new Error(`Deployment not found: ${deploymentId}`);
+  async rollbackDeployment(
+    environmentName: string, 
+    reason: string, 
+    options?: { 
+      strategy?: string; 
+      affectedComponents?: string[]; 
+      targetVersion?: string 
     }
-
-    const environment = this.environments.get(deployment.environment);
+  ): Promise<{
+    success: boolean;
+    rolledBackTo?: string;
+    rollbackReason: string;
+    error?: string;
+  }> {
+    const environment = this.environments.get(environmentName);
     if (!environment) {
-      throw new Error(`Environment not found: ${deployment.environment}`);
+      return {
+        success: false,
+        rollbackReason: reason,
+        error: `Environment not found: ${environmentName}`
+      };
     }
 
-    // Find previous successful deployment
-    const previousDeployment = this.deploymentHistory
-      .filter(d => d.environment === deployment.environment && d.status === 'success' && d.timestamp < deployment.timestamp)
-      .sort((a, b) => b.timestamp - a.timestamp)[0];
+    // Find target deployment to rollback to
+    let targetDeployment: DeploymentRecord | undefined;
+    
+    if (options?.targetVersion) {
+      // Rollback to specific version
+      targetDeployment = this.deploymentHistory.find(d => 
+        d.environment === environmentName && 
+        d.version === options.targetVersion && 
+        d.status === 'success'
+      );
+      
+      if (!targetDeployment) {
+        return {
+          success: false,
+          rollbackReason: reason,
+          error: `Target version ${options.targetVersion} not found or not successful`
+        };
+      }
+    } else {
+      // Find previous successful deployment
+      const currentDeployment = environment.lastDeployment;
+      if (!currentDeployment) {
+        return {
+          success: false,
+          rollbackReason: reason,
+          error: 'No current deployment found'
+        };
+      }
 
-    if (!previousDeployment) {
-      throw new Error('No previous successful deployment found for rollback');
+      targetDeployment = this.deploymentHistory
+        .filter(d => 
+          d.environment === environmentName && 
+          d.status === 'success' && 
+          d.timestamp < currentDeployment.timestamp
+        )
+        .sort((a, b) => b.timestamp - a.timestamp)[0];
+
+      if (!targetDeployment) {
+        return {
+          success: false,
+          rollbackReason: reason,
+          error: 'No previous successful deployment found for rollback'
+        };
+      }
     }
 
-    deployment.rollbackInfo = {
-      previousVersion: previousDeployment.version,
-      rollbackReason: reason,
-      rollbackTimestamp: Date.now(),
-      affectedComponents: ['programs', 'frontend', 'api']
+    // Create rollback deployment record
+    const rollbackDeployment: DeploymentRecord = {
+      id: `rollback_${Date.now()}`,
+      timestamp: Date.now(),
+      version: targetDeployment.version,
+      environment: environmentName,
+      status: 'rolled_back',
+      duration: 60000, // 1 minute rollback time
+      artifacts: [...targetDeployment.artifacts],
+      tests: [],
+      rollbackInfo: {
+        previousVersion: targetDeployment.version,
+        rollbackReason: reason,
+        rollbackTimestamp: Date.now(),
+        affectedComponents: options?.affectedComponents || ['programs', 'frontend', 'api']
+      }
     };
 
-    deployment.status = 'rolled_back';
-    environment.lastDeployment = previousDeployment;
+    // Add rollback record to history
+    this.deploymentHistory.push(rollbackDeployment);
+
+    // Update environment
+    environment.lastDeployment = rollbackDeployment;
+    environment.status = 'active';
 
     // Simulate rollback process
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1000);
-    });
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    return {
+      success: true,
+      rolledBackTo: targetDeployment.version,
+      rollbackReason: reason
+    };
   }
 
   getDeploymentHistory(environmentName?: string): DeploymentRecord[] {

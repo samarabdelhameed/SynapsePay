@@ -40,6 +40,46 @@ interface UsePaymentConfig {
     facilitatorUrl: string;
     resourceServerUrl: string;
     network?: 'devnet' | 'mainnet-beta';
+    demoMode?: boolean;  // Enable demo mode for testing without backend
+}
+
+/**
+ * Generate a fake transaction signature for demo mode
+ */
+function generateFakeTxSignature(): string {
+    const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    let result = '';
+    for (let i = 0; i < 88; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+/**
+ * Simulate a delay
+ */
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Check if backend is available
+ */
+async function checkBackendHealth(url: string): Promise<boolean> {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+        const response = await fetch(`${url}/health`, {
+            method: 'GET',
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        return response.ok;
+    } catch {
+        return false;
+    }
 }
 
 /**
@@ -51,11 +91,14 @@ interface UsePaymentConfig {
  * 3. Settle on Solana
  * 4. Execute agent task
  * 
+ * Supports demo mode for testing without a backend.
+ * 
  * @example
  * ```tsx
  * const { executePayment, state, logs } = usePayment({
- *   facilitatorUrl: 'http://localhost:8403',
- *   resourceServerUrl: 'http://localhost:8404',
+ *   facilitatorUrl: 'http://localhost:4021',
+ *   resourceServerUrl: 'http://localhost:4020',
+ *   demoMode: true, // Enable demo mode
  * });
  * 
  * const result = await executePayment('pdf-summarizer-v1', 0.05, 600, { file: 'test.pdf' });
@@ -73,6 +116,64 @@ export function usePayment(config: UsePaymentConfig) {
     }, []);
 
     /**
+     * Execute demo payment flow (simulated)
+     */
+    const executeDemoPayment = useCallback(async (
+        agentId: string,
+        amountUsdc: number,
+    ): Promise<PaymentResult> => {
+        try {
+            setError(null);
+            setLogs([]);
+
+            // Step 1: Create Invoice (simulated)
+            setState('creating_invoice');
+            addLog('Creating payment invoice...');
+            await delay(800);
+            addLog(`✓ Invoice created: ${amountUsdc} USDC`, 'success');
+
+            // Step 2: Sign Payment Intent (simulated)
+            setState('awaiting_signature');
+            addLog('Simulating wallet signature...');
+            await delay(600);
+            addLog('✓ Signature received (Demo Mode)', 'success');
+
+            // Step 3: Settle Payment (simulated)
+            setState('settling');
+            addLog('Submitting payment to Solana (Demo)...');
+            await delay(1200);
+            const fakeTxSignature = generateFakeTxSignature();
+            addLog(`✓ Payment settled: ${fakeTxSignature.slice(0, 20)}...`, 'success');
+
+            // Step 4: Execute Agent (simulated)
+            setState('executing');
+            addLog(`Executing ${agentId}...`);
+            await delay(1500);
+            addLog('✓ Task completed successfully!', 'success');
+
+            setState('completed');
+
+            return {
+                success: true,
+                txSignature: fakeTxSignature,
+                slot: 123456789,
+                result: {
+                    status: 'success',
+                    message: `Demo: ${agentId} executed successfully`,
+                    timestamp: new Date().toISOString(),
+                },
+            };
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setState('failed');
+            setError(errorMessage);
+            addLog(`✗ Error: ${errorMessage}`, 'error');
+            return { success: false, error: errorMessage };
+        }
+    }, [addLog]);
+
+    /**
      * Execute the full payment flow
      */
     const executePayment = useCallback(async (
@@ -81,7 +182,28 @@ export function usePayment(config: UsePaymentConfig) {
         _durationSeconds: number,
         taskParams?: Record<string, unknown>
     ): Promise<PaymentResult> => {
-        // Validate wallet
+        // Check if we should use demo mode
+        // Demo mode is used when:
+        // 1. demoMode is explicitly enabled in config
+        // 2. Backend is not available (automatic fallback)
+
+        let useDemoMode = config.demoMode ?? false;
+
+        // If demo mode is not explicitly enabled, check if backend is available
+        if (!useDemoMode) {
+            const backendAvailable = await checkBackendHealth(config.facilitatorUrl);
+            if (!backendAvailable) {
+                addLog('⚠️ Backend not available, using demo mode', 'info');
+                useDemoMode = true;
+            }
+        }
+
+        // Use demo mode
+        if (useDemoMode) {
+            return executeDemoPayment(agentId, amountUsdc);
+        }
+
+        // Validate wallet for real payments
         if (!connected || !publicKey || !signMessage) {
             return { success: false, error: 'Wallet not connected' };
         }
@@ -228,7 +350,7 @@ export function usePayment(config: UsePaymentConfig) {
             addLog(`✗ Error: ${errorMessage}`, 'error');
             return { success: false, error: errorMessage };
         }
-    }, [publicKey, signMessage, connected, config, addLog]);
+    }, [publicKey, signMessage, connected, config, addLog, executeDemoPayment]);
 
     /**
      * Reset the payment state
@@ -249,3 +371,4 @@ export function usePayment(config: UsePaymentConfig) {
         isConnected: connected,
     };
 }
+

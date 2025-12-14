@@ -395,3 +395,33 @@ export class SecurityError extends Error implements X402Error {
         this.name = 'SecurityError';
     }
 }
+
+export class AuthenticationError extends Error implements X402Error {
+    code = 'AUTHENTICATION_ERROR';
+    recoverable = true;
+    
+    constructor(message: string, public details?: Record<string, any>) {
+        super(message);
+        this.name = 'AuthenticationError';
+    }
+}
+
+export class AuthorizationError extends Error implements X402Error {
+    code = 'AUTHORIZATION_ERROR';
+    recoverable = false;
+    
+    constructor(message: string, public details?: Record<string, any>) {
+        super(message);
+        this.name = 'AuthorizationError';
+    }
+}
+
+export class EncryptionError extends Error implements X402Error {
+    code = 'ENCRYPTION_ERROR';
+    recoverable = false;
+    
+    constructor(message: string, public details?: Record<string, any>) {
+        super(message);
+        this.name = 'EncryptionError';
+    }
+}

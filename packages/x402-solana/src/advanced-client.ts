@@ -17,17 +17,32 @@ import {
     DeviceSession,
     DeviceCommand,
     ExecutedCommand,
-    X402Error
+    SecurityError,
+    AuthenticationError,
+    AuthorizationError
 } from './advanced-types';
 import { GaslessTransactionEngine } from './gasless-engine';
 import { RobotControlSystem } from './robot-control';
-import { createPayload, encodePayload } from './payload';
+import { IoTDeviceManager } from './iot-device-manager';
+import { encodePayload } from './payload';
 import { createSigningMessage } from './signatures';
+import { 
+    AdvancedSecurityLayer,
+    MFAConfig,
+    AuditLogConfig,
+    EncryptionConfig,
+    AccessControlConfig,
+    UserRole,
+    Permission
+} from './advanced-security';
 
 export class AdvancedX402Client {
     private config: AdvancedX402Config;
     private gaslessEngine?: GaslessTransactionEngine;
     private robotControl?: RobotControlSystem;
+    private iotDeviceManager?: IoTDeviceManager;
+    private securityLayer?: AdvancedSecurityLayer;
+    private currentSessionId?: string;
     private wallet?: {
         publicKey: PublicKey | null;
         signMessage?: (message: Uint8Array) => Promise<Uint8Array>;
@@ -37,6 +52,7 @@ export class AdvancedX402Client {
     constructor(config: AdvancedX402Config) {
         this.config = config;
         this.initializeEngines();
+        this.initializeSecurityLayer();
     }
 
     /**
@@ -59,6 +75,93 @@ export class AdvancedX402Client {
                 }
             });
         }
+
+        if (this.config.features.iotDevice.enabled) {
+            this.iotDeviceManager = new IoTDeviceManager();
+        }
+    }
+
+    /**
+     * Initialize advanced security layer
+     */
+    private initializeSecurityLayer(): void {
+        // Default security configuration
+        const mfaConfig: MFAConfig = {
+            enabled: true,
+            methods: [
+                { type: 'totp', enabled: true, config: {} },
+                { type: 'email', enabled: true, config: {} }
+            ],
+            requiredMethods: 1,
+            sessionTimeout: 3600, // 1 hour
+            maxAttempts: 3
+        };
+
+        const auditConfig: AuditLogConfig = {
+            enabled: true,
+            logLevel: 'info',
+            retention: {
+                days: 90,
+                maxEntries: 100000
+            },
+            storage: {
+                type: 'memory',
+                config: {}
+            }
+        };
+
+        const encryptionConfig: EncryptionConfig = {
+            algorithm: 'aes-256-gcm',
+            keyDerivation: 'pbkdf2',
+            keyLength: 256,
+            ivLength: 16
+        };
+
+        // Define default roles and permissions
+        const defaultRoles: UserRole[] = [
+            {
+                name: 'user',
+                description: 'Standard user with basic permissions',
+                isActive: true,
+                permissions: [
+                    { resource: 'payment', actions: ['create', 'view'] },
+                    { resource: 'device', actions: ['control', 'view'] },
+                    { resource: 'session', actions: ['create', 'view'] }
+                ]
+            },
+            {
+                name: 'admin',
+                description: 'Administrator with full permissions',
+                isActive: true,
+                permissions: [
+                    { resource: '*', actions: ['*'] }
+                ]
+            },
+            {
+                name: 'operator',
+                description: 'Device operator with control permissions',
+                isActive: true,
+                permissions: [
+                    { resource: 'device', actions: ['control', 'view', 'configure'] },
+                    { resource: 'session', actions: ['create', 'view', 'manage'] },
+                    { resource: 'payment', actions: ['create', 'view'] }
+                ]
+            }
+        ];
+
+        const accessControlConfig: AccessControlConfig = {
+            enabled: true,
+            defaultRole: 'user',
+            roles: defaultRoles,
+            sessionTimeout: 3600 // 1 hour
+        };
+
+        this.securityLayer = new AdvancedSecurityLayer({
+            mfa: mfaConfig,
+            audit: auditConfig,
+            encryption: encryptionConfig,
+            accessControl: accessControlConfig
+        });
     }
 
     /**
@@ -70,6 +173,136 @@ export class AdvancedX402Client {
         signTransaction?: (transaction: any) => Promise<any>;
     }): void {
         this.wallet = wallet;
+    }
+
+    // ============================================================================
+    // Security Layer Methods
+    // ============================================================================
+
+    /**
+     * Initialize security layer
+     */
+    async initializeSecurity(): Promise<void> {
+        if (!this.securityLayer) {
+            throw new SecurityError('Security layer not initialized');
+        }
+        await this.securityLayer.initialize();
+    }
+
+    /**
+     * Authenticate user with credentials
+     */
+    async authenticateUser(userId: string, credentials: any): Promise<{
+        success: boolean;
+        sessionId?: string;
+        mfaRequired?: boolean;
+        challenges?: any[];
+    }> {
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            const result = await this.securityLayer.authenticateUser(userId, credentials);
+            
+            if (result.success && result.sessionId) {
+                this.currentSessionId = result.sessionId;
+            }
+
+            return result;
+        } catch (error) {
+            throw new AuthenticationError(`Authentication failed: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Verify MFA challenge
+     */
+    async verifyMFA(challengeId: string, response: string): Promise<boolean> {
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            return await this.securityLayer.mfa.verifyMFA(challengeId, response);
+        } catch (error) {
+            throw new AuthenticationError(`MFA verification failed: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Check if user is authorized for action
+     */
+    async checkAuthorization(resource: string, action: string): Promise<boolean> {
+        if (!this.currentSessionId) {
+            throw new AuthorizationError('No active session');
+        }
+
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            return await this.securityLayer.authorizeAction(this.currentSessionId, resource, action);
+        } catch (error) {
+            throw new AuthorizationError(`Authorization check failed: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Encrypt sensitive data
+     */
+    async encryptData(data: string, password: string): Promise<any> {
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            return await this.securityLayer.encryptSensitiveData(data, password);
+        } catch (error) {
+            throw new SecurityError(`Encryption failed: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Decrypt sensitive data
+     */
+    async decryptData(encryptedData: any, password: string): Promise<string> {
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            return await this.securityLayer.encryption.decrypt(encryptedData, password);
+        } catch (error) {
+            throw new SecurityError(`Decryption failed: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Get security dashboard data
+     */
+    async getSecurityDashboard(): Promise<any> {
+        try {
+            if (!this.securityLayer) {
+                throw new SecurityError('Security layer not initialized');
+            }
+            return await this.securityLayer.getSecurityDashboard();
+        } catch (error) {
+            throw new SecurityError(`Failed to get security dashboard: ${(error as Error).message}`);
+        }
+    }
+
+    /**
+     * Logout and invalidate session
+     */
+    async logout(): Promise<void> {
+        if (this.currentSessionId) {
+            try {
+                if (!this.securityLayer) {
+                    throw new SecurityError('Security layer not initialized');
+                }
+                await this.securityLayer.accessControl.invalidateSession(this.currentSessionId);
+                this.currentSessionId = undefined;
+            } catch (error) {
+                throw new SecurityError(`Logout failed: ${(error as Error).message}`);
+            }
+        }
     }
 
     // ============================================================================
@@ -90,6 +323,14 @@ export class AdvancedX402Client {
         paymentId: string;
         payload: EnhancedX402PaymentPayload;
     }> {
+        // Security check: Verify authorization (only if session exists)
+        if (this.currentSessionId) {
+            const authorized = await this.checkAuthorization('payment', 'create');
+            if (!authorized) {
+                throw new AuthorizationError('Not authorized to create payments');
+            }
+        }
+
         if (!this.wallet?.publicKey || !this.wallet.signMessage) {
             throw new Error('Wallet not connected or does not support message signing');
         }
@@ -400,6 +641,89 @@ export class AdvancedX402Client {
         } catch (error) {
             throw new Error(`Failed to create IoT device payment: ${error}`);
         }
+    }
+
+    /**
+     * Initialize IoT device session after payment
+     */
+    async initializeIoTDevice(
+        payload: IoTDevicePayload,
+        paymentVerified: boolean
+    ): Promise<IoTDeviceResult> {
+        if (!this.iotDeviceManager) {
+            throw new Error('IoT device manager not initialized');
+        }
+
+        return await this.iotDeviceManager.initializeDeviceSession(payload, paymentVerified);
+    }
+
+    /**
+     * Execute command on IoT device
+     */
+    async executeIoTCommand(
+        sessionId: string,
+        command: DeviceCommand
+    ): Promise<ExecutedCommand> {
+        if (!this.iotDeviceManager) {
+            throw new Error('IoT device manager not initialized');
+        }
+
+        return await this.iotDeviceManager.executeDeviceCommand(sessionId, command);
+    }
+
+    /**
+     * Register new IoT device
+     */
+    async registerIoTDevice(deviceConfig: any): Promise<string> {
+        if (!this.iotDeviceManager) {
+            throw new Error('IoT device manager not initialized');
+        }
+
+        return await this.iotDeviceManager.registerDevice(deviceConfig);
+    }
+
+    /**
+     * Get IoT device registry
+     */
+    getIoTDeviceRegistry(): any[] {
+        if (!this.iotDeviceManager) {
+            return [];
+        }
+
+        return this.iotDeviceManager.getDeviceRegistry();
+    }
+
+    /**
+     * Get IoT device by ID
+     */
+    getIoTDevice(deviceId: string): any | undefined {
+        if (!this.iotDeviceManager) {
+            return undefined;
+        }
+
+        return this.iotDeviceManager.getDevice(deviceId);
+    }
+
+    /**
+     * Get active IoT sessions
+     */
+    getActiveIoTSessions(): DeviceSession[] {
+        if (!this.iotDeviceManager) {
+            return [];
+        }
+
+        return this.iotDeviceManager.getActiveSessions();
+    }
+
+    /**
+     * Terminate IoT device session
+     */
+    async terminateIoTSession(sessionId: string): Promise<void> {
+        if (!this.iotDeviceManager) {
+            throw new Error('IoT device manager not initialized');
+        }
+
+        await this.iotDeviceManager.terminateSession(sessionId);
     }
 
     // ============================================================================

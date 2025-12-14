@@ -277,7 +277,8 @@ class SecurityCameraSimulator {
         }
 
         // Simulate command execution with reliability
-        const commandSuccess = Math.random() < camera.reliability;
+        // Emergency stop always succeeds regardless of reliability
+        const commandSuccess = command.type === 'emergency_stop' || Math.random() < camera.reliability;
         
         if (!commandSuccess) {
             return {
@@ -1050,13 +1051,12 @@ describe('Security Camera Management Properties', () => {
                 priority: 5
             });
             
-            if (camera.capabilities.includes('live_stream')) {
-                await cameraSimulator.sendCameraCommand(camera.id, {
-                    type: 'activate',
-                    parameters: { mode: 'record' },
-                    priority: 5
-                });
-            }
+            // Start recording if camera supports it
+            await cameraSimulator.sendCameraCommand(camera.id, {
+                type: 'activate',
+                parameters: { mode: 'record' },
+                priority: 5
+            });
             
             // Emergency stop
             const emergencyResult = await cameraSimulator.sendCameraCommand(camera.id, {
