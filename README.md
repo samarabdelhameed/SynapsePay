@@ -10,10 +10,17 @@
 <h3 align="center">✅ FULLY DEPLOYED & VERIFIED ON SOLANA DEVNET</h3>
 
 <p align="center">
+  <a href="https://synapsepay.vercel.app" target="_blank">
+    <img src="https://img.shields.io/badge/🌐_LIVE_DEMO-synapsepay.vercel.app-00D18C?style=for-the-badge&logoColor=white" alt="Live Demo"/>
+  </a>
+</p>
+
+<p align="center">
   <strong>Pay-per-Action • Automation • Solana Actions • x402 • AI Agents • Marketplace</strong>
 </p>
 
 <p align="center">
+  <a href="https://synapsepay.vercel.app">🌐 Live Demo</a> •
   <a href="#-deployed-contracts">🔗 Live Contracts</a> •
   <a href="#-core-features">Features</a> •
   <a href="#-architecture">Architecture</a> •
@@ -24,7 +31,18 @@
 
 ---
 
-## 🎉 **DEPLOYMENT STATUS: COMPLETE**
+## � **Live Demo & Links**
+
+| Resource | Link |
+|----------|------|
+| **🚀 Live Demo** | **[https://synapsepay.vercel.app](https://synapsepay.vercel.app)** |
+| **📂 GitHub Repository** | [https://github.com/samarabdelhameed/SynapsePay](https://github.com/samarabdelhameed/SynapsePay) |
+| **📖 User Guide** | [USER_GUIDE.md](./USER_GUIDE.md) |
+| **🔧 Deployment Guide** | [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) |
+
+---
+
+## �🎉 **DEPLOYMENT STATUS: COMPLETE**
 
 ### ✅ **All Smart Contracts Deployed & Verified**
 
