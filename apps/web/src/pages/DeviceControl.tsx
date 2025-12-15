@@ -18,6 +18,7 @@ const DEMO_DEVICES: Record<string, {
     priceUsdc: number;
     durationMinutes: number;
     location?: { lat: number; lon: number };
+    streamUrl?: string; // 👈 URL for iframe video stream from robot/camera
     icon: string;
 }> = {
     'ugv-rover-01': {
@@ -28,6 +29,7 @@ const DEMO_DEVICES: Record<string, {
         priceUsdc: 0.10,
         durationMinutes: 10,
         location: { lat: 34.0522, lon: 118.2437 },
+        streamUrl: 'http://192.168.0.221:5000', // 👈 Robot camera stream URL
         icon: '🤖',
     },
     'smart-led-array': {
@@ -311,6 +313,7 @@ export default function DeviceControl() {
                             <LiveFeed
                                 isConnected={accessGranted}
                                 deviceName={device.name}
+                                streamUrl={device.streamUrl}
                                 location={device.location}
                             />
 

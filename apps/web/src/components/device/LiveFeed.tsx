@@ -33,22 +33,66 @@ export default function LiveFeed({
     const [error, setError] = useState<string | null>(null);
     const [detectedPersons, setDetectedPersons] = useState<DetectedPerson[]>([]);
     const [motionDetected, setMotionDetected] = useState(false);
+    const [iframeLoaded, setIframeLoaded] = useState(false); // Track if iframe stream loaded
+    const [useDemo, setUseDemo] = useState(false); // Fallback to demo mode if stream fails
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const previousFrameRef = useRef<ImageData | null>(null);
+    const iframeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Start webcam when connected
+    // Start webcam when connected (only if no external streamUrl)
     useEffect(() => {
         console.log('🔄 Connection effect:', { isConnected, streamUrl, hasStream: !!stream });
 
+        // If we have an external stream URL (like robot camera), set up timeout
+        if (streamUrl && isConnected) {
+            console.log('📹 Using external stream URL, setting up connection...');
+            setIsLoading(true);
+            setIframeLoaded(false);
+            setUseDemo(false);
+
+            // Timeout: if iframe doesn't load in 5 seconds, fall back to local webcam
+            iframeTimeoutRef.current = setTimeout(() => {
+                if (!iframeLoaded) {
+                    console.log('⏰ Robot stream timeout - trying local webcam...');
+                    setUseDemo(true); // Switch to webcam/demo mode
+                    // Try to start local webcam as fallback
+                    setTimeout(() => {
+                        if (videoRef.current) {
+                            console.log('🎥 Starting local webcam as fallback...');
+                            startWebcam();
+                        } else {
+                            console.log('📺 Video ref not ready, using demo overlay');
+                            setIsLoading(false);
+                        }
+                    }, 100);
+                }
+            }, 3000); // Reduced to 3 seconds for faster fallback
+
+            return () => {
+                if (iframeTimeoutRef.current) {
+                    clearTimeout(iframeTimeoutRef.current);
+                }
+            };
+        }
+
         if (isConnected && !streamUrl) {
             console.log('🚀 Should start webcam');
-            startWebcam();
+            // Delay webcam start to ensure video element is mounted
+            const timer = setTimeout(() => {
+                if (videoRef.current) {
+                    startWebcam();
+                } else {
+                    console.log('⏳ Video ref not ready, using demo mode');
+                    setIsLoading(false);
+                }
+            }, 100);
+            return () => clearTimeout(timer);
         } else if (!isConnected && stream) {
             console.log('🛑 Should stop webcam');
             stopWebcam();
         }
-    }, [isConnected, streamUrl]);
+    }, [isConnected, streamUrl, iframeLoaded]);
 
     const startWebcam = async () => {
         try {
@@ -56,14 +100,24 @@ export default function LiveFeed({
             setError(null);
             console.log('🎥 Starting webcam...');
 
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    frameRate: { ideal: 30 }
-                },
-                audio: false
+            // Create a timeout promise
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Camera access timeout after 5 seconds')), 5000);
             });
+
+            // Race between getUserMedia and timeout
+            const mediaStream = await Promise.race([
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        frameRate: { ideal: 30 },
+                        facingMode: { ideal: 'environment' } // Prefer back camera
+                    },
+                    audio: false
+                }),
+                timeoutPromise
+            ]) as MediaStream;
 
             console.log('✅ Webcam stream obtained:', mediaStream);
             setStream(mediaStream);
@@ -72,31 +126,81 @@ export default function LiveFeed({
                 videoRef.current.srcObject = mediaStream;
                 console.log('✅ Video element updated with stream');
 
-                // Force play the video
-                videoRef.current.play().then(() => {
-                    console.log('✅ Video is now playing');
-                }).catch(e => {
-                    console.error('❌ Video play error:', e);
-                });
+                // Add error handler for video element
+                videoRef.current.onerror = (e) => {
+                    console.error('❌ Video element error:', e);
+                    setError('Video playback failed');
+                    setIsLoading(false);
+                };
 
-                // Wait for video to be ready
+                // Force play the video with timeout
+                try {
+                    await Promise.race([
+                        videoRef.current.play(),
+                        new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Video play timeout')), 3000)
+                        )
+                    ]);
+                    console.log('✅ Video is now playing');
+                } catch (playError) {
+                    console.error('❌ Video play error:', playError);
+                    // Continue anyway, might work in demo mode
+                }
+
+                // Enhanced video event handlers
                 videoRef.current.onloadedmetadata = () => {
                     console.log('✅ Video metadata loaded');
+                    console.log('📐 Video dimensions:', videoRef.current?.videoWidth, 'x', videoRef.current?.videoHeight);
                     setIsLoading(false);
                 };
 
                 videoRef.current.onplaying = () => {
                     console.log('✅ Video is actively playing');
+                    setIsLoading(false);
                 };
+
+                videoRef.current.onloadstart = () => {
+                    console.log('🔄 Video load started');
+                };
+
+                videoRef.current.oncanplay = () => {
+                    console.log('✅ Video can play');
+                    setIsLoading(false);
+                };
+
+                // Force video to be visible and play
+                videoRef.current.style.display = 'block';
+                videoRef.current.style.opacity = '1';
+                videoRef.current.style.zIndex = '10';
+
+                // Fallback timeout to stop loading state
+                setTimeout(() => {
+                    if (isLoading) {
+                        console.log('⏰ Fallback: stopping loading state');
+                        setIsLoading(false);
+                    }
+                }, 3000);
             } else {
                 console.log('❌ Video ref not available');
                 setTimeout(() => setIsLoading(false), 1000);
             }
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('❌ Error accessing webcam:', err);
-            // Don't show error, just continue with demo overlay
-            setError(null);
+
+            // Set specific error messages based on error type
+            let errorMessage = 'Camera access failed';
+            if (err.name === 'NotAllowedError') {
+                errorMessage = 'Camera permission denied. Please allow camera access and try again.';
+            } else if (err.name === 'NotFoundError') {
+                errorMessage = 'No camera found. Please connect a camera and try again.';
+            } else if (err.name === 'NotReadableError') {
+                errorMessage = 'Camera is already in use by another application.';
+            } else if (err.message?.includes('timeout')) {
+                errorMessage = 'Camera access timed out. Please check your camera and try again.';
+            }
+
+            setError(errorMessage);
             setIsLoading(false);
             console.log('📺 Continuing with demo overlay without camera');
         }
@@ -117,17 +221,54 @@ export default function LiveFeed({
     useEffect(() => {
         if (stream && videoRef.current) {
             console.log('🔗 Connecting stream to video element...');
+            console.log('📊 Stream details:', {
+                active: stream.active,
+                tracks: stream.getTracks().length,
+                videoTracks: stream.getVideoTracks().length
+            });
+
             videoRef.current.srcObject = stream;
+
+            // Force video properties
+            videoRef.current.style.display = 'block';
+            videoRef.current.style.opacity = '1';
+            videoRef.current.style.zIndex = '10';
 
             videoRef.current.play().then(() => {
                 console.log('✅ Video playback started successfully');
+                console.log('📐 Video element size:', {
+                    width: videoRef.current?.clientWidth,
+                    height: videoRef.current?.clientHeight,
+                    videoWidth: videoRef.current?.videoWidth,
+                    videoHeight: videoRef.current?.videoHeight
+                });
                 setIsLoading(false);
             }).catch(e => {
                 console.error('❌ Video play error:', e);
                 setIsLoading(false);
             });
+        } else if (stream && !videoRef.current) {
+            // Stream exists but video ref not ready - retry after a short delay
+            console.log('⏳ Stream ready but video ref not mounted yet, retrying...');
+            const retryTimer = setTimeout(() => {
+                if (videoRef.current && stream) {
+                    console.log('🔄 Retry: connecting stream to video...');
+                    videoRef.current.srcObject = stream;
+                    videoRef.current.style.display = 'block';
+                    videoRef.current.style.opacity = '1';
+                    videoRef.current.style.zIndex = '10';
+                    videoRef.current.play().then(() => {
+                        console.log('✅ Retry successful - video playing');
+                        setIsLoading(false);
+                    }).catch(e => {
+                        console.error('❌ Retry video play error:', e);
+                        setIsLoading(false);
+                    });
+                }
+            }, 300);
+            return () => clearTimeout(retryTimer);
         }
-    }, [stream]);
+    }, [stream, useDemo]); // Also watch useDemo to re-run when switching modes
 
     // Motion detection using camera frames
     useEffect(() => {
@@ -230,6 +371,43 @@ export default function LiveFeed({
             animate={{ opacity: 1 }}
             className="relative w-full aspect-video rounded-2xl overflow-hidden bg-dark-bg border border-dark-border"
         >
+            {/* GLOBAL Video element - ALWAYS in DOM for ref availability */}
+            <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover"
+                autoPlay
+                muted
+                playsInline
+                controls={false}
+                style={{
+                    zIndex: stream ? 15 : 0,
+                    opacity: stream ? 1 : 0,
+                    backgroundColor: 'black'
+                }}
+                onLoadedMetadata={() => {
+                    console.log('🎥 GLOBAL Video: metadata loaded');
+                    setIsLoading(false);
+                }}
+                onCanPlay={() => {
+                    console.log('🎥 GLOBAL Video: can play');
+                }}
+                onPlay={() => {
+                    console.log('🎥 GLOBAL Video: playing!');
+                    setIsLoading(false);
+                }}
+                onError={(e) => {
+                    console.error('🎥 GLOBAL Video: error', e);
+                }}
+            />
+
+            {/* Hidden canvas for motion detection */}
+            <canvas
+                ref={canvasRef}
+                className="hidden"
+                width={320}
+                height={240}
+            />
+
             {/* Status Badge */}
             <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isConnected
@@ -288,52 +466,207 @@ export default function LiveFeed({
                                 </p>
                             </div>
                         </div>
-                    ) : streamUrl ? (
-                        // External stream URL
-                        <div className="relative w-full h-full">
-                            <video
-                                className="w-full h-full object-cover"
-                                autoPlay
-                                muted
-                                playsInline
+                    ) : streamUrl && !useDemo ? (
+                        // External stream URL via iframe (robot/camera stream)
+                        <div className="relative w-full h-full bg-black">
+                            {/* Loading indicator */}
+                            {isLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-dark-bg z-20">
+                                    <div className="text-center">
+                                        <motion.div
+                                            animate={{ rotate: 360 }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                                            className="w-12 h-12 mx-auto mb-3"
+                                        >
+                                            <svg viewBox="0 0 24 24" className="w-full h-full text-synapse-purple/50">
+                                                <circle
+                                                    cx="12"
+                                                    cy="12"
+                                                    r="10"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    fill="none"
+                                                    strokeDasharray="40 60"
+                                                />
+                                            </svg>
+                                        </motion.div>
+                                        <p className="text-gray-400 font-mono text-xs">
+                                            CONNECTING TO ROBOT STREAM...
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* iframe for robot camera stream */}
+                            <iframe
+                                className="w-full h-full border-0"
                                 src={streamUrl}
-                                onError={(e) => console.error('Video stream error:', e)}
+                                title={`${deviceName} - Robot Control Interface`}
+                                allow="cross-origin-isolated; fullscreen; camera; microphone"
+                                sandbox="allow-same-origin allow-scripts allow-forms"
+                                onLoad={() => {
+                                    console.log('✅ Robot stream iframe loaded successfully');
+                                    setIsLoading(false);
+                                    setIframeLoaded(true);
+                                    setError(null);
+                                    // Clear timeout since iframe loaded
+                                    if (iframeTimeoutRef.current) {
+                                        clearTimeout(iframeTimeoutRef.current);
+                                    }
+                                }}
+                                onError={(e) => {
+                                    console.error('❌ Robot stream iframe error:', e);
+                                    setError('Failed to connect to robot stream');
+                                    setIsLoading(false);
+                                    setUseDemo(true);
+                                }}
                             />
-                            <div className="absolute top-2 left-2 px-2 py-1 bg-red-500/80 text-white text-xs rounded">
-                                🔴 LIVE STREAM
+
+                            {/* Stream status badges */}
+                            <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+                                <div className="px-2 py-1 bg-red-500/90 text-white text-xs font-mono rounded flex items-center gap-1">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                    </span>
+                                    LIVE STREAM
+                                </div>
+                                <div className="px-2 py-1 bg-synapse-purple/80 text-white text-xs font-mono rounded">
+                                    {deviceName}
+                                </div>
                             </div>
+
+                            {/* Recording indicator */}
+                            <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1 bg-black/60 rounded-lg">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                <span className="text-white text-xs font-mono">REC</span>
+                            </div>
+
+                            {/* Connection info */}
+                            <div className="absolute bottom-2 left-2 z-10 px-2 py-1 bg-black/60 rounded text-xs font-mono text-gray-300">
+                                📡 {streamUrl}
+                            </div>
+
+                            {/* Error overlay */}
+                            {error && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-30">
+                                    <div className="text-center max-w-md mx-4">
+                                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                                            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-red-400 font-medium mb-2">Connection Failed</p>
+                                        <p className="text-gray-400 text-sm mb-4">{error}</p>
+                                        <button
+                                            onClick={() => {
+                                                setIsLoading(true);
+                                                setError(null);
+                                                // Force iframe reload
+                                                const iframe = document.querySelector('iframe');
+                                                if (iframe) {
+                                                    iframe.src = streamUrl || '';
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-synapse-purple hover:bg-synapse-purple-light rounded-lg text-sm transition-colors font-medium"
+                                        >
+                                            🔄 Retry Connection
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : stream || true ? ( // Always show feed for demo
                         // Live webcam feed
                         <div className="relative w-full h-full bg-black overflow-hidden">
-                            {/* Demo background if no camera */}
+                            {/* Demo background with animated terrain simulation when no camera */}
                             {!stream && (
                                 <div
-                                    className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+                                    className="absolute inset-0"
                                     style={{ zIndex: 1 }}
-                                />
+                                >
+                                    {/* Animated terrain/environment simulation */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-gray-800 via-gray-700 to-gray-600">
+                                        {/* Moving terrain lines to simulate movement */}
+                                        <div
+                                            className="absolute inset-0 opacity-40"
+                                            style={{
+                                                backgroundImage: `
+                                                    linear-gradient(0deg, transparent 49%, rgba(100, 100, 100, 0.3) 50%, transparent 51%),
+                                                    linear-gradient(90deg, transparent 49%, rgba(100, 100, 100, 0.2) 50%, transparent 51%)
+                                                `,
+                                                backgroundSize: '40px 40px',
+                                                animation: 'moveDown 2s linear infinite'
+                                            }}
+                                        />
+
+                                        {/* Simulated horizon */}
+                                        <div className="absolute top-1/3 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-500/50 to-transparent" />
+
+                                        {/* Simulated ground/floor pattern */}
+                                        <div
+                                            className="absolute bottom-0 left-0 right-0 h-2/3"
+                                            style={{
+                                                background: `
+                                                    linear-gradient(to bottom, 
+                                                        rgba(50, 60, 70, 0.8) 0%,
+                                                        rgba(40, 50, 60, 0.9) 50%,
+                                                        rgba(30, 40, 50, 1) 100%
+                                                    )
+                                                `,
+                                            }}
+                                        >
+                                            {/* Moving floor lines for depth */}
+                                            <div
+                                                className="absolute inset-0 opacity-30"
+                                                style={{
+                                                    backgroundImage: `
+                                                        repeating-linear-gradient(
+                                                            to bottom,
+                                                            transparent,
+                                                            transparent 15px,
+                                                            rgba(80, 90, 100, 0.4) 15px,
+                                                            rgba(80, 90, 100, 0.4) 16px
+                                                        )
+                                                    `,
+                                                    animation: 'moveDown 1s linear infinite'
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Dust/noise effect */}
+                                        <div
+                                            className="absolute inset-0 opacity-10"
+                                            style={{
+                                                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                                            }}
+                                        />
+
+                                        {/* Scan line effect */}
+                                        <div
+                                            className="absolute inset-0 pointer-events-none opacity-20"
+                                            style={{
+                                                background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 4px)'
+                                            }}
+                                        />
+                                    </div>
+
+                                    {/* Demo mode indicator */}
+                                    <div className="absolute top-14 left-4 px-2 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-yellow-400 text-xs font-mono z-30">
+                                        📹 DEMO MODE
+                                    </div>
+
+                                    {/* CSS Animation keyframes */}
+                                    <style>{`
+                                        @keyframes moveDown {
+                                            from { transform: translateY(-40px); }
+                                            to { transform: translateY(0px); }
+                                        }
+                                    `}</style>
+                                </div>
                             )}
 
-                            {/* Video element - MUST be visible and properly positioned */}
-                            <video
-                                ref={videoRef}
-                                className="absolute inset-0 w-full h-full object-cover"
-                                autoPlay
-                                muted
-                                playsInline
-                                style={{
-                                    zIndex: stream ? 5 : 0,
-                                    opacity: stream ? 1 : 0,
-                                }}
-                            />
-
-                            {/* Hidden canvas for motion detection */}
-                            <canvas
-                                ref={canvasRef}
-                                className="hidden"
-                                width={320}
-                                height={240}
-                            />
+                            {/* Video element moved to top of component - ref always available */}
 
                             {/* Professional overlay like in the original */}
                             <div className="absolute top-2 left-2 px-2 py-1 bg-red-500/90 text-white text-xs font-mono rounded z-20">
@@ -452,12 +785,25 @@ export default function LiveFeed({
                                             TRACKING
                                         </span>
                                     </div>
-                                    {!stream && (
+                                    {!stream && !error && (
                                         <button
                                             onClick={startWebcam}
                                             className="bg-black/80 rounded-lg px-3 py-1 border border-blue-400/50 text-blue-400 text-xs font-mono hover:bg-blue-400/20 transition-colors pointer-events-auto"
                                         >
                                             📹 ENABLE CAMERA
+                                        </button>
+                                    )}
+                                    {stream && (
+                                        <div className="bg-black/80 rounded-lg px-3 py-1 border border-green-400/50 text-green-400 text-xs font-mono">
+                                            ✅ CAMERA ACTIVE
+                                        </div>
+                                    )}
+                                    {error && (
+                                        <button
+                                            onClick={startWebcam}
+                                            className="bg-black/80 rounded-lg px-3 py-1 border border-red-400/50 text-red-400 text-xs font-mono hover:bg-red-400/20 transition-colors pointer-events-auto"
+                                        >
+                                            🔄 RETRY CAMERA
                                         </button>
                                     )}
                                 </div>
@@ -485,22 +831,63 @@ export default function LiveFeed({
                             </div>
                         </div>
                     ) : error ? (
-                        // Error state
-                        <div className="absolute inset-0 flex items-center justify-center bg-dark-bg">
-                            <div className="text-center">
-                                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-                                    <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                                    </svg>
+                        // Error state with demo overlay
+                        <div className="relative w-full h-full">
+                            {/* Show demo overlay even with error */}
+                            <div
+                                className="absolute inset-0"
+                                style={{ zIndex: 1 }}
+                            >
+                                {/* Same demo background as above */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-gray-800 via-gray-700 to-gray-600">
+                                    <div
+                                        className="absolute inset-0 opacity-40"
+                                        style={{
+                                            backgroundImage: `
+                                                linear-gradient(0deg, transparent 49%, rgba(100, 100, 100, 0.3) 50%, transparent 51%),
+                                                linear-gradient(90deg, transparent 49%, rgba(100, 100, 100, 0.2) 50%, transparent 51%)
+                                            `,
+                                            backgroundSize: '40px 40px',
+                                            animation: 'moveDown 2s linear infinite'
+                                        }}
+                                    />
+                                    <div className="absolute top-1/3 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-gray-500/50 to-transparent" />
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 h-2/3"
+                                        style={{
+                                            background: `linear-gradient(to bottom, rgba(50, 60, 70, 0.8) 0%, rgba(40, 50, 60, 0.9) 50%, rgba(30, 40, 50, 1) 100%)`
+                                        }}
+                                    />
                                 </div>
-                                <p className="text-red-400 font-medium mb-2">Camera Error</p>
-                                <p className="text-gray-600 text-sm">{error}</p>
-                                <button
-                                    onClick={startWebcam}
-                                    className="mt-3 px-4 py-2 bg-synapse-purple hover:bg-synapse-purple-light rounded-lg text-sm transition-colors"
-                                >
-                                    Retry Camera Access
-                                </button>
+                            </div>
+
+                            {/* Error overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10">
+                                <div className="text-center max-w-md mx-4">
+                                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                                        <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-red-400 font-medium mb-2">Camera Access Issue</p>
+                                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">{error}</p>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={startWebcam}
+                                            className="w-full px-4 py-2 bg-synapse-purple hover:bg-synapse-purple-light rounded-lg text-sm transition-colors font-medium"
+                                        >
+                                            🔄 Retry Camera Access
+                                        </button>
+                                        <p className="text-xs text-gray-400">
+                                            Demo mode will continue without camera
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Demo mode indicator */}
+                            <div className="absolute top-14 left-4 px-2 py-1 bg-yellow-500/20 border border-yellow-500/50 rounded text-yellow-400 text-xs font-mono z-20">
+                                📹 DEMO MODE - CAMERA ERROR
                             </div>
                         </div>
                     ) : (

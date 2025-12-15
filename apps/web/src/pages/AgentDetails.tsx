@@ -133,9 +133,44 @@ export default function AgentDetails() {
         } catch (error) {
             console.error('Payment flow error:', error);
             setIsExecuting(false);
-            toast.error(`Payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { 
-                id: 'execute' 
-            });
+            
+            // Enhanced error handling for common payment issues
+            let errorMessage = 'Unknown error';
+            let helpText = '';
+            
+            if (error instanceof Error) {
+                errorMessage = error.message;
+                
+                // Handle specific Solana errors
+                if (errorMessage.includes('Attempt to debit an account but found no record of a prior credit')) {
+                    errorMessage = 'Insufficient USDC balance or missing token account';
+                    helpText = 'Get USDC from https://spl-token-faucet.com/ or create token account first';
+                } else if (errorMessage.includes('Transaction simulation failed')) {
+                    errorMessage = 'Transaction simulation failed - check wallet balance';
+                    helpText = 'Ensure you have SOL for fees and USDC for payment';
+                } else if (errorMessage.includes('Failed to create invoice')) {
+                    errorMessage = 'Payment service unavailable';
+                    helpText = 'X402 Facilitator may be offline - check console logs';
+                } else if (errorMessage.includes('Payment verification failed')) {
+                    errorMessage = 'Payment verification failed';
+                    helpText = 'Transaction may not have been confirmed yet';
+                } else if (errorMessage.includes('Payment settlement failed')) {
+                    errorMessage = 'Payment settlement failed';
+                    helpText = 'Transaction failed on Solana network';
+                }
+            }
+            
+            // Show detailed error with help text
+            toast.error(
+                <div className="space-y-1">
+                    <p className="font-medium">Payment failed: {errorMessage}</p>
+                    {helpText && <p className="text-sm opacity-80">{helpText}</p>}
+                </div>, 
+                { 
+                    id: 'execute',
+                    duration: 8000 // Longer duration for detailed errors
+                }
+            );
         }
     };
 
