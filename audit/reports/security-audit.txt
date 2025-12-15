@@ -1,7 +1,0 @@
-    Fetching advisory database from `https://github.com/RustSec/advisory-db.git`
-      Loaded 884 security advisories (from /Users/s/.cargo/advisory-db)
-    Updating crates.io index
-error: not found: Couldn't load Cargo.lock
-Caused by:
-  -> I/O operation failed: parse error: parse error: invalid Cargo.lock format version: `4`
-
