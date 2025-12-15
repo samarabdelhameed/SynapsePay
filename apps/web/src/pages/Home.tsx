@@ -70,7 +70,7 @@ export default function Home() {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8 px-1 sm:px-0"
         >
             {/* Onboarding Guide Modal */}
             <OnboardingGuide isOpen={showGuide} onClose={() => setShowGuide(false)} />
@@ -81,9 +81,9 @@ export default function Home() {
             {/* Quick Start Banner for new users */}
             <QuickStartBanner onStartGuide={() => setShowGuide(true)} />
             {/* Hero Section */}
-            <motion.section variants={itemVariants} className="relative overflow-hidden rounded-3xl">
+            <motion.section variants={itemVariants} className="relative overflow-hidden rounded-2xl sm:rounded-3xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-synapse-purple/30 via-transparent to-synapse-orange/30" />
-                <div className="relative glass-card p-8 md:p-12">
+                <div className="relative glass-card p-4 sm:p-8 md:p-12">
                     <div className="max-w-3xl">
                         <motion.div
                             initial={{ scale: 0 }}
@@ -98,13 +98,13 @@ export default function Home() {
                             <span className="text-sm font-medium">Solana Winter Buildathon 2025</span>
                         </motion.div>
 
-                        <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">
+                        <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold mb-4 sm:mb-6">
                             <span className="text-white">AI-Powered</span>
                             <br />
                             <span className="gradient-text">AutoPay Agents</span>
                         </h1>
 
-                        <p className="text-lg text-gray-400 mb-8 max-w-2xl">
+                        <p className="text-sm sm:text-lg text-gray-400 mb-6 sm:mb-8 max-w-2xl">
                             Execute AI tasks, automate workflows, and control devices — all with{' '}
                             <span className="text-synapse-green font-semibold">gasless micropayments</span> on Solana.
                             Pay only for what you use.
@@ -158,19 +158,19 @@ export default function Home() {
 
             {/* Stats Grid */}
             <motion.section variants={itemVariants}>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {stats.map((stat, _index) => (
                         <motion.div
                             key={stat.label}
                             variants={itemVariants}
                             whileHover={{ scale: 1.02, y: -4 }}
-                            className="glass-card p-6 group cursor-pointer"
+                            className="glass-card p-4 sm:p-6 group cursor-pointer"
                         >
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
+                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
                                 {stat.icon}
                             </div>
-                            <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
-                            <p className="text-sm text-gray-400">{stat.label}</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</p>
+                            <p className="text-xs sm:text-sm text-gray-400">{stat.label}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -178,10 +178,10 @@ export default function Home() {
 
             {/* Featured Agents */}
             <motion.section variants={itemVariants}>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
                     <div>
-                        <h2 className="text-2xl font-display font-bold text-white">Featured Agents</h2>
-                        <p className="text-gray-400">Top performing AI agents this week</p>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-white">Featured Agents</h2>
+                        <p className="text-sm sm:text-base text-gray-400">Top performing AI agents this week</p>
                     </div>
                     <Link to="/marketplace">
                         <motion.button
@@ -196,7 +196,7 @@ export default function Home() {
                     </Link>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {featuredAgents.map((agent, _index) => (
                         <Link key={agent.id} to={`/agent/${agent.id}`}>
                             <motion.div
@@ -237,11 +237,11 @@ export default function Home() {
             </motion.section>
 
             {/* How It Works */}
-            <motion.section variants={itemVariants} className="glass-card p-8">
-                <h2 className="text-2xl font-display font-bold text-white mb-8 text-center">
+            <motion.section variants={itemVariants} className="glass-card p-4 sm:p-8">
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-6 sm:mb-8 text-center">
                     How It Works
                 </h2>
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
                     {[
                         { step: '01', icon: '🔍', title: 'Discover', desc: 'Browse AI agents in the marketplace' },
                         { step: '02', icon: '💳', title: 'Pay', desc: 'Pay with USDC - zero gas fees' },
@@ -271,10 +271,10 @@ export default function Home() {
 
             {/* IoT Devices Section */}
             <motion.section variants={itemVariants}>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-4 sm:mb-6">
                     <div>
-                        <h2 className="text-2xl font-display font-bold text-white">🌐 IoT Device Hub</h2>
-                        <p className="text-gray-400">Control real-world devices with micropayments</p>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-white">🌐 IoT Device Hub</h2>
+                        <p className="text-sm sm:text-base text-gray-400">Control real-world devices with micropayments</p>
                     </div>
                     <Link to="/devices">
                         <motion.button
@@ -289,7 +289,7 @@ export default function Home() {
                     </Link>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {[
                         { id: 'ugv-rover-01', name: 'UGV Rover 01', price: '0.10', type: 'Robot', icon: '🤖', gradient: 'from-synapse-purple to-synapse-cyan', status: 'available' },
                         { id: 'smart-led-array', name: 'Smart LED Array', price: '0.05', type: 'LED', icon: '💡', gradient: 'from-synapse-orange to-yellow-500', status: 'available' },

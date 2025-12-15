@@ -10,7 +10,7 @@
 
   body {
     @apply bg-dark-bg text-white;
-    background-image: 
+    background-image:
       radial-gradient(ellipse 80% 80% at 50% -20%, rgba(153, 69, 255, 0.15), transparent),
       radial-gradient(ellipse 60% 60% at 80% 50%, rgba(255, 107, 53, 0.1), transparent),
       radial-gradient(ellipse 50% 50% at 20% 80%, rgba(20, 241, 149, 0.05), transparent);
@@ -41,6 +41,7 @@
 
 /* Custom Components */
 @layer components {
+
   /* Glass Card */
   .glass-card {
     @apply bg-dark-card/80 backdrop-blur-xl border border-dark-border rounded-2xl;
@@ -80,25 +81,20 @@
 
   /* Buttons */
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-synapse-orange to-synapse-purple rounded-xl font-semibold text-white
-           transition-all duration-300 hover:shadow-glow-purple hover:scale-105 active:scale-95;
+    @apply px-6 py-3 bg-gradient-to-r from-synapse-orange to-synapse-purple rounded-xl font-semibold text-white transition-all duration-300 hover:shadow-glow-purple hover:scale-105 active:scale-95;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-dark-card border border-dark-border rounded-xl font-semibold text-white
-           transition-all duration-300 hover:border-synapse-purple hover:bg-dark-card-hover;
+    @apply px-6 py-3 bg-dark-card border border-dark-border rounded-xl font-semibold text-white transition-all duration-300 hover:border-synapse-purple hover:bg-dark-card-hover;
   }
 
   .btn-ghost {
-    @apply px-6 py-3 bg-transparent rounded-xl font-semibold text-gray-400
-           transition-all duration-300 hover:text-white hover:bg-dark-card;
+    @apply px-6 py-3 bg-transparent rounded-xl font-semibold text-gray-400 transition-all duration-300 hover:text-white hover:bg-dark-card;
   }
 
   /* Input */
   .input-dark {
-    @apply w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white
-           placeholder:text-gray-500 focus:outline-none focus:border-synapse-purple focus:ring-2 focus:ring-synapse-purple/20
-           transition-all duration-300;
+    @apply w-full px-4 py-3 bg-dark-bg border border-dark-border rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-synapse-purple focus:ring-2 focus:ring-synapse-purple/20 transition-all duration-300;
   }
 
   /* Badge */
@@ -153,12 +149,10 @@
   .shimmer::after {
     content: '';
     @apply absolute inset-0 -translate-x-full;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.08),
-      transparent
-    );
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent);
     animation: shimmer 2s infinite;
   }
 
@@ -177,13 +171,11 @@
 
   /* Sidebar */
   .sidebar-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 
-           transition-all duration-300 hover:text-white hover:bg-dark-card;
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 transition-all duration-300 hover:text-white hover:bg-dark-card;
   }
 
   .sidebar-link-active {
-    @apply sidebar-link text-white bg-gradient-to-r from-synapse-orange/20 to-synapse-purple/20 
-           border-l-2 border-synapse-orange;
+    @apply sidebar-link text-white bg-gradient-to-r from-synapse-orange/20 to-synapse-purple/20 border-l-2 border-synapse-orange;
   }
 
   /* Progress Bar */
@@ -218,15 +210,19 @@
   .animation-delay-100 {
     animation-delay: 100ms;
   }
+
   .animation-delay-200 {
     animation-delay: 200ms;
   }
+
   .animation-delay-300 {
     animation-delay: 300ms;
   }
+
   .animation-delay-400 {
     animation-delay: 400ms;
   }
+
   .animation-delay-500 {
     animation-delay: 500ms;
   }
@@ -241,5 +237,15 @@
 
   .transform-3d {
     transform-style: preserve-3d;
+  }
+
+  /* Hide scrollbar for horizontal scroll areas */
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }

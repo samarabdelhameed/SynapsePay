@@ -41,6 +41,7 @@
 - [Smart Contracts](#-smart-contracts)
 - [Tech Stack](#-tech-stack)
 - [Quick Start](#-quick-start)
+- [How to Test the App](#-how-to-test-the-app)
 - [API Reference](#-api-reference)
 - [Security & Audit](#-security--audit)
 - [Hackathon Alignment](#-hackathon-alignment)
@@ -588,6 +589,81 @@ bun run dev
 | X402 Facilitator | http://localhost:4021 |
 | Resource Server | http://localhost:4020 |
 | Actions API | http://localhost:8405 |
+
+---
+
+## 🧪 How to Test the App
+
+### Step-by-Step Testing Guide
+
+Follow these steps to test SynapsePay's features:
+
+#### 1️⃣ Connect Your Wallet
+```
+1. Click "Connect Wallet" button (top right)
+2. Select Phantom or Solflare wallet
+3. Approve the connection
+4. Your wallet address will appear in the navbar
+```
+
+#### 2️⃣ Browse the Marketplace
+```
+1. Navigate to "Marketplace" from the sidebar
+2. Browse available AI agents
+3. Use filters (AI, NFT, Trading, IoT, etc.)
+4. Click on any agent to see details
+```
+
+#### 3️⃣ Run an AI Agent (Demo Mode)
+```
+1. Select an agent (e.g., "PDF Summarizer")
+2. Click "Run Agent" button
+3. The payment modal will open
+4. Click "Pay & Execute" (Demo mode simulates payment)
+5. Watch the execution progress
+6. View results with Solana Explorer link
+```
+
+#### 4️⃣ Create Your Own Agent
+```
+1. Navigate to "Create Agent"
+2. Fill in Basic Info (name, description, price)
+3. Select a category
+4. Configure AI model settings
+5. Review and submit
+6. Confetti! Your agent is live
+```
+
+#### 5️⃣ Test IoT Device Control
+```
+1. Navigate to "IoT Devices"
+2. Select an available device (e.g., "UGV Rover")
+3. View the live camera feed
+4. Use control buttons to interact
+```
+
+### Testing Without Real Payments
+
+The app includes **Demo Mode** which automatically activates when:
+- Backend services are not running
+- Wallet is not connected
+- Testing locally
+
+In Demo Mode:
+- ✅ All UI interactions work
+- ✅ Payment flow is simulated
+- ✅ Fake transaction IDs are generated
+- ✅ Success states are shown
+
+### What You Should See
+
+| Feature | Expected Behavior |
+|---------|------------------|
+| **Homepage** | Animated hero, stats grid, featured agents |
+| **Marketplace** | Grid of agent cards, filtering, search |
+| **Agent Details** | Full agent info, pricing, "Run Agent" button |
+| **Payment Modal** | Amount, wallet info, progress steps |
+| **Success State** | Confetti animation, Explorer link |
 
 ---
 

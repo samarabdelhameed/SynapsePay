@@ -119,25 +119,25 @@ export default function CreateAgent() {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-4xl mx-auto space-y-6"
+            className="max-w-4xl mx-auto space-y-4 sm:space-y-6 px-2 sm:px-0"
         >
             {/* Header */}
             <div className="text-center">
-                <h1 className="text-3xl font-display font-bold text-white mb-2">
+                <h1 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
                     Create New Agent
                 </h1>
-                <p className="text-gray-400">
+                <p className="text-sm sm:text-base text-gray-400">
                     Build your own AI agent and start earning USDC
                 </p>
             </div>
 
             {/* Progress Bar */}
-            <div className="glass-card p-4">
+            <div className="glass-card p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-2">
                     {[1, 2, 3, 4].map((s) => (
-                        <div key={s} className="flex items-center">
+                        <div key={s} className="flex items-center flex-1 last:flex-none">
                             <motion.div
-                                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${s < step
+                                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold text-sm sm:text-base ${s < step
                                     ? 'bg-synapse-green text-dark-bg'
                                     : s === step
                                         ? 'bg-gradient-to-r from-synapse-orange to-synapse-purple text-white'
@@ -148,15 +148,15 @@ export default function CreateAgent() {
                                 {s < step ? '✓' : s}
                             </motion.div>
                             {s < 4 && (
-                                <div className={`w-full h-1 mx-2 rounded ${s < step ? 'bg-synapse-green' : 'bg-dark-border'}`} style={{ width: '60px' }} />
+                                <div className={`flex-1 h-1 mx-1 sm:mx-2 rounded ${s < step ? 'bg-synapse-green' : 'bg-dark-border'}`} />
                             )}
                         </div>
                     ))}
                 </div>
-                <div className="flex justify-between text-xs text-gray-400">
+                <div className="flex justify-between text-[10px] sm:text-xs text-gray-400">
                     <span>Basic Info</span>
                     <span>Category</span>
-                    <span>Configuration</span>
+                    <span>Config</span>
                     <span>Review</span>
                 </div>
             </div>
@@ -167,7 +167,7 @@ export default function CreateAgent() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="glass-card p-8"
+                className="glass-card p-4 sm:p-8"
             >
                 {/* Step 1: Basic Info */}
                 {step === 1 && (
@@ -218,23 +218,23 @@ export default function CreateAgent() {
                 {/* Step 2: Category */}
                 {step === 2 && (
                     <div className="space-y-6">
-                        <h2 className="text-xl font-semibold text-white mb-6">Select Category</h2>
+                        <h2 className="text-lg sm:text-xl font-semibold text-white mb-4 sm:mb-6">Select Category</h2>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                             {categories.map((cat) => (
                                 <motion.button
                                     key={cat.id}
                                     onClick={() => setFormData({ ...formData, category: cat.id })}
-                                    className={`p-6 rounded-xl border-2 text-left transition-all ${formData.category === cat.id
+                                    className={`p-4 sm:p-6 rounded-xl border-2 text-left transition-all ${formData.category === cat.id
                                         ? 'border-synapse-purple bg-synapse-purple/10'
                                         : 'border-dark-border hover:border-synapse-purple/50 bg-dark-bg'
                                         }`}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <div className="text-4xl mb-3">{cat.icon}</div>
-                                    <p className="font-semibold text-white">{cat.label}</p>
-                                    <p className="text-sm text-gray-400 mt-1">{cat.desc}</p>
+                                    <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">{cat.icon}</div>
+                                    <p className="font-semibold text-white text-sm sm:text-base">{cat.label}</p>
+                                    <p className="text-xs sm:text-sm text-gray-400 mt-1">{cat.desc}</p>
                                 </motion.button>
                             ))}
                         </div>
@@ -247,20 +247,20 @@ export default function CreateAgent() {
                         <h2 className="text-xl font-semibold text-white mb-6">Configuration</h2>
 
                         <div>
-                            <label className="block text-white mb-2">AI Model *</label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <label className="block text-white mb-2 text-sm sm:text-base">AI Model *</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {aiModels.map((model) => (
                                     <motion.button
                                         key={model.id}
                                         onClick={() => setFormData({ ...formData, aiModel: model.id })}
-                                        className={`p-4 rounded-xl border text-left transition-all ${formData.aiModel === model.id
+                                        className={`p-3 sm:p-4 rounded-xl border text-left transition-all ${formData.aiModel === model.id
                                             ? 'border-synapse-purple bg-synapse-purple/10'
                                             : 'border-dark-border hover:border-synapse-purple/50 bg-dark-bg'
                                             }`}
                                         whileHover={{ scale: 1.02 }}
                                     >
-                                        <p className="font-semibold text-white">{model.label}</p>
-                                        <p className="text-sm text-gray-400">{model.provider}</p>
+                                        <p className="font-semibold text-white text-sm sm:text-base">{model.label}</p>
+                                        <p className="text-xs sm:text-sm text-gray-400">{model.provider}</p>
                                     </motion.button>
                                 ))}
                             </div>
@@ -278,7 +278,7 @@ export default function CreateAgent() {
                             </div>
                             <div className="space-y-3">
                                 {formData.inputFields.map((field, index) => (
-                                    <div key={index} className="flex gap-3">
+                                    <div key={index} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                                         <input
                                             type="text"
                                             placeholder="Field name"
@@ -337,7 +337,7 @@ export default function CreateAgent() {
 
                             <p className="text-gray-300">{formData.description || 'No description provided'}</p>
 
-                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-dark-border">
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4 border-t border-dark-border">
                                 <div>
                                     <p className="text-sm text-gray-400">Price</p>
                                     <p className="text-xl font-bold text-synapse-green">${formData.price || '0.00'} USDC</p>

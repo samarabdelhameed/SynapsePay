@@ -188,15 +188,15 @@ export default function Marketplace() {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="space-y-6"
+            className="space-y-4 sm:space-y-6 px-1 sm:px-0"
         >
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div>
-                    <h1 className="text-3xl font-display font-bold text-white">
+                    <h1 className="text-2xl sm:text-3xl font-display font-bold text-white">
                         Agent Marketplace
                     </h1>
-                    <p className="text-gray-400 mt-1">
+                    <p className="text-sm sm:text-base text-gray-400 mt-1">
                         Discover and run AI agents with micropayments
                     </p>
                 </div>
@@ -213,7 +213,7 @@ export default function Marketplace() {
             </div>
 
             {/* Search and Filters */}
-            <div className="glass-card p-4">
+            <div className="glass-card p-3 sm:p-4">
                 <div className="flex flex-col lg:flex-row gap-4">
                     {/* Search */}
                     <div className="flex-1 relative">
@@ -326,7 +326,7 @@ export default function Marketplace() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                     >
                         {sortedAgents.map((agent, index) => (
                             <motion.div
