@@ -13,6 +13,9 @@
   <a href="https://synapsepay.vercel.app" target="_blank">
     <img src="https://img.shields.io/badge/🌐_LIVE_DEMO-synapsepay.vercel.app-00D18C?style=for-the-badge&logoColor=white" alt="Live Demo"/>
   </a>
+  <a href="https://youtu.be/stY5DphAuVw" target="_blank">
+    <img src="https://img.shields.io/badge/🎬_DEMO_VIDEO-Watch_on_YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Demo Video"/>
+  </a>
 </p>
 
 <p align="center">
@@ -21,6 +24,7 @@
 
 <p align="center">
   <a href="https://synapsepay.vercel.app">🌐 Live Demo</a> •
+  <a href="https://youtu.be/stY5DphAuVw">🎬 Demo Video</a> •
   <a href="#-deployed-contracts">🔗 Live Contracts</a> •
   <a href="#-core-features">Features</a> •
   <a href="#-architecture">Architecture</a> •
@@ -31,14 +35,16 @@
 
 ---
 
-## � **Live Demo & Links**
+## 🌐 **Live Demo & Links**
 
 | Resource | Link |
 |----------|------|
 | **🚀 Live Demo** | **[https://synapsepay.vercel.app](https://synapsepay.vercel.app)** |
+| **🎬 Demo Video** | **[https://youtu.be/stY5DphAuVw](https://youtu.be/stY5DphAuVw)** |
 | **📂 GitHub Repository** | [https://github.com/samarabdelhameed/SynapsePay](https://github.com/samarabdelhameed/SynapsePay) |
 | **📖 User Guide** | [USER_GUIDE.md](./USER_GUIDE.md) |
 | **🔧 Deployment Guide** | [DEPLOYMENT_README.md](./DEPLOYMENT_README.md) |
+
 
 ---
 
