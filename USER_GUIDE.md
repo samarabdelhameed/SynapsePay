@@ -1,1549 +1,390 @@
 # 📱 SynapsePay - User Guide
-## دليل استخدام المستخدم الشامل
+
+## Comprehensive User Manual
 
 ---
 
-# 🚀 البداية السريعة
+## 🚀 Quick Start
 
-## 🌐 الموقع الحي (Live Demo)
+### Live Demo
 ```
-https://synapsepay-demo.surge.sh
+https://synapsepay.vercel.app
 ```
 
-## تشغيل المشروع محلياً
+### Running Locally
 
 ```bash
-# 1. افتح Terminal وادخل لمجلد المشروع
-cd /Users/s/Solana-SynapsePay
+# 1. Navigate to project folder
+cd /path/to/SynapsePay
 
-# 2. شغل الـ Frontend
+# 2. Start the Frontend
 cd apps/web && npm run dev
 ```
 
-## الرابط المحلي
+### Local URL
 ```
 http://localhost:5173/
 ```
 
 ---
 
-# 📋 السيناريوهات المتاحة
+## 📋 Available Scenarios
 
-SynapsePay يقدم **3 سيناريوهات رئيسية** للاستخدام:
+SynapsePay offers **3 main use cases**:
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                     SYNAPSEPAY SCENARIOS                            │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  1. 🤖 AI Agents                                                    │
-│     تنفيذ مهام AI مثل تلخيص PDF، إنشاء NFT، تحليل الكود           │
-│     السعر: 0.05 - 0.50 USDC لكل مهمة                               │
-│                                                                     │
-│  2. 🌐 IoT Devices                                                  │
-│     تأجير والتحكم في أجهزة حقيقية (روبوت، درون، طابعة 3D)         │
-│     السعر: 0.05 - 0.50 USDC لكل جلسة                               │
-│                                                                     │
-│  3. 🔄 Subscriptions                                                │
-│     جدولة مهام تلقائية متكررة (تقرير يومي، نسخ احتياطي)           │
-│     السعر: 0.01 - 0.10 USDC لكل تنفيذ                              │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-| السيناريو | الاستخدام | مثال |
-|-----------|----------|------|
-| **AI Agents** | مهام لمرة واحدة | تلخيص PDF، تحويل صورة لـ NFT |
-| **IoT Devices** | تحكم في الوقت الحقيقي | قيادة روبوت، تشغيل أضواء |
-| **Subscriptions** | مهام متكررة مجدولة | تقرير أسعار يومي |
+| Scenario | Usage | Example | Price |
+|----------|-------|---------|-------|
+| **AI Agents** | One-time tasks | PDF Summary, NFT Creation | 0.05 - 0.50 USDC |
+| **IoT Devices** | Real-time control | Robot control, Smart lights | 0.05 - 0.50 USDC |
+| **Subscriptions** | Scheduled recurring tasks | Daily reports, Backups | 0.01 - 0.10 USDC |
 
 ---
 
-# 🤖 السيناريو الأول: AI Agents
+# 🤖 Scenario 1: AI Agents
 
-## الهدف
-تنفيذ مهمة AI (مثل تلخيص PDF) مقابل دفع USDC فوري.
+## Goal
+Execute an AI task (like PDF summarization) for instant USDC payment.
 
-## المشكلة التي يحلها
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  المشكلة: عايز تلخص PDF من 100 صفحة                                │
-│                                                                     │
-│  الحلول التقليدية:                                                  │
-│  ❌ اشتراك ChatGPT Plus = $20/شهر (غالي لمهمة واحدة)              │
-│  ❌ API Keys = معقد + تحتاج Setup                                  │
-│  ❌ خدمات مجانية = بطيئة + محدودة                                  │
-│                                                                     │
-│  حل SynapsePay:                                                     │
-│  ✅ ادفع $0.05 → ارفع PDF → احصل على الملخص خلال ثواني            │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+## Problem We Solve
+
+| Traditional Solution | Issue |
+|---------------------|-------|
+| ChatGPT Plus subscription | $20/month for one task |
+| API Keys setup | Complex configuration |
+| Free services | Slow and limited |
+
+**SynapsePay Solution**: Pay $0.05 → Upload PDF → Get summary in seconds
 
 ---
 
-## خطوات السيناريو
+## Step-by-Step Guide
 
-### الخطوة 1️⃣ - الصفحة الرئيسية
+### Step 1️⃣ - Homepage
 
-**🔗 الرابط:** `http://localhost:5173/`
+**URL:** `http://localhost:5173/`
+
+**Action:** Click `🏪 Marketplace` in the sidebar or `Explore Marketplace` button
+
+### Step 2️⃣ - Agent Marketplace
+
+**URL:** `http://localhost:5173/marketplace`
+
+**Available Agents:**
+
+| Agent | Function | Price | Rating |
+|-------|----------|-------|--------|
+| 📄 PDF Summarizer | Summarize PDF files | 0.05 USDC | ⭐⭐⭐⭐⭐ |
+| 🎨 NFT Minter | Convert image to NFT | 0.25 USDC | ⭐⭐⭐⭐ |
+| 🐛 Code Debugger | Analyze and fix code | 0.10 USDC | ⭐⭐⭐⭐⭐ |
+| 📊 Data Analyzer | Analyze data | 0.15 USDC | ⭐⭐⭐⭐ |
+
+**Action:** Click `View Details` on `PDF Summarizer`
+
+### Step 3️⃣ - Agent Details
+
+**URL:** `http://localhost:5173/agent/pdf-summarizer`
+
+**Agent Information:**
+- Multi-language support
+- Key points extraction
+- Bullet-point formatting
+- Supports documents up to 100 pages
+
+**Action:** Click `🚀 Run Agent (0.05 USDC)`
+
+### Step 4️⃣ - Upload & Pay
+
+1. Upload your PDF file (max 100 pages, 10MB)
+2. Click `💳 Pay & Execute`
+
+### Step 5️⃣ - Processing
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │                                                         │
-│  SIDEBAR │    Welcome to SynapsePay                                │
-│          │    AI-Powered AutoPay Agents on Solana                  │
-│ ──────── │                                                         │
-│ 🏠 Home  │    Featured AI Agents:                                  │
-│ 🏪 Market│◄── │ ┌──────┐ ┌──────┐ ┌──────┐                        │
-│ 🌐 IoT   │    │ │ PDF  │ │ NFT  │ │ Code │                        │
-│ 📊 Dash  │    │ │ Bot  │ │Minter│ │Debug │                        │
-│          │    │ └──────┘ └──────┘ └──────┘                        │
-│          │    │                                                    │
-│          │    [Explore Marketplace] ◄── أو اضغط هنا               │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
+[14:30:01] Initiating X402 payment sequence...
+[14:30:02] ✓ Permit signature received
+[14:30:03] ✓ Payment intent signed
+[14:30:04] ✓ Payment settled: 0.05 USDC transferred
+[14:30:05] Processing PDF...
+[14:30:08] ✓ Summary generated successfully
 ```
 
-**👆 الفعل:** اضغط على `🏪 Marketplace` في الـ Sidebar أو `Explore Marketplace`
+**Duration:** 3-8 seconds
+
+### Step 6️⃣ - Result
+
+- View your summarized content
+- Copy text or download result
+- Transaction link to Solana Explorer
 
 ---
 
-### الخطوة 2️⃣ - سوق الوكلاء (Agent Marketplace)
+# 🌐 Scenario 2: IoT Device Rental
 
-**🔗 الرابط:** `http://localhost:5173/marketplace`
+## Goal
+Rent and control a real device (robot) for a specified duration with USDC payment.
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │  🏪 Agent Marketplace                                   │
-│  SIDEBAR │  Discover and run AI agents with micropayments          │
-│          │                                                         │
-│ ──────── │  [🔍 Search agents...]     [Filter ▼] [Sort ▼]         │
-│ 🏠 Home  │                                                         │
-│ 🏪 Market│◄ │ Categories: [All] [AI] [Automation] [Analytics]     │
-│ 🌐 IoT   │  │                                                      │
-│ 📊 Dash  │  │ ┌─────────────────┐ ┌─────────────────┐             │
-│          │  │ │  📄 PDF         │ │  🎨 NFT         │             │
-│          │  │ │  Summarizer     │ │  Minter         │             │
-│          │  │ │                 │ │                 │             │
-│          │  │ │  ⭐⭐⭐⭐⭐ (128) │ │  ⭐⭐⭐⭐ (89)   │             │
-│          │  │ │  $0.05 USDC     │ │  $0.25 USDC     │             │
-│          │  │ │                 │ │                 │             │
-│          │  │ │ [View Details]◄─┼─┼── اضغط هنا     │             │
-│          │  │ └─────────────────┘ └─────────────────┘             │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
+## Problem We Solve
 
-**الوكلاء المتاحون:**
+| Traditional Solution | Issue |
+|---------------------|-------|
+| Buy the device | Expensive ($500+) |
+| Monthly rental | Don't need it for a whole month |
+| Travel to location | Impractical |
 
-| الوكيل | الوظيفة | السعر | التقييم |
-|--------|---------|-------|---------|
-| 📄 PDF Summarizer | تلخيص ملفات PDF | 0.05 USDC | ⭐⭐⭐⭐⭐ |
-| 🎨 NFT Minter | تحويل صورة لـ NFT | 0.25 USDC | ⭐⭐⭐⭐ |
-| 🐛 Code Debugger | تحليل وإصلاح الكود | 0.10 USDC | ⭐⭐⭐⭐⭐ |
-| 📊 Data Analyzer | تحليل البيانات | 0.15 USDC | ⭐⭐⭐⭐ |
-
-**👆 الفعل:** اضغط على `View Details` على `PDF Summarizer`
+**SynapsePay Solution**: Pay $0.10 → Control for 10 minutes → Done
 
 ---
 
-### الخطوة 3️⃣ - تفاصيل الوكيل (Agent Details)
+## Step-by-Step Guide
 
-**🔗 الرابط:** `http://localhost:5173/agent/pdf-summarizer`
+### Step 1️⃣ - Homepage
+
+**Action:** Click `🌐 IoT Devices` in the sidebar
+
+### Step 2️⃣ - IoT Device Hub
+
+**URL:** `http://localhost:5173/devices`
+
+**Available Devices:**
+
+| Device | Type | Price | Duration | Status |
+|--------|------|-------|----------|--------|
+| 🤖 UGV Rover 01 | Robot | 0.10 USDC | 10 min | ✅ Available |
+| 💡 Smart LED Array | LED | 0.05 USDC | 5 min | ✅ Available |
+| 🚁 Drone Camera 01 | Drone | 0.25 USDC | 15 min | ⚠️ In Use |
+| 🖨️ 3D Printer MK3 | Printer | 0.50 USDC | 30 min | 🔧 Maintenance |
+
+**Action:** Click `Rent Now` on `UGV Rover 01`
+
+### Step 3️⃣ - Connect Wallet
+
+**URL:** `http://localhost:5173/devices/ugv-rover-01`
+
+**Action:** Click `🔗 Connect Wallet`
+
+### Step 4️⃣ - Payment Gate
+
+**X402 Payment Steps:**
+
+| Step | Description |
+|------|-------------|
+| 1️⃣ **Sign Permit** | Approve USDC spending (no gas fees) |
+| 2️⃣ **Sign Intent** | Sign payment intent |
+| 3️⃣ **Settlement** | Execute transaction on Solana |
+
+**Action:** Click `⊕ Initialize Payment Sequence →`
+
+### Step 5️⃣ - Processing (Automatic)
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                   [X402: ONLINE]  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │  📄 PDF Summarizer                                      │
-│  SIDEBAR │  ⭐⭐⭐⭐⭐ (128 reviews)      by @ai-labs               │
-│          │                                                         │
-│ ──────── │  ┌────────────────────────────────────────────────────┐│
-│ 🏠 Home  │  │  About this Agent                                  ││
-│ 🏪 Market│  │                                                    ││
-│ 🌐 IoT   │  │  Upload any PDF document and get a concise        ││
-│ 📊 Dash  │  │  summary using advanced AI. Supports documents    ││
-│          │  │  up to 100 pages. Results in seconds.             ││
-│          │  │                                                    ││
-│          │  │  ✓ Multi-language support                         ││
-│          │  │  ✓ Key points extraction                          ││
-│          │  │  ✓ Bullet-point formatting                        ││
-│          │  └────────────────────────────────────────────────────┘│
-│          │                                                         │
-│          │  ┌────────────────────────────────────────────────────┐│
-│          │  │  💰 Price: 0.05 USDC                               ││
-│          │  │  ⚡ Average time: 3-5 seconds                      ││
-│          │  │  📊 Total runs: 15,847                             ││
-│          │  └────────────────────────────────────────────────────┘│
-│          │                                                         │
-│          │         ┌────────────────────────────────┐              │
-│          │         │  🚀 Run Agent (0.05 USDC)     │◄── اضغط هنا  │
-│          │         └────────────────────────────────┘              │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
+[12:45:01] Initiating X402 payment sequence...
+[12:45:03] ✓ Permit signature received
+[12:45:05] ✓ Payment intent signed
+[12:45:07] ✓ Payment settled: 0.10 USDC transferred
+[12:45:08] ✓ Access token issued
+[12:45:09] Device access granted for 10 minutes
 ```
 
-**👆 الفعل:** اضغط على `🚀 Run Agent (0.05 USDC)`
+**Duration:** 5-6 seconds
+
+### Step 6️⃣ - Control Interface
+
+**Control Panel Features:**
+- Live video feed
+- Device status (battery, signal, temperature)
+- Session timer countdown
+- Directional controls
+
+**Keyboard Controls:**
+
+| Key | Keyboard | Function |
+|-----|----------|----------|
+| `↑` | `W` | Move forward |
+| `↓` | `S` | Move backward |
+| `←` | `A` | Turn left |
+| `→` | `D` | Turn right |
+| `●` | `Space` | Stop |
+
+### Step 7️⃣ - Session End
+
+When the timer reaches 00:00:
+- Option to rent again
+- Option to return to hub
 
 ---
 
-### الخطوة 4️⃣ - رفع الملف والدفع
+# 🔄 Scenario 3: Subscriptions
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│  ┌────────────────────────────────────────────────────────────────┐│
-│  │  📄 PDF Summarizer                              0.05 USDC      ││
-│  │                                                                ││
-│  │  ┌──────────────────────────────────────────────────────────┐ ││
-│  │  │                                                          │ ││
-│  │  │     📁 Drop your PDF here or click to browse            │ ││
-│  │  │                                                          │ ││
-│  │  │     Supported: .pdf (max 100 pages, 10MB)               │ ││
-│  │  │                                                          │ ││
-│  │  └──────────────────────────────────────────────────────────┘ ││
-│  │                                                                ││
-│  │  File: research-paper.pdf (2.3 MB) ✓                          ││
-│  │                                                                ││
-│  │  ┌──────────────────────────────────────────────────────────┐ ││
-│  │  │         💳 Pay & Execute (0.05 USDC)                    │◄┼── اضغط
-│  │  └──────────────────────────────────────────────────────────┘ ││
-│  │                                                                ││
-│  └────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
+## Goal
+Schedule an automatic recurring task (like daily price reports) that executes and pays automatically.
 
-**👆 الفعل:** 
-1. ارفع ملف PDF
-2. اضغط `💳 Pay & Execute`
+## Problem We Solve
+
+| Traditional Solution | Issue |
+|---------------------|-------|
+| Check manually daily | Boring and time-consuming |
+| Monthly subscription service | $10/month is expensive |
+| Build custom script | Too complex |
+
+**SynapsePay Solution**: Schedule once → Runs automatically daily → Pays $0.01 per report
 
 ---
 
-### الخطوة 5️⃣ - معالجة الدفع والتنفيذ
+## Step-by-Step Guide
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Terminal Log:                                                      │
-│                                                                     │
-│  [14:30:01] Initiating X402 payment sequence...                    │
-│  [14:30:02] Requesting USDC-SPL approval signature...              │
-│  [14:30:02] ✓ Permit signature received                            │
-│  [14:30:03] ✓ Payment intent signed                                │
-│  [14:30:03] Submitting to Solana network...                        │
-│  [14:30:04] ✓ Payment settled: 0.05 USDC transferred               │
-│  [14:30:04] Starting PDF analysis...                               │
-│  [14:30:05] Processing page 1/45...                                │
-│  [14:30:06] Processing page 23/45...                               │
-│  [14:30:07] Processing page 45/45...                               │
-│  [14:30:08] ✓ Summary generated successfully                       │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
+### Step 1️⃣ - Homepage
 
-**⏱️ المدة:** 3-8 ثواني
+**Action:** Click `📊 Dashboard` in the sidebar
 
----
+### Step 2️⃣ - Dashboard
 
-### الخطوة 6️⃣ - النتيجة
+**URL:** `http://localhost:5173/dashboard`
 
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  ✅ Task Completed Successfully                                    │
-│                                                                     │
-│  ┌────────────────────────────────────────────────────────────────┐│
-│  │  📄 Summary of "research-paper.pdf"                            ││
-│  │                                                                ││
-│  │  Key Points:                                                   ││
-│  │  • This paper presents a novel approach to...                 ││
-│  │  • The methodology includes three main phases...              ││
-│  │  • Results show a 45% improvement in...                       ││
-│  │  • The authors conclude that...                               ││
-│  │                                                                ││
-│  │  Word Count: 234 words                                        ││
-│  │  Original Pages: 45                                           ││
-│  │                                                                ││
-│  └────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐ │
-│  │ 📋 Copy Text    │  │ 📥 Download     │  │ 🔄 Run Again       │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────┘ │
-│                                                                     │
-│  Transaction: 3xK9m...7Qp2 ✓                                       │
-│  Paid: 0.05 USDC                                                   │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
+**Dashboard Overview:**
+- Balance display
+- Active subscriptions count
+- Total spent
 
-**✅ النتيجة:** ملخص PDF جاهز للنسخ أو التحميل
+**Action:** Click `➕ Create New Subscription`
 
----
+### Step 3️⃣ - Create Subscription
 
-## ملخص سيناريو AI Agents
+**Available Task Types:**
+- 📈 Price Report
+- 💾 Backup
+- 🔔 Alerts
+- 📊 Analytics
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│  [1] Home (/)                                                       │
-│       │                                                             │
-│       └──▶ اضغط "🏪 Marketplace"                                   │
-│                   │                                                 │
-│                   ▼                                                 │
-│  [2] Marketplace (/marketplace)                                     │
-│       │                                                             │
-│       └──▶ اضغط "View Details" على PDF Summarizer                 │
-│                   │                                                 │
-│                   ▼                                                 │
-│  [3] Agent Details (/agent/pdf-summarizer)                         │
-│       │                                                             │
-│       └──▶ اضغط "🚀 Run Agent"                                     │
-│                   │                                                 │
-│                   ▼                                                 │
-│  [4] Upload & Pay (Modal)                                          │
-│       │                                                             │
-│       └──▶ ارفع PDF → اضغط "Pay & Execute"                        │
-│                   │                                                 │
-│                   ▼                                                 │
-│  [5] Processing (3-8 ثواني)                                        │
-│       │                                                             │
-│       └──▶ انتظر                                                   │
-│                   │                                                 │
-│                   ▼                                                 │
-│  [6] Result (النتيجة)                                              │
-│       │                                                             │
-│       └──▶ انسخ أو حمّل النتيجة                                    │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+**Settings Example:**
 
----
-
-# 🌐 السيناريو الثاني: IoT Device Rental
-
-## الهدف
-تأجير والتحكم في جهاز حقيقي (روبوت) لمدة محددة مقابل USDC.
-
-## المشكلة التي يحلها
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  المشكلة: عايز تتحكم في روبوت/درون لمدة 10 دقائق فقط             │
-│                                                                     │
-│  الحلول التقليدية:                                                  │
-│  ❌ شراء الجهاز = غالي جداً ($500+)                                │
-│  ❌ إيجار شهري = مش محتاج كل ده                                    │
-│  ❌ السفر للمكان = غير عملي                                         │
-│                                                                     │
-│  حل SynapsePay:                                                     │
-│  ✅ ادفع $0.10 → تحكم 10 دقائق → خلاص                              │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## خطوات السيناريو
-
-### الخطوة 1️⃣ - الصفحة الرئيسية
-
-**🔗 الرابط:** `http://localhost:5173/`
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │                                                         │
-│  SIDEBAR │    Welcome to SynapsePay                                │
-│          │    AI-Powered AutoPay Agents on Solana                  │
-│ ──────── │                                                         │
-│ 🏠 Home  │    🌐 IoT Device Hub                                    │
-│ 🏪 Market│    Control real-world devices with micropayments        │
-│ 🌐 IoT ◄─┼─── اضغط هنا                                             │
-│ 📊 Dash  │    ┌──────┐ ┌──────┐ ┌──────┐                          │
-│          │    │ 🤖   │ │ 💡   │ │ 🚁   │                          │
-│          │    │Rover │ │ LED  │ │Drone │                          │
-│          │    └──────┘ └──────┘ └──────┘                          │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**👆 الفعل:** اضغط على `🌐 IoT Devices` في الـ Sidebar
-
----
-
-### الخطوة 2️⃣ - صفحة الأجهزة (IoT Device Hub)
-
-**🔗 الرابط:** `http://localhost:5173/devices`
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │  🌐 IoT Device Hub                                      │
-│  SIDEBAR │  Rent and control physical devices with USDC            │
-│          │                                                         │
-│ ──────── │  ┌─ Stats ─────────────────────────────────────────────┐│
-│ 🏠 Home  │  │ 🔌 Total: 6  ✅ Available: 4  🔄 In Use: 1         ││
-│ 🏪 Market│  └─────────────────────────────────────────────────────┘│
-│ 🌐 IoT ◄ │                                                         │
-│ 📊 Dash  │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────┐│
-│          │  │      🤖         │ │      💡         │ │     🚁      ││
-│          │  │  UGV Rover 01   │ │ Smart LED Array │ │ Drone Cam   ││
-│          │  │                 │ │                 │ │             ││
-│          │  │  $0.10 USDC     │ │  $0.05 USDC     │ │  $0.25 USDC ││
-│          │  │  10 min         │ │  5 min          │ │  15 min     ││
-│          │  │                 │ │                 │ │             ││
-│          │  │ [✅ Available]  │ │ [✅ Available]  │ │ [⚠️ In Use] ││
-│          │  │                 │ │                 │ │             ││
-│          │  │ [  Rent Now →]◄─┼─┼── اضغط هنا     │ │             ││
-│          │  └─────────────────┘ └─────────────────┘ └─────────────┘│
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**الأجهزة المتاحة:**
-
-| الجهاز | النوع | السعر | المدة | الحالة |
-|--------|-------|-------|-------|--------|
-| 🤖 UGV Rover 01 | Robot | 0.10 USDC | 10 دقائق | ✅ متاح |
-| 💡 Smart LED Array | LED | 0.05 USDC | 5 دقائق | ✅ متاح |
-| 🚁 Drone Camera 01 | Drone | 0.25 USDC | 15 دقيقة | ⚠️ مشغول |
-| 🖨️ 3D Printer MK3 | Printer | 0.50 USDC | 30 دقيقة | 🔧 صيانة |
-
-**👆 الفعل:** اضغط على `Rent Now` على `UGV Rover 01`
-
----
-
-### الخطوة 3️⃣ - ربط المحفظة
-
-**🔗 الرابط:** `http://localhost:5173/devices/ugv-rover-01`
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │                                                         │
-│  SIDEBAR │                     🤖                                  │
-│          │                UGV Rover 01                             │
-│ ──────── │                                                         │
-│          │           Connect to SynapsePay                         │
-│          │                                                         │
-│          │     Access the device controls by connecting            │
-│          │     your wallet. Uses X402 protocol for                 │
-│          │     secure, gasless micropayments.                      │
-│          │                                                         │
-│          │              ┌─────────────────────────┐                │
-│          │              │   🔗 Connect Wallet     │◄── اضغط هنا    │
-│          │              └─────────────────────────┘                │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**👆 الفعل:** اضغط على `🔗 Connect Wallet`
-
----
-
-### الخطوة 4️⃣ - بوابة الدفع (Secure Access Gate)
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay              [X402: ONLINE]        [0x71C...9A23]  │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │                                                         │
-│  SIDEBAR │  ┌──────────────────────────────────────────────────┐   │
-│          │  │  🔐 Secure Access Gate               0.10 USDC   │   │
-│ ──────── │  │     X402 Micropayment Required      For 10 min   │   │
-│          │  │                                                  │   │
-│          │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐   │   │
-│          │  │  │ 1️⃣ Sign    │ │ 2️⃣ Sign    │ │ 3️⃣ Settle  │   │   │
-│          │  │  │ Permit     │ │ Intent     │ │ ment       │   │   │
-│          │  │  └────────────┘ └────────────┘ └────────────┘   │   │
-│          │  │                                                  │   │
-│          │  │  [Terminal Log...]                              │   │
-│          │  │                                                  │   │
-│          │  │  ┌──────────────────────────────────────────────┐│   │
-│          │  │  │   ⊕ Initialize Payment Sequence →          ││◄── اضغط
-│          │  │  └──────────────────────────────────────────────┘│   │
-│          │  └──────────────────────────────────────────────────┘   │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**📋 خطوات الدفع X402:**
-
-| الخطوة | الوصف |
-|--------|-------|
-| 1️⃣ **Sign Permit** | توقيع الموافقة على USDC (بدون رسوم غاز) |
-| 2️⃣ **Sign Intent** | توقيع نية الدفع |
-| 3️⃣ **Settlement** | تنفيذ المعاملة على Solana |
-
-**👆 الفعل:** اضغط على `⊕ Initialize Payment Sequence →`
-
----
-
-### الخطوة 5️⃣ - معالجة الدفع (تلقائي)
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Terminal Log:                                                      │
-│                                                                     │
-│  [12:45:01] Initiating X402 payment sequence...                    │
-│  [12:45:02] Requesting USDC-SPL approval signature...              │
-│  [12:45:03] ✓ Permit signature received                            │
-│  [12:45:04] Requesting payment intent signature...                 │
-│  [12:45:05] ✓ Payment intent signed                                │
-│  [12:45:06] Submitting to Solana network...                        │
-│  [12:45:07] ✓ Payment settled: 0.10 USDC transferred               │
-│  [12:45:08] ✓ Access token issued                                  │
-│  [12:45:09] Device access granted for 10 minutes                   │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**⏱️ المدة:** 5-6 ثواني (انتظر فقط)
-
----
-
-### الخطوة 6️⃣ - واجهة التحكم
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  🤖 UGV Rover 01                         X402: ONLINE   [0x71C...9A23] │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─── LIVE FEED ───────────────────┐  ┌─── DEVICE STATUS ───────────┐  │
-│  │  ● LIVE          LAT: 34.0522   │  │  🤖 UGV Rover 01    [IDLE]  │  │
-│  │                  LON: 118.2437  │  │                             │  │
-│  │                                 │  │  ⚡ Battery: 87%            │  │
-│  │    [Camera Feed Area]           │  │  📶 Signal: 97%             │  │
-│  │                                 │  │  🌡️ Temp: 40.4°C            │  │
-│  │                                 │  │  ⏱️ Session: 09:45          │  │
-│  └─────────────────────────────────┘  └─────────────────────────────┘  │
-│                                                                         │
-│  ┌─── SYSTEM LOGS ─────────────────┐  ┌─── CONTROLS ────────────────┐  │
-│  │  [12:45:10] Access granted      │  │         ┌─────┐             │  │
-│  │  [12:45:12] Device control OK   │  │         │  ↑  │    W        │  │
-│  │  > █                            │  │  ┌─────┐┌─────┐┌─────┐     │  │
-│  │                                 │  │  │  ←  ││  ●  ││  →  │     │  │
-│  │                                 │  │  └─────┘└─────┘└─────┘     │  │
-│  │                                 │  │         ┌─────┐             │  │
-│  │                                 │  │         │  ↓  │    S        │  │
-│  │                                 │  │         └─────┘             │  │
-│  │                                 │  │  Use WASD or Arrows         │  │
-│  └─────────────────────────────────┘  └─────────────────────────────┘  │
-│                                                                         │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-**🎮 أزرار التحكم:**
-
-| الزر | الكيبورد | الوظيفة |
-|------|----------|---------|
-| `↑` | `W` | تحريك للأمام |
-| `↓` | `S` | تحريك للخلف |
-| `←` | `A` | دوران يسار |
-| `→` | `D` | دوران يمين |
-| `●` | `Space` | توقف |
-
-**👆 الفعل:** استخدم WASD أو الأسهم للتحكم في الروبوت
-
----
-
-### الخطوة 7️⃣ - انتهاء الجلسة
-
-عندما ينتهي الـ Timer (00:00):
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│                    ⏱️ SESSION EXPIRED                              │
-│                                                                     │
-│     Your 10-minute session has ended.                              │
-│                                                                     │
-│     ┌─────────────────────┐  ┌─────────────────────┐              │
-│     │  🔄 Rent Again      │  │  ← Back to Hub      │              │
-│     └─────────────────────┘  └─────────────────────┘              │
-└────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## ملخص سيناريو IoT
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│  [1] Home → اضغط "🌐 IoT Devices"                                  │
-│       ▼                                                             │
-│  [2] IoT Hub → اضغط "Rent Now" على UGV Rover                      │
-│       ▼                                                             │
-│  [3] Connect → اضغط "🔗 Connect Wallet"                            │
-│       ▼                                                             │
-│  [4] Payment → اضغط "Initialize Payment"                          │
-│       ▼                                                             │
-│  [5] Processing → انتظر 5 ثواني                                    │
-│       ▼                                                             │
-│  [6] Control → استخدم WASD للتحكم                                  │
-│       ▼                                                             │
-│  [7] Session End → Rent Again أو Back to Hub                       │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-# 🔄 السيناريو الثالث: Subscriptions
-
-## الهدف
-جدولة مهمة تلقائية متكررة (مثل تقرير أسعار يومي) تُنفذ تلقائياً وتُدفع تلقائياً.
-
-## المشكلة التي يحلها
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  المشكلة: عايز تقرير أسعار الكريبتو كل يوم الساعة 9 الصبح         │
-│                                                                     │
-│  الحلول التقليدية:                                                  │
-│  ❌ تفتح الموقع يومياً بنفسك (مملل)                                 │
-│  ❌ اشتراك شهري في خدمة ($10/month)                                │
-│  ❌ تبرمج Script خاص (معقد)                                         │
-│                                                                     │
-│  حل SynapsePay:                                                     │
-│  ✅ جدول مرة واحدة → يتنفذ تلقائي يومياً → يدفع $0.01 لكل تقرير   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## خطوات السيناريو
-
-### الخطوة 1️⃣ - الصفحة الرئيسية
-
-**🔗 الرابط:** `http://localhost:5173/`
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                               🔔  [Connect Wallet] │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │                                                         │
-│  SIDEBAR │    Welcome to SynapsePay                                │
-│          │                                                         │
-│ ──────── │    🔄 Auto-Tasks & Subscriptions                        │
-│ 🏠 Home  │    Schedule recurring tasks that run automatically      │
-│ 🏪 Market│                                                         │
-│ 🌐 IoT   │                                                         │
-│ 📊 Dash ◄┼─── اضغط هنا                                             │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**👆 الفعل:** اضغط على `📊 Dashboard` في الـ Sidebar
-
----
-
-### الخطوة 2️⃣ - لوحة التحكم (Dashboard)
-
-**🔗 الرابط:** `http://localhost:5173/dashboard`
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  [S] SynapsePay                   [X402: ONLINE]  [0x71C...9A23]   │
-├──────────┬─────────────────────────────────────────────────────────┤
-│          │  📊 Dashboard                                           │
-│  SIDEBAR │                                                         │
-│          │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
-│ ──────── │  │ 💰 Balance  │ │ 🔄 Active   │ │ 📈 Total    │       │
-│ 🏠 Home  │  │   12.50     │ │ Subs: 3     │ │ Spent: 45   │       │
-│ 🏪 Market│  │   USDC      │ │             │ │ USDC        │       │
-│ 🌐 IoT   │  └─────────────┘ └─────────────┘ └─────────────┘       │
-│ 📊 Dash ◄│                                                         │
-│          │  Active Subscriptions:                                  │
-│          │  ┌──────────────────────────────────────────────────┐  │
-│          │  │ 📈 Daily Price Report     │ Every day 9:00 AM   │  │
-│          │  │ 💾 Weekly Backup          │ Every Sunday        │  │
-│          │  │ 🔔 Wallet Alerts          │ On transaction      │  │
-│          │  └──────────────────────────────────────────────────┘  │
-│          │                                                         │
-│          │  ┌──────────────────────────────────┐                  │
-│          │  │  ➕ Create New Subscription      │◄── اضغط هنا      │
-│          │  └──────────────────────────────────┘                  │
-│          │                                                         │
-└──────────┴─────────────────────────────────────────────────────────┘
-```
-
-**👆 الفعل:** اضغط على `➕ Create New` لفتح نافذة إنشاء اشتراك جديد
-
----
-
-### الخطوة 3️⃣ - إنشاء اشتراك جديد
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  ➕ Create New Subscription                                        │
-│                                                                     │
-│  ┌────────────────────────────────────────────────────────────────┐│
-│  │  Select Task Type:                                             ││
-│  │                                                                ││
-│  │  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐      ││
-│  │  │ 📈 Price  │ │ 💾 Backup │ │ 🔔 Alerts │ │ 📊 Report │      ││
-│  │  │ Report ◄──┼─┼── اختار   │ │           │ │           │      ││
-│  │  └───────────┘ └───────────┘ └───────────┘ └───────────┘      ││
-│  │                                                                ││
-│  │  Schedule:                                                     ││
-│  │  ┌─────────────────────────────────────────────────────────┐  ││
-│  │  │ Frequency: [Daily ▼]  Time: [09:00 AM ▼]               │  ││
-│  │  └─────────────────────────────────────────────────────────┘  ││
-│  │                                                                ││
-│  │  Tokens to Track:                                              ││
-│  │  ┌─────────────────────────────────────────────────────────┐  ││
-│  │  │ [✓] SOL   [✓] USDC   [ ] ETH   [✓] BTC                 │  ││
-│  │  └─────────────────────────────────────────────────────────┘  ││
-│  │                                                                ││
-│  │  Cost: 0.01 USDC per execution                                ││
-│  │  Estimated Monthly: 0.30 USDC (30 days)                       ││
-│  │                                                                ││
-│  │  ┌─────────────────────────────────────────────────────────┐  ││
-│  │  │         ✅ Create Subscription (0.01 USDC/run)          │◄─┼┼── اضغط
-│  │  └─────────────────────────────────────────────────────────┘  ││
-│  └────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**الإعدادات:**
-
-| الإعداد | القيمة |
-|---------|--------|
+| Setting | Value |
+|---------|-------|
 | **Task Type** | 📈 Price Report |
 | **Frequency** | Daily |
 | **Time** | 09:00 AM |
 | **Tokens** | SOL, USDC, BTC |
 | **Cost** | 0.01 USDC per run |
 
-**👆 الفعل:** 
-1. اختر نوع المهمة
-2. حدد الجدول الزمني
-3. اضغط `✅ Create Subscription`
+**Action:** 
+1. Select task type
+2. Set schedule
+3. Click `✅ Create Subscription`
+
+### Step 4️⃣ - Confirm Subscription
+
+**Action:** Click `🔐 Authorize Auto-Payment` to approve automatic payments
+
+### Step 5️⃣ - Automatic Execution
+
+At the scheduled time, you'll receive:
+- Automatic price report
+- Auto-paid from your balance
+- Next run scheduled
 
 ---
 
-### الخطوة 4️⃣ - تأكيد الاشتراك
+# 💳 X402 Payment Protocol
+
+## How It Works
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  ✅ Subscription Created Successfully!                             │
-│                                                                     │
-│  ┌────────────────────────────────────────────────────────────────┐│
-│  │  📈 Daily Price Report                                         ││
-│  │                                                                ││
-│  │  Schedule: Every day at 9:00 AM                               ││
-│  │  Next Run: Tomorrow, 9:00 AM                                  ││
-│  │  Cost: 0.01 USDC per execution                                ││
-│  │                                                                ││
-│  │  Status: ✅ ACTIVE                                            ││
-│  │                                                                ││
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         ││
-│  │  │ ⏸️ Pause     │  │ ✏️ Edit      │  │ 🗑️ Delete   │         ││
-│  │  └──────────────┘  └──────────────┘  └──────────────┘         ││
-│  └────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-│  Authorize automatic payments?                                      │
-│  This allows SynapsePay to deduct 0.01 USDC per scheduled run.     │
-│                                                                     │
-│  ┌────────────────────────────────────────┐                        │
-│  │  🔐 Authorize Auto-Payment (one-time)  │◄── اضغط للموافقة       │
-│  └────────────────────────────────────────┘                        │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
+User clicks "Pay"
+    ↓
+[1] Sign Permit (USDC approval - NO GAS!)
+    ↓
+[2] Sign Payment Intent
+    ↓
+[3] Facilitator submits to Solana
+    ↓
+[4] Transaction confirmed (~400ms)
+    ↓
+[5] Task executed
+    ↓
+[6] Result returned with Explorer link
 ```
 
-**👆 الفعل:** اضغط على `🔐 Authorize Auto-Payment` للموافقة على الدفع التلقائي
+## Key Benefits
 
----
-
-### الخطوة 5️⃣ - التنفيذ التلقائي (في الموعد المحدد)
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  📬 You received a new report!                    9:00 AM          │
-│                                                                     │
-│  ┌────────────────────────────────────────────────────────────────┐│
-│  │  📈 Daily Price Report - Dec 10, 2024                         ││
-│  │                                                                ││
-│  │  ┌─────────────────────────────────────────────────────────┐  ││
-│  │  │  Token    │  Price      │  24h Change  │  7d Change    │  ││
-│  │  ├─────────────────────────────────────────────────────────┤  ││
-│  │  │  SOL     │  $148.50    │  +3.2%       │  +12.5%       │  ││
-│  │  │  USDC    │  $1.00      │  0.0%        │  0.0%         │  ││
-│  │  │  BTC     │  $97,450    │  +1.8%       │  +8.3%        │  ││
-│  │  └─────────────────────────────────────────────────────────┘  ││
-│  │                                                                ││
-│  │  Generated automatically by SynapsePay                        ││
-│  │  Cost: 0.01 USDC (auto-paid)                                  ││
-│  │                                                                ││
-│  └────────────────────────────────────────────────────────────────┘│
-│                                                                     │
-│  Next report: Tomorrow, 9:00 AM                                    │
-│                                                                     │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**✅ النتيجة:** تقرير يومي تلقائي بدون أي تدخل منك
-
----
-
-## ملخص سيناريو Subscriptions
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                                                                     │
-│  [1] Home → اضغط "📊 Dashboard"                                    │
-│       ▼                                                             │
-│  [2] Dashboard → اضغط "➕ Create Subscription"                     │
-│       ▼                                                             │
-│  [3] Create → اختر Task Type + Schedule + اضغط Create             │
-│       ▼                                                             │
-│  [4] Authorize → اضغط "Authorize Auto-Payment"                     │
-│       ▼                                                             │
-│  [5] DONE! → التقارير ستصل تلقائياً في الموعد                      │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-# 📊 مقارنة السيناريوهات الثلاثة
-
-| المعيار | 🤖 AI Agents | 🌐 IoT Devices | 🔄 Subscriptions |
-|---------|-------------|----------------|------------------|
-| **النوع** | مهمة لمرة واحدة | جلسة تحكم محددة | مهمة متكررة |
-| **التفاعل** | رفع ملف → نتيجة | تحكم في الوقت الحقيقي | إعداد مرة → تلقائي |
-| **الدفع** | لكل مهمة | لكل جلسة | لكل تنفيذ تلقائي |
-| **السعر** | 0.05 - 0.50 USDC | 0.05 - 0.50 USDC | 0.01 - 0.10 USDC |
-| **المدة** | ثواني | دقائق | يومي/أسبوعي |
-| **مثال** | تلخيص PDF | تحكم في روبوت | تقرير أسعار يومي |
-
----
-
-# ⚠️ حل المشاكل الشائعة
-
-## المشكلة: الصفحة لا تفتح
-```bash
-cd /Users/s/Solana-SynapsePay/apps/web
-npm run dev
-```
-
-## المشكلة: زر لا يستجيب
-- تأكد من ربط المحفظة أولاً
-- تأكد من وجود رصيد USDC كافي
-
-## المشكلة: الدفع لا يكتمل
-- انتظر 5-6 ثواني كاملة
-- في Demo Mode الدفع محاكى
-
-## المشكلة: أزرار التحكم IoT لا تعمل
-- تأكد الـ Session Timer > 00:00
-- اضغط داخل منطقة التحكم أولاً
-
----
-
-# 🎉 الخلاصة
-
-أنت الآن تعرف كيف تستخدم SynapsePay بالكامل!
-
-| ✅ تعلمت | الوصف |
-|---------|-------|
-| **AI Agents** | تنفيذ مهام AI بدفعة واحدة |
-| **IoT Devices** | تأجير والتحكم في أجهزة حقيقية |
-| **Subscriptions** | جدولة مهام تلقائية متكررة |
-| **X402 Payment** | الدفع بدون رسوم غاز |
-
----
-
-**Made with ❤️ by SynapsePay Team**
-
----
-
-# 📚 الجزء الثاني: API Documentation
-
-## 🔗 X402 Facilitator API
-
-الـ Facilitator هو الخادم المسؤول عن معالجة المدفوعات وتسويتها.
-
-### Base URL
-```
-http://localhost:4021
-```
-
-### Endpoints
-
-#### 1. إنشاء فاتورة (Create Invoice)
-```http
-POST /api/invoice
-Content-Type: application/json
-
-{
-  "agentId": "pdf-summarizer",
-  "amount": "50000",
-  "payer": "YOUR_WALLET_ADDRESS",
-  "recipient": "AGENT_OWNER_ADDRESS",
-  "taskMetadata": {
-    "fileType": "pdf",
-    "fileName": "document.pdf"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "invoice": {
-    "paymentId": "inv_abc123...",
-    "amount": "50000",
-    "expiresAt": 1702500000,
-    "nonce": 12345
-  }
-}
-```
-
----
-
-#### 2. التحقق من الدفع (Verify Payment)
-```http
-POST /api/verify
-Content-Type: application/json
-X-PAYMENT: <base64_encoded_payment_payload>
-```
-
-**Response:**
-```json
-{
-  "valid": true,
-  "paymentId": "inv_abc123...",
-  "payer": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "recipient": "9yMXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "amount": "50000",
-  "agentId": "pdf-summarizer"
-}
-```
-
----
-
-#### 3. تسوية الدفع (Settle Payment)
-```http
-POST /api/settle
-Content-Type: application/json
-X-PAYMENT: <base64_encoded_payment_payload>
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "txSignature": "5xK9m...7Qp2",
-  "slot": 280123456,
-  "mode": "real"
-}
-```
-
----
-
-## 🤖 Resource Server API
-
-الـ Resource Server مسؤول عن تنفيذ المهام.
-
-### Base URL
-```
-http://localhost:4020
-```
-
-### Endpoints
-
-#### 1. تنفيذ مهمة (Execute Task)
-```http
-POST /api/task/execute
-Content-Type: multipart/form-data
-X-PAYMENT: <base64_encoded_payment_payload>
-
-{
-  "agentId": "pdf-summarizer",
-  "file": <binary_file>,
-  "options": {
-    "language": "ar",
-    "maxLength": 500
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "taskId": "task_xyz789...",
-  "result": {
-    "summary": "ملخص المستند...",
-    "wordCount": 234,
-    "keyPoints": ["نقطة 1", "نقطة 2"]
-  },
-  "resultCid": "QmXXXX..."
-}
-```
-
----
-
-#### 2. حالة المهمة (Task Status)
-```http
-GET /api/task/:taskId/status
-```
-
-**Response:**
-```json
-{
-  "taskId": "task_xyz789...",
-  "status": "completed",
-  "progress": 100,
-  "result": {...}
-}
-```
-
----
-
-## 📱 Solana Actions API (Blinks)
-
-### Base URL
-```
-http://localhost:8405
-```
-
-#### Get Action Metadata
-```http
-GET /api/actions/agent/:agentId
-```
-
-**Response (actions.json format):**
-```json
-{
-  "icon": "https://synapsepay.io/icons/pdf-summarizer.png",
-  "label": "PDF Summarizer",
-  "title": "Summarize PDF Document",
-  "description": "Upload a PDF and get an AI summary",
-  "links": {
-    "actions": [
-      {
-        "label": "Run Agent (0.05 USDC)",
-        "href": "/api/actions/agent/pdf-summarizer/run"
-      }
-    ]
-  }
-}
-```
-
----
-
-# 🛠️ Developer Guide
-
-## 📁 هيكل المشروع (Project Structure)
-
-```
-Solana-SynapsePay/
-├── apps/
-│   ├── web/                    # Frontend (React + Vite)
-│   ├── x402-facilitator/       # Payment Facilitator Server
-│   ├── resource-server/        # Task Execution Server
-│   └── actions-api/            # Solana Actions (Blinks)
-│
-├── packages/
-│   ├── x402-solana/            # X402 Protocol Implementation
-│   ├── ai-agents/              # AI Agent Definitions
-│   ├── ui-kit/                 # Shared UI Components
-│   └── tsconfig/               # TypeScript Configurations
-│
-├── programs/                   # Anchor Smart Contracts
-│   ├── synapsepay-registry/    # Agent Registry
-│   ├── synapsepay-payments/    # Payment Processing
-│   └── synapsepay-scheduler/   # Subscriptions
-│
-├── tests/                      # Integration Tests
-├── idl/                        # Generated IDL Files
-└── docs/                       # Documentation
-```
-
----
-
-## ⚙️ إعداد بيئة التطوير (Development Setup)
-
-### المتطلبات (Requirements)
-```bash
-# Required versions
-Node.js >= 18.0.0
-Bun >= 1.0.0
-Rust >= 1.70.0
-Anchor >= 0.29.0
-Solana CLI >= 1.17.0
-```
-
-### التثبيت (Installation)
-```bash
-# 1. Clone repository
-git clone https://github.com/your-org/Solana-SynapsePay.git
-cd Solana-SynapsePay
-
-# 2. Install dependencies
-bun install
-
-# 3. Copy environment file
-cp .env.example .env
-
-# 4. Configure your .env file
-nano .env
-
-# 5. Build all packages
-bun run build
-
-# 6. Start development servers
-bun run dev
-```
-
----
-
-## 🔑 إعداد المحفظة (Wallet Setup)
-
-### للمستخدمين (For Users)
-
-#### 1. تثبيت Phantom Wallet
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  1. اذهب إلى: https://phantom.app                                   │
-│  2. حمّل الإضافة لمتصفحك (Chrome/Firefox/Edge)                      │
-│  3. أنشئ محفظة جديدة واحفظ الـ 12 كلمات سرية                        │
-│  4. غيّر الشبكة إلى Devnet من الإعدادات                             │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-#### 2. الحصول على SOL للاختبار
-```bash
-# من Terminal
-solana airdrop 2 YOUR_WALLET_ADDRESS --url devnet
-
-# أو من Faucet
-# https://faucet.solana.com
-```
-
-#### 3. الحصول على USDC للاختبار
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Devnet USDC Faucet:                                                │
-│  https://spl-token-faucet.com/?token-name=USDC-Dev                  │
-│                                                                     │
-│  أو استخدم SPL Token CLI:                                          │
-│  spl-token create-account 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-### للمطورين (For Developers)
-
-#### إنشاء Keypair جديد
-```bash
-# Generate new keypair
-solana-keygen new --outfile ~/.config/solana/devnet.json
-
-# Set as default
-solana config set --keypair ~/.config/solana/devnet.json
-solana config set --url devnet
-
-# Get airdrop
-solana airdrop 5
-```
-
-#### استخراج Private Key لـ .env
-```bash
-# Show keypair as base58
-cat ~/.config/solana/devnet.json | python3 -c "
-import json, sys
-import base58
-data = json.load(sys.stdin)
-print(base58.b58encode(bytes(data)).decode())
-"
-```
-
----
-
-# 🏗️ Architecture Overview
-
-## نظرة عامة على النظام
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           SynapsePay Architecture                            │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
-│  │   Frontend   │    │ Facilitator  │    │  Resource    │                   │
-│  │  (React)     │───▶│   Server     │───▶│   Server     │                   │
-│  │  Port: 5173  │    │  Port: 4021  │    │  Port: 4020  │                   │
-│  └──────────────┘    └──────────────┘    └──────────────┘                   │
-│         │                   │                   │                            │
-│         │                   │                   │                            │
-│         ▼                   ▼                   ▼                            │
-│  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                        Solana Blockchain                            │    │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │    │
-│  │  │  Registry   │  │  Payments   │  │  Scheduler  │                 │    │
-│  │  │  Program    │  │  Program    │  │  Program    │                 │    │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘                 │    │
-│  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## X402 Payment Flow
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                         X402 Payment Flow                                  │
-├────────────────────────────────────────────────────────────────────────────┤
-│                                                                            │
-│  User                 Frontend              Facilitator         Solana     │
-│   │                      │                      │                  │       │
-│   │  1. Click Pay        │                      │                  │       │
-│   │─────────────────────▶│                      │                  │       │
-│   │                      │  2. Create Invoice   │                  │       │
-│   │                      │─────────────────────▶│                  │       │
-│   │                      │                      │  3. createInvoice│       │
-│   │                      │                      │─────────────────▶│       │
-│   │                      │  4. Return Invoice   │                  │       │
-│   │                      │◀─────────────────────│                  │       │
-│   │  5. Sign Permit      │                      │                  │       │
-│   │◀─────────────────────│                      │                  │       │
-│   │  6. User Signs       │                      │                  │       │
-│   │─────────────────────▶│                      │                  │       │
-│   │                      │  7. Settle Payment   │                  │       │
-│   │                      │─────────────────────▶│                  │       │
-│   │                      │                      │  8. Transfer USDC│       │
-│   │                      │                      │─────────────────▶│       │
-│   │                      │  9. TX Confirmed     │                  │       │
-│   │                      │◀─────────────────────│                  │       │
-│   │  10. Success!        │                      │                  │       │
-│   │◀─────────────────────│                      │                  │       │
-│                                                                            │
-└────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-# 📜 Smart Contracts Reference
-
-## Program IDs (Devnet)
-
-| Program | Address |
+| Feature | Benefit |
 |---------|---------|
-| **Registry** | `5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby` |
-| **Payments** | `8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP` |
-| **Scheduler** | `8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY` |
+| **Gasless** | Users don't pay transaction fees |
+| **Instant** | ~400ms settlement on Solana |
+| **Micropayments** | Pay as low as $0.01 |
+| **Verifiable** | All transactions on Solana Explorer |
 
 ---
 
-## Registry Program
+# 🔐 Wallet Setup
 
-### Instructions
+## Supported Wallets
 
-| Instruction | Description | Parameters |
-|-------------|-------------|------------|
-| `register_agent` | تسجيل وكيل جديد | `agent_id`, `metadata_cid`, `price`, `category` |
-| `update_agent` | تحديث بيانات الوكيل | `new_metadata_cid`, `new_price` |
-| `deactivate_agent` | إلغاء تفعيل الوكيل | - |
-| `reactivate_agent` | إعادة تفعيل الوكيل | - |
-| `transfer_ownership` | نقل ملكية الوكيل | `new_owner` |
+| Wallet | Status |
+|--------|--------|
+| Phantom | ✅ Fully Supported |
+| Solflare | ✅ Fully Supported |
 
-### Agent Categories
-```rust
-pub enum AgentCategory {
-    AI,          // وكلاء ذكاء اصطناعي
-    IoT,         // أجهزة إنترنت الأشياء
-    Automation,  // أتمتة المهام
-    Analytics,   // تحليل البيانات
-    Other,       // أخرى
-}
-```
+## Setup Steps
+
+1. Install Phantom or Solflare browser extension
+2. Create or import a wallet
+3. Switch to Devnet network
+4. Get test SOL from [solfaucet.com](https://solfaucet.com)
+5. Get test USDC (or use demo mode)
 
 ---
 
-## Payments Program
+# 📊 Dashboard Features
 
-### Instructions
+## Overview Stats
+- Current USDC balance
+- Active subscriptions count
+- Total USDC spent
 
-| Instruction | Description |
-|-------------|-------------|
-| `initialize_platform` | تهيئة المنصة |
-| `create_invoice` | إنشاء فاتورة |
-| `settle_payment` | تسوية الدفع |
-| `verify_payment` | التحقق من الدفع |
-| `complete_task` | إكمال المهمة |
-| `mint_receipt` | سك إيصال |
-| `claim_payment` | المطالبة بالدفع |
-| `refund_payment` | استرداد المبلغ |
+## Recent Tasks
+- Task history with status
+- Transaction links
+- Cost breakdown
 
-### Payment States
-```
-InvoiceCreated → Pending → Executing → Completed → ReceiptMinted → Claimed
-                    │                      │
-                    ▼                      ▼
-                 Expired               Refunded
-```
+## Subscription Management
+- View active subscriptions
+- Pause/Resume subscriptions
+- Edit schedule
+- Delete subscriptions
 
 ---
 
-## Scheduler Program
+# ❓ FAQ
 
-### Instructions
+## General
 
-| Instruction | Description |
-|-------------|-------------|
-| `initialize_scheduler` | تهيئة المجدول |
-| `create_subscription` | إنشاء اشتراك |
-| `update_subscription` | تحديث الاشتراك |
-| `pause_subscription` | إيقاف مؤقت |
-| `resume_subscription` | استئناف |
-| `cancel_subscription` | إلغاء الاشتراك |
-| `fund_subscription` | تمويل الاشتراك |
-| `trigger_scheduled_task` | تنفيذ المهمة |
+**Q: Do I need SOL for gas fees?**
+A: No! SynapsePay uses X402 protocol where the facilitator pays all gas fees. You only pay the service cost in USDC.
 
-### Schedule Cadence
-```rust
-pub enum ScheduleCadence {
-    Hourly,              // كل ساعة
-    Daily,               // يومياً
-    Weekly,              // أسبوعياً
-    Monthly,             // شهرياً
-    Custom { seconds },  // مخصص
-}
-```
+**Q: What's the minimum payment?**
+A: You can pay as low as $0.01 USDC per task.
+
+**Q: Is my payment secure?**
+A: Yes! All payments use Ed25519 signatures and are verified on-chain before execution.
+
+## Technical
+
+**Q: What network is this on?**
+A: Currently deployed on Solana Devnet. Mainnet deployment coming soon.
+
+**Q: How fast are transactions?**
+A: Solana provides ~400ms finality, so payments settle almost instantly.
+
+**Q: Can I verify my transactions?**
+A: Yes! Each transaction includes a link to Solana Explorer.
 
 ---
 
-# 🔧 Environment Variables Reference
+# 📞 Support
 
-## ملف .env الكامل
-
-```bash
-# ═══════════════════════════════════════════════════════════════
-# ⛓️ SOLANA CONFIGURATION
-# ═══════════════════════════════════════════════════════════════
-SOLANA_NETWORK=devnet
-SOLANA_RPC_URL=https://api.devnet.solana.com
-SOLANA_WS_URL=wss://api.devnet.solana.com
-
-# Program IDs (Devnet - Deployed)
-REGISTRY_PROGRAM_ID=5w8vTt1AUo67nE9bWA5e9Sh28HXtJJZaqiPj53n6wcby
-PAYMENTS_PROGRAM_ID=8yzR2Ze7t8NjH9b9wUUaUxkHLcrfogWqAzqbMSb1vZgP
-SCHEDULER_PROGRAM_ID=8NWxX7CDYhpfWAG5Dd6UJQ4EU1Ykrid8CoJ48Kp8MjsY
-
-# USDC Token Mint (Devnet)
-USDC_MINT_ADDRESS=4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
-
-# ═══════════════════════════════════════════════════════════════
-# 💳 X402 FACILITATOR
-# ═══════════════════════════════════════════════════════════════
-FACILITATOR_PORT=4021
-FACILITATOR_PRIVATE_KEY=your_base58_private_key
-FACILITATOR_FEE_BPS=500          # 5% fee
-
-# ═══════════════════════════════════════════════════════════════
-# 🤖 RESOURCE SERVER
-# ═══════════════════════════════════════════════════════════════
-RESOURCE_SERVER_PORT=4020
-TASK_TIMEOUT_SECONDS=60
-MAX_CONCURRENT_TASKS=10
-
-# ═══════════════════════════════════════════════════════════════
-# 🧠 AI SERVICES
-# ═══════════════════════════════════════════════════════════════
-OPENAI_API_KEY=sk-your-openai-key
-OPENAI_MODEL=gpt-4-turbo-preview
-
-# ═══════════════════════════════════════════════════════════════
-# 🎨 FRONTEND (VITE_* prefix)
-# ═══════════════════════════════════════════════════════════════
-VITE_APP_NAME=SynapsePay
-VITE_SOLANA_NETWORK=devnet
-VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
-VITE_FACILITATOR_URL=http://localhost:4021
-VITE_RESOURCE_SERVER_URL=http://localhost:4020
-```
+- **GitHub**: [github.com/samarabdelhameed/SynapsePay](https://github.com/samarabdelhameed/SynapsePay)
+- **Solana Docs**: [docs.solana.com](https://docs.solana.com/)
+- **Solana Explorer**: [explorer.solana.com](https://explorer.solana.com/?cluster=devnet)
 
 ---
 
-# 🧪 Testing Guide
-
-## تشغيل الاختبارات (Running Tests)
-
-### اختبارات العقود الذكية
-```bash
-# Build contracts
-anchor build
-
-# Run tests
-anchor test
-
-# Test specific program
-anchor test --program-name synapsepay-payments
-```
-
-### اختبارات التكامل
-```bash
-# Run all integration tests
-bun run test
-
-# Run with coverage
-bun run test:coverage
-```
-
----
-
-## Demo Mode vs Real Mode
-
-| الوضع | الوصف | الاستخدام |
-|-------|-------|----------|
-| **Demo Mode** | محاكاة المدفوعات بدون تحويل حقيقي | التطوير والعرض |
-| **Real Mode** | تحويل USDC حقيقي على Solana | الإنتاج |
-
-### تفعيل Demo Mode
-```bash
-# Remove FACILITATOR_PRIVATE_KEY from .env
-# Or leave it empty
-FACILITATOR_PRIVATE_KEY=
-```
-
-### تفعيل Real Mode
-```bash
-# Add your private key
-FACILITATOR_PRIVATE_KEY=your_base58_private_key
-```
-
----
-
-# 🔐 Security Best Practices
-
-## للمستخدمين
-
-1. **احمِ الـ Seed Phrase**
-   - لا تشاركها مع أي شخص
-   - احفظها في مكان آمن offline
-
-2. **تحقق من العناوين**
-   - تأكد من صحة عنوان المستلم قبل الدفع
-
-3. **ابدأ بمبالغ صغيرة**
-   - اختبر بـ 0.01 USDC أولاً
-
----
-
-## للمطورين
-
-1. **Never commit `.env`**
-```bash
-# .gitignore
-.env
-*.pem
-*-keypair.json
-```
-
-2. **Use environment variables**
-```typescript
-const privateKey = process.env.FACILITATOR_PRIVATE_KEY;
-if (!privateKey) {
-  throw new Error('Missing FACILITATOR_PRIVATE_KEY');
-}
-```
-
-3. **Validate all inputs**
-```typescript
-if (amount <= 0) {
-  throw new Error('Invalid amount');
-}
-```
-
----
-
-# ❓ FAQ - الأسئلة الشائعة
-
-## أسئلة عامة
-
-**س: ما هو X402؟**
-> X402 هو بروتوكول للمدفوعات الصغيرة يسمح بالدفع بدون رسوم غاز للمستخدم.
-
-**س: هل المدفوعات آمنة؟**
-> نعم، جميع المدفوعات موقعة بالـ Ed25519 ومحفوظة في Escrow على السلسلة.
-
-**س: ما هي العمولة؟**
-> 5% من قيمة المهمة تذهب للمنصة، 95% للوكيل.
-
----
-
-## أسئلة تقنية
-
-**س: لماذا لا تعمل المحفظة؟**
-> تأكد من:
-> - أنك على شبكة Devnet
-> - لديك SOL كافي (للغاز)
-> - لديك USDC كافي (للدفع)
-
-**س: كيف أسجل وكيل جديد؟**
-```typescript
-await program.methods
-  .registerAgent("my-agent", "QmCID...", 1_000_000, { ai: {} })
-  .accounts({ owner, agent })
-  .rpc();
-```
-
----
-
-# 📞 الدعم والتواصل
-
-## روابط مهمة
-
-| الرابط | الوصف |
-|--------|-------|
-| 🌐 Website | https://synapsepay.io |
-| 📚 Docs | https://docs.synapsepay.io |
-| 🐦 Twitter | @SynapsePaySol |
-| 💬 Discord | discord.gg/synapsepay |
-| 🐙 GitHub | github.com/synapsepay |
-
----
-
-# 📄 الملحق: أكواد الأخطاء
-
-## Payment Errors
-
-| Code | Error | الحل |
-|------|-------|------|
-| `InvalidAmount` | المبلغ غير صالح | تأكد المبلغ > 0 |
-| `InvoiceExpired` | الفاتورة منتهية | أنشئ فاتورة جديدة |
-| `InvalidSignature` | توقيع غير صالح | وقّع مرة أخرى |
-| `InsufficientBalance` | رصيد غير كافي | أضف USDC |
-
-## Scheduler Errors
-
-| Code | Error | الحل |
-|------|-------|------|
-| `NotActive` | الاشتراك غير نشط | فعّل الاشتراك |
-| `IsPaused` | الاشتراك متوقف | استأنف الاشتراك |
-| `NotTimeYet` | لم يحن الموعد | انتظر الموعد المحدد |
-| `MaxRunsReached` | الحد الأقصى | أنشئ اشتراك جديد |
-
----
-
-**📅 آخر تحديث:** 14 ديسمبر 2024
-
-**🔖 الإصدار:** 1.1.0
-
-**🌐 Live Demo:** https://synapsepay-demo.surge.sh
+*Built for Solana Winter Buildathon 2025*
