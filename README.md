@@ -32,6 +32,7 @@
 ## 📌 Table of Contents
 
 - [Overview](#-overview)
+- [Screenshots Gallery](#-screenshots-gallery)
 - [The Problem We Solve](#-the-problem-we-solve)
 - [Key Features](#-key-features)
 - [Live Deployment](#-live-deployment)
@@ -79,7 +80,48 @@ By leveraging the **X402 Payment Protocol**, we've created a **gasless, instant,
 
 ---
 
-## 🔴 The Problem We Solve
+## � Screenshots Gallery
+
+<div align="center">
+
+### 🏠 Homepage
+*Modern, clean landing page with animated hero section*
+
+<img src="./docs/screenshots/1_homepage.png" alt="Homepage" width="800"/>
+
+---
+
+### 🛒 Agent Marketplace
+*Browse and discover AI agents with real-time pricing*
+
+<img src="./docs/screenshots/2_marketplace.png" alt="Marketplace" width="800"/>
+
+---
+
+### 🤖 Agent Details
+*Detailed agent information with usage stats and reviews*
+
+<img src="./docs/screenshots/3_agent_details.png" alt="Agent Details" width="800"/>
+
+---
+
+### 💳 Payment Modal
+*Seamless X402 gasless payment with wallet integration*
+
+<img src="./docs/screenshots/4_payment_modal.png" alt="Payment Modal" width="800"/>
+
+---
+
+### ➕ Create Agent
+*Multi-step wizard for creating and publishing new agents*
+
+<img src="./docs/screenshots/5_create_agent.png" alt="Create Agent" width="800"/>
+
+</div>
+
+---
+
+## �🔴 The Problem We Solve
 
 ### Current Pain Points in AI Services:
 
