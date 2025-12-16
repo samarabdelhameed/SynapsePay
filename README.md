@@ -563,6 +563,8 @@ pub fn create_scheduled_task(
 - Node.js 20+ or Bun 1.0+
 - Phantom or Solflare wallet
 - Solana CLI (optional, for contract dev)
+- Supabase account (free tier works)
+- OpenAI/Anthropic API keys (for real AI execution)
 
 ### Installation
 
@@ -576,9 +578,45 @@ bun install  # or npm install
 
 # Configure environment
 cp .env.example .env
+# Edit .env with your credentials (see below)
 
 # Start development server
 bun run dev
+```
+
+### Database Setup (Supabase)
+
+For **real data** instead of demo mode, set up Supabase:
+
+1. Create a free account at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Go to **SQL Editor** and run:
+   ```sql
+   -- First, run packages/database/schema.sql
+   -- Then, run packages/database/seed.sql
+   ```
+4. Copy your credentials from **Settings → API**
+5. Add to your `.env`:
+   ```bash
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=eyJ...
+   SUPABASE_SERVICE_KEY=eyJ...
+   
+   # Frontend
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJ...
+   ```
+
+### AI Configuration
+
+For **real AI execution**:
+
+```bash
+# OpenAI (for PDF Summarizer, Content Writer)
+OPENAI_API_KEY=sk-...
+
+# Anthropic (for Code Debugger)  
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ### Access Points
@@ -586,9 +624,16 @@ bun run dev
 | Service | URL |
 |---------|-----|
 | Frontend | http://localhost:5173 |
-| X402 Facilitator | http://localhost:4021 |
-| Resource Server | http://localhost:4020 |
+| X402 Facilitator | http://localhost:8403 |
+| Resource Server | http://localhost:8404 |
 | Actions API | http://localhost:8405 |
+
+### Quick Verify
+
+After setup, the app will show:
+- ✅ `source: "supabase"` in API responses (real database)
+- ✅ AI agents execute with real OpenAI/Claude calls
+- ✅ Payments recorded to database
 
 ---
 
